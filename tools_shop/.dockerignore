@@ -1,0 +1,30 @@
+# секреты и окружение
+.env
+.env.*
+!.env.example
+
+# VCS и IDE
+.git
+.gitignore
+.idea
+.vscode
+
+# виртуальное окружение и кэши Python
+.venv
+venv
+**/__pycache__
+**/*.pyc
+.pytest_cache
+.mypy_cache
+
+# данные, которые живут в томах, а не в образе
+media
+staticfiles
+
+# docker-файлы и прочее ненужное внутри образа
+Dockerfile
+docker-compose*.yml
+.dockerignore
+conf
+*.sql
+*.log

@@ -1,0 +1,46 @@
+.vscode/
+*.swp
+
+# === Python & Django ===
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+ENV/
+.env
+db.sqlite3
+
+# === Статика (Важно для Docker) ===
+# Сюда collectstatic соберет всё (включая админку) на сервере. 
+# В репозитории эта папка не нужна.
+staticfiles/
+
+# === Frontend мусор ===
+# Если вдруг решите использовать npm
+node_modules/
+.npm/
+# Если ваши JS-библиотеки создают файлы карт для дебага
+*.js.map
+*.css.map
+
+# django-extensions
+*.dot
+*.pdf
+*.png
+*.svg
+*.mp4
+*.webp
+# *.xlsx
+*.jpg
+# Но иконки PWA включаем
+!static/icons/
+!static/icons/*.png
+# Если используете Werkzeug debugger (через runserver_plus)
+.ipynb_checkpoints/
+
+__pycache__/
+*.py[cod]git check-ignore -v static/icons/your-icon.png
+
+*.ctl
+*.sock
+conf/nginx.conf
