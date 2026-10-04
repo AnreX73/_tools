@@ -16,6 +16,7 @@ django-extensions==4.1
 django-picklefield==3.4.0
 django-q2==1.10.0
 django-redis==7.0.0
+django-treebeard==7.0.2
 django-unfold==0.89.0
 et_xmlfile==2.0.0
 frozenlist==1.8.0

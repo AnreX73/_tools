@@ -1,0 +1,127 @@
+<div id="catalog-body" class="catalog-layout" x-data="{ filtersOpen: $persist(false).as('filters-open').using(sessionStorage) }" @keydown.escape.window="filtersOpen = false">
+    <div class="filters-backdrop" x-show="filtersOpen" x-cloak x-transition.opacity @click="filtersOpen = false"></div>
+    <aside class="filters" :class="filtersOpen && 'is-open'">
+        <form id="filters-form"
+              hx-get="{{ category.get_absolute_url }}"
+              hx-target="#catalog-body"
+              hx-swap="outerHTML"
+              hx-push-url="true"
+              hx-indicator="#catalog-loading"
+              hx-trigger="change, submit">
+
+            <div class="filters-head">
+                <strong>Фильтры</strong>
+                {% if state.has_active %}
+                    <a class="reset" href="{{ category.get_absolute_url }}"
+                       hx-get="{{ category.get_absolute_url }}"
+                       hx-target="#catalog-body" hx-swap="outerHTML" hx-push-url="true">Сбросить</a>
+                {% endif %}
+                <button type="button" class="filters-close" @click="filtersOpen = false" aria-label="Закрыть фильтры">×</button>
+            </div>
+
+            {% for facet in facets %}
+                <div class="facet" x-data="{ open: $persist(true).as('facet-{{ facet.code }}') }">
+                    <button type="button" class="facet-head" @click="open = !open">
+                        <span>{{ facet.attr.name }}{% if facet.attr.unit %}, {{ facet.attr.unit }}{% endif %}</span>
+                        <span class="chev" :class="open && 'up'">▾</span>
+                    </button>
+
+                    <div class="facet-body" x-show="open">
+                        {% if facet.kind == "options" %}
+                            {% for option in facet.options %}
+                                <label class="facet-opt">
+                                    {% if option.selected %}
+                                        <input type="checkbox" name="a__{{ facet.code }}" value="{{ option.code }}" checked>
+                                    {% elif option.disabled %}
+                                        <input type="checkbox" name="a__{{ facet.code }}" value="{{ option.code }}" disabled>
+                                    {% else %}
+                                        <input type="checkbox" name="a__{{ facet.code }}" value="{{ option.code }}">
+                                    {% endif %}
+                                    <span class="facet-label">{{ option.label }}</span>
+                                    <span class="facet-count">{{ option.count }}</span>
+                                </label>
+                            {% endfor %}
+                        {% elif facet.kind == "range" %}
+                            <div class="facet-range">
+                                <input type="number" inputmode="decimal" step="any"
+                                       name="a__{{ facet.code }}__min"
+                                       value="{{ facet.sel_min|default_if_none:'' }}"
+                                       placeholder="от {{ facet.min|default_if_none:'' }}">
+                                <span>—</span>
+                                <input type="number" inputmode="decimal" step="any"
+                                       name="a__{{ facet.code }}__max"
+                                       value="{{ facet.sel_max|default_if_none:'' }}"
+                                       placeholder="до {{ facet.max|default_if_none:'' }}">
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            {% empty %}
+                <p class="help">Для этой категории фильтры не заданы.</p>
+            {% endfor %}
+
+            <label class="sort-field">
+                <span>Сортировка</span>
+                <select name="sort">
+                    {% for sort_option in sort_options %}
+                        {% if sort_option.selected %}
+                            <option value="{{ sort_option.value }}" selected>{{ sort_option.label }}</option>
+                        {% else %}
+                            <option value="{{ sort_option.value }}">{{ sort_option.label }}</option>
+                        {% endif %}
+                    {% endfor %}
+                </select>
+            </label>
+        </form>
+    </aside>
+
+    <section class="results">
+        <div class="results-head">
+            <button type="button" class="btn btn-ghost filters-toggle" @click="filtersOpen = true">⚲ Фильтры{% if chips %} · {{ chips|length }}{% endif %}</button>
+            <p class="results-count">Найдено: <strong>{{ total }}</strong></p>
+            {% if chips %}
+                <div class="chips">
+                    {% for chip in chips %}
+                        <a class="chip"
+                           href="{{ category.get_absolute_url }}{% if chip.query %}?{{ chip.query }}{% endif %}"
+                           hx-get="{{ category.get_absolute_url }}{% if chip.query %}?{{ chip.query }}{% endif %}"
+                           hx-target="#catalog-body" hx-swap="outerHTML" hx-push-url="true">
+                            {{ chip.label }} <span class="chip-x">×</span>
+                        </a>
+                    {% endfor %}
+                    <a class="chip chip-reset" href="{{ category.get_absolute_url }}"
+                       hx-get="{{ category.get_absolute_url }}"
+                       hx-target="#catalog-body" hx-swap="outerHTML" hx-push-url="true">Сбросить всё</a>
+                </div>
+            {% endif %}
+        </div>
+
+        <div id="catalog-loading" class="htmx-indicator loading">Загрузка…</div>
+
+        {% if products %}
+            <div class="product-grid">
+                {% for item in products %}
+                    {% include "shop/partials/product_card.html" %}
+                {% endfor %}
+            </div>
+
+            {% if page.has_other_pages %}
+                <nav class="pagination">
+                    {% if page.has_previous %}
+                        <a href="?{% if base_query %}{{ base_query }}&{% endif %}page={{ page.previous_page_number }}"
+                           hx-get="{{ category.get_absolute_url }}?{% if base_query %}{{ base_query }}&{% endif %}page={{ page.previous_page_number }}"
+                           hx-target="#catalog-body" hx-swap="outerHTML" hx-push-url="true">← Назад</a>
+                    {% endif %}
+                    <span class="page-info">Страница {{ page.number }} из {{ page.paginator.num_pages }}</span>
+                    {% if page.has_next %}
+                        <a href="?{% if base_query %}{{ base_query }}&{% endif %}page={{ page.next_page_number }}"
+                           hx-get="{{ category.get_absolute_url }}?{% if base_query %}{{ base_query }}&{% endif %}page={{ page.next_page_number }}"
+                           hx-target="#catalog-body" hx-swap="outerHTML" hx-push-url="true">Вперёд →</a>
+                    {% endif %}
+                </nav>
+            {% endif %}
+        {% else %}
+            <p class="empty"><span class="empty-icon" aria-hidden="true">🔍</span>По выбранным фильтрам товаров не найдено. Попробуйте сбросить часть условий.</p>
+        {% endif %}
+    </section>
+</div>

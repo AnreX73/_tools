@@ -1,0 +1,943 @@
+{
+  "attribute_definitions": [
+    {
+      "code": "tool_material",
+      "name": "Материал инструмента",
+      "data_type": "choice",
+      "unit": "",
+      "options": [
+        {"code": "carbide", "label": "Твёрдый сплав"},
+        {"code": "r6m5", "label": "Р6М5"},
+        {"code": "r6m5k5", "label": "Р6М5К5"}
+      ]
+    },
+    {
+      "code": "coating",
+      "name": "Покрытие",
+      "data_type": "choice",
+      "unit": "",
+      "options": [
+        {"code": "none", "label": "Без покрытия"},
+        {"code": "tin", "label": "TiN"},
+        {"code": "ticn", "label": "TiCN"},
+        {"code": "tialn", "label": "TiAlN"},
+        {"code": "altin", "label": "AlTiN"}
+      ]
+    },
+    {
+      "code": "work_materials",
+      "name": "Обрабатываемый материал",
+      "data_type": "multi",
+      "unit": "",
+      "options": [
+        {"code": "steel", "label": "Сталь"},
+        {"code": "stainless", "label": "Нержавеющая сталь"},
+        {"code": "cast_iron", "label": "Чугун"},
+        {"code": "aluminium", "label": "Алюминий"},
+        {"code": "titanium", "label": "Титан"},
+        {"code": "hardened", "label": "Закалённые стали"}
+      ]
+    },
+    {
+      "code": "diameter",
+      "name": "Диаметр",
+      "data_type": "decimal",
+      "unit": "мм"
+    },
+    {
+      "code": "length",
+      "name": "Длина",
+      "data_type": "decimal",
+      "unit": "мм"
+    },
+    {
+      "code": "shank_diameter",
+      "name": "Диаметр хвостовика",
+      "data_type": "decimal",
+      "unit": "мм"
+    },
+    {
+      "code": "flutes",
+      "name": "Число зубьев",
+      "data_type": "int",
+      "unit": "шт"
+    },
+    {
+      "code": "length_series",
+      "name": "Серия по длине",
+      "data_type": "choice",
+      "unit": "",
+      "options": [
+        {"code": "short", "label": "Короткая"},
+        {"code": "standard", "label": "Стандартная"},
+        {"code": "long", "label": "Длинная"}
+      ]
+    },
+    {
+      "code": "coolant_through",
+      "name": "Внутренний подвод СОЖ",
+      "data_type": "bool",
+      "unit": ""
+    },
+    {
+      "code": "center_angle",
+      "name": "Угол при вершине",
+      "data_type": "int",
+      "unit": "°"
+    },
+    {
+      "code": "corner_radius",
+      "name": "Радиус при вершине",
+      "data_type": "decimal",
+      "unit": "мм"
+    },
+    {
+      "code": "insert_code",
+      "name": "Обозначение пластины",
+      "data_type": "text",
+      "unit": ""
+    },
+    {
+      "code": "grade",
+      "name": "Марка сплава",
+      "data_type": "text",
+      "unit": ""
+    },
+    {
+      "code": "hand",
+      "name": "Исполнение",
+      "data_type": "choice",
+      "unit": "",
+      "options": [
+        {"code": "right", "label": "Правое"},
+        {"code": "left", "label": "Левое"},
+        {"code": "neutral", "label": "Нейтральное"}
+      ]
+    },
+    {
+      "code": "shank_section",
+      "name": "Сечение державки",
+      "data_type": "text",
+      "unit": "мм"
+    },
+    {
+      "code": "groove_width",
+      "name": "Ширина канавки",
+      "data_type": "decimal",
+      "unit": "мм"
+    },
+    {
+      "code": "thread_standard",
+      "name": "Тип резьбы",
+      "data_type": "choice",
+      "unit": "",
+      "options": [
+        {"code": "metric", "label": "Метрическая"},
+        {"code": "metric_fine", "label": "Метрическая мелкая"},
+        {"code": "unc", "label": "Дюймовая UNC"},
+        {"code": "bsp", "label": "Трубная G"}
+      ]
+    },
+    {
+      "code": "thread_size",
+      "name": "Размер резьбы",
+      "data_type": "text",
+      "unit": ""
+    },
+    {
+      "code": "pitch",
+      "name": "Шаг резьбы",
+      "data_type": "decimal",
+      "unit": "мм"
+    },
+    {
+      "code": "tap_type",
+      "name": "Тип метчика",
+      "data_type": "choice",
+      "unit": "",
+      "options": [
+        {"code": "straight", "label": "Прямая канавка"},
+        {"code": "spiral", "label": "Спиральная канавка"},
+        {"code": "forming", "label": "Бесстружечный (раскатник)"}
+      ]
+    },
+    {
+      "code": "interface",
+      "name": "Посадка / конус",
+      "data_type": "choice",
+      "unit": "",
+      "options": [
+        {"code": "bt30", "label": "BT30"},
+        {"code": "bt40", "label": "BT40"},
+        {"code": "bt50", "label": "BT50"},
+        {"code": "iso40", "label": "ISO40"},
+        {"code": "hsk63", "label": "HSK-A63"},
+        {"code": "mt2", "label": "Морзе 2"},
+        {"code": "mt3", "label": "Морзе 3"},
+        {"code": "mt4", "label": "Морзе 4"},
+        {"code": "cylinder", "label": "Цилиндрическая"}
+      ]
+    },
+    {
+      "code": "collet_size",
+      "name": "Размер цанги",
+      "data_type": "choice",
+      "unit": "",
+      "options": [
+        {"code": "er16", "label": "ER16"},
+        {"code": "er20", "label": "ER20"},
+        {"code": "er25", "label": "ER25"},
+        {"code": "er32", "label": "ER32"},
+        {"code": "er40", "label": "ER40"}
+      ]
+    },
+    {
+      "code": "set_pieces",
+      "name": "Количество в наборе",
+      "data_type": "int",
+      "unit": "шт"
+    },
+    {
+      "code": "jaw_width",
+      "name": "Ширина губок",
+      "data_type": "decimal",
+      "unit": "мм"
+    },
+    {
+      "code": "jaw_opening",
+      "name": "Раскрытие губок",
+      "data_type": "decimal",
+      "unit": "мм"
+    },
+    {
+      "code": "range_max",
+      "name": "Предел измерения",
+      "data_type": "decimal",
+      "unit": "мм"
+    },
+    {
+      "code": "resolution",
+      "name": "Цена деления",
+      "data_type": "decimal",
+      "unit": "мм"
+    },
+    {
+      "code": "digital",
+      "name": "Цифровой отсчёт",
+      "data_type": "bool",
+      "unit": ""
+    },
+    {
+      "code": "angle",
+      "name": "Угол",
+      "data_type": "decimal",
+      "unit": "°"
+    },
+    {
+      "code": "v_width",
+      "name": "Ширина паза V",
+      "data_type": "decimal",
+      "unit": "мм"
+    },
+    {
+      "code": "volume",
+      "name": "Объём",
+      "data_type": "decimal",
+      "unit": "л"
+    },
+    {
+      "code": "oil_base",
+      "name": "Основа",
+      "data_type": "choice",
+      "unit": "",
+      "options": [
+        {"code": "mineral", "label": "Минеральная"},
+        {"code": "semi", "label": "Полусинтетическая"},
+        {"code": "synthetic", "label": "Синтетическая"}
+      ]
+    },
+    {
+      "code": "viscosity",
+      "name": "Вязкость ISO VG",
+      "data_type": "int",
+      "unit": ""
+    },
+    {
+      "code": "compat",
+      "name": "Совместимость",
+      "data_type": "text",
+      "unit": ""
+    },
+    {
+      "code": "consumable_type",
+      "name": "Тип расходника",
+      "data_type": "choice",
+      "unit": "",
+      "options": [
+        {"code": "wire", "label": "Проволока"},
+        {"code": "electrode", "label": "Электрод-трубка"},
+        {"code": "filter", "label": "Фильтр"},
+        {"code": "resin", "label": "Ионообменная смола"},
+        {"code": "guide", "label": "Направляющая"}
+      ]
+    }
+  ],
+  "categories": [
+    {
+      "name": "Расходные материалы для электроэрозионных станков",
+      "attributes": [
+        {"code": "consumable_type", "required": true},
+        {"code": "diameter"},
+        {"code": "compat", "filterable": false}
+      ],
+      "children": [
+        {
+          "name": "Для высокоточных станков",
+          "products": [
+            {"sku": "EDM-HP-001", "name": "Проволока латунная Ø0.25 мм, катушка 5 кг", "brand": "Norden", "price": 8900, "attributes": {"consumable_type": "wire", "diameter": 0.25, "compat": "Высокоточные проволочно-вырезные станки"}},
+            {"sku": "EDM-HP-002", "name": "Проволока латунная Ø0.20 мм, катушка 5 кг", "brand": "Metalix", "price": 9400, "attributes": {"consumable_type": "wire", "diameter": 0.2, "compat": "Высокоточные проволочно-вырезные станки"}},
+            {"sku": "EDM-HP-003", "name": "Фильтр тонкой очистки (комплект 2 шт)", "brand": "Ferrum Pro", "price": 3200, "attributes": {"consumable_type": "filter", "compat": "Высокоточные проволочно-вырезные станки"}}
+          ]
+        },
+        {
+          "name": "Для станков серии DK",
+          "products": [
+            {"sku": "EDM-DK-001", "name": "Проволока молибденовая Ø0.18 мм, 2000 м", "brand": "Vektor", "price": 12500, "attributes": {"consumable_type": "wire", "diameter": 0.18, "compat": "Станки серии DK"}},
+            {"sku": "EDM-DK-002", "name": "Направляющая алмазная Ø0.255 мм", "brand": "Prisma", "price": 7800, "attributes": {"consumable_type": "guide", "diameter": 0.255, "compat": "Станки серии DK"}},
+            {"sku": "EDM-DK-003", "name": "Ионообменная смола, 25 л", "brand": "Norden", "price": 5400, "attributes": {"consumable_type": "resin", "compat": "Станки серии DK"}}
+          ]
+        },
+        {
+          "name": "Для прошивных станков",
+          "products": [
+            {"sku": "EDM-SK-001", "name": "Электрод-трубка латунная Ø1.0×400 мм", "brand": "Metalix", "price": 640, "attributes": {"consumable_type": "electrode", "diameter": 1.0, "compat": "Прошивные станки"}},
+            {"sku": "EDM-SK-002", "name": "Электрод-трубка латунная Ø0.5×400 мм", "brand": "Ferrum Pro", "price": 720, "attributes": {"consumable_type": "electrode", "diameter": 0.5, "compat": "Прошивные станки"}},
+            {"sku": "EDM-SK-003", "name": "Электрод-трубка латунная Ø2.0×400 мм", "brand": "Vektor", "price": 560, "attributes": {"consumable_type": "electrode", "diameter": 2.0, "compat": "Прошивные станки"}}
+          ]
+        },
+        {
+          "name": "Для супердрелей",
+          "products": [
+            {"sku": "EDM-SD-001", "name": "Электрод-трубка Ø0.3×400 мм", "brand": "Prisma", "price": 980, "attributes": {"consumable_type": "electrode", "diameter": 0.3, "compat": "Супердрели"}},
+            {"sku": "EDM-SD-002", "name": "Электрод-трубка Ø0.8×400 мм", "brand": "Norden", "price": 780, "attributes": {"consumable_type": "electrode", "diameter": 0.8, "compat": "Супердрели"}},
+            {"sku": "EDM-SD-003", "name": "Направляющая керамическая Ø1.0 мм", "brand": "Metalix", "price": 2100, "attributes": {"consumable_type": "guide", "diameter": 1.0, "compat": "Супердрели"}}
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Металлорежущий инструмент",
+      "attributes": [
+        {"code": "tool_material"},
+        {"code": "coating"},
+        {"code": "work_materials"}
+      ],
+      "children": [
+        {
+          "name": "Свёрла",
+          "attributes": [
+            {"code": "diameter", "required": true},
+            {"code": "length"},
+            {"code": "length_series"},
+            {"code": "coolant_through"}
+          ],
+          "products": [
+            {"sku": "DR-001", "name": "Сверло твердосплавное Ø6.0 мм, TiAlN", "brand": "Ferrum Pro", "price": 3450, "attributes": {"tool_material": "carbide", "coating": "tialn", "work_materials": ["steel", "cast_iron"], "diameter": 6.0, "length": 66, "length_series": "standard", "coolant_through": true}},
+            {"sku": "DR-002", "name": "Сверло из быстрореза Р6М5 Ø10.0 мм", "brand": "Vektor", "price": 640, "attributes": {"tool_material": "r6m5", "coating": "none", "work_materials": ["steel"], "diameter": 10.0, "length": 133, "length_series": "standard", "coolant_through": false}},
+            {"sku": "DR-003", "name": "Сверло Р6М5К5 длинное Ø8.0 мм, TiN", "brand": "Prisma", "price": 1180, "attributes": {"tool_material": "r6m5k5", "coating": "tin", "work_materials": ["steel", "stainless"], "diameter": 8.0, "length": 165, "length_series": "long", "coolant_through": false}}
+          ]
+        },
+        {
+          "name": "Свёрла центровочные",
+          "attributes": [
+            {"code": "diameter", "required": true},
+            {"code": "center_angle"},
+            {"code": "length"}
+          ],
+          "products": [
+            {"sku": "CD-001", "name": "Сверло центровочное твердосплавное Ø3.15 мм, 60°", "brand": "Norden", "price": 980, "attributes": {"tool_material": "carbide", "coating": "none", "work_materials": ["steel", "cast_iron"], "diameter": 3.15, "center_angle": 60, "length": 31.5}},
+            {"sku": "CD-002", "name": "Сверло центровочное Р6М5 Ø2.5 мм, 60°", "brand": "Metalix", "price": 190, "attributes": {"tool_material": "r6m5", "coating": "none", "work_materials": ["steel"], "diameter": 2.5, "center_angle": 60, "length": 28}},
+            {"sku": "CD-003", "name": "Сверло центровочное Р6М5К5 Ø4.0 мм, 90°, TiN", "brand": "Ferrum Pro", "price": 340, "attributes": {"tool_material": "r6m5k5", "coating": "tin", "work_materials": ["steel", "stainless"], "diameter": 4.0, "center_angle": 90, "length": 40}}
+          ]
+        },
+        {
+          "name": "Свёрла со сменными пластинами",
+          "children": [
+            {
+              "name": "Корпуса",
+              "attributes": [
+                {"code": "diameter", "required": true},
+                {"code": "length"},
+                {"code": "coolant_through"}
+              ],
+              "products": [
+                {"sku": "DI-B-001", "name": "Корпус сверла Ø16 мм, 3D", "brand": "Vektor", "price": 14500, "attributes": {"work_materials": ["steel", "cast_iron"], "diameter": 16.0, "length": 120, "coolant_through": true}},
+                {"sku": "DI-B-002", "name": "Корпус сверла Ø20 мм, 3D", "brand": "Prisma", "price": 16800, "attributes": {"work_materials": ["steel", "cast_iron"], "diameter": 20.0, "length": 135, "coolant_through": true}},
+                {"sku": "DI-B-003", "name": "Корпус сверла Ø25 мм, 5D", "brand": "Norden", "price": 21900, "attributes": {"work_materials": ["steel"], "diameter": 25.0, "length": 190, "coolant_through": true}}
+              ]
+            },
+            {
+              "name": "Пластины",
+              "attributes": [
+                {"code": "insert_code", "required": true},
+                {"code": "grade"}
+              ],
+              "products": [
+                {"sku": "DI-P-001", "name": "Пластина для сверла SPMG 06T308", "brand": "Metalix", "price": 360, "attributes": {"tool_material": "carbide", "coating": "tialn", "work_materials": ["steel"], "insert_code": "SPMG 06T308", "grade": "PC5300"}},
+                {"sku": "DI-P-002", "name": "Пластина для сверла SPMG 090408", "brand": "Ferrum Pro", "price": 410, "attributes": {"tool_material": "carbide", "coating": "tialn", "work_materials": ["steel"], "insert_code": "SPMG 090408", "grade": "PC5300"}},
+                {"sku": "DI-P-003", "name": "Пластина для сверла SPMG 110408", "brand": "Vektor", "price": 440, "attributes": {"tool_material": "carbide", "coating": "altin", "work_materials": ["steel", "stainless"], "insert_code": "SPMG 110408", "grade": "PC5400"}}
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Фрезы концевые",
+          "attributes": [
+            {"code": "diameter", "required": true},
+            {"code": "flutes"},
+            {"code": "length"},
+            {"code": "shank_diameter"}
+          ],
+          "products": [
+            {"sku": "EM-001", "name": "Фреза концевая Ø6 мм, 4 зуба, по стали", "brand": "Prisma", "price": 2150, "attributes": {"tool_material": "carbide", "coating": "tialn", "work_materials": ["steel", "stainless", "cast_iron"], "diameter": 6.0, "flutes": 4, "length": 57, "shank_diameter": 6.0}},
+            {"sku": "EM-002", "name": "Фреза концевая Ø10 мм, 3 зуба, по алюминию", "brand": "Norden", "price": 2780, "attributes": {"tool_material": "carbide", "coating": "none", "work_materials": ["aluminium"], "diameter": 10.0, "flutes": 3, "length": 72, "shank_diameter": 10.0}},
+            {"sku": "EM-003", "name": "Фреза концевая Ø8 мм, 4 зуба, по закалённым сталям", "brand": "Metalix", "price": 3290, "attributes": {"tool_material": "carbide", "coating": "altin", "work_materials": ["hardened", "steel"], "diameter": 8.0, "flutes": 4, "length": 63, "shank_diameter": 8.0}}
+          ]
+        },
+        {
+          "name": "Фрезы радиусные",
+          "attributes": [
+            {"code": "diameter", "required": true},
+            {"code": "corner_radius"},
+            {"code": "flutes"},
+            {"code": "length"},
+            {"code": "shank_diameter"}
+          ],
+          "products": [
+            {"sku": "RM-001", "name": "Фреза радиусная Ø10 мм R1.0, по стали", "brand": "Ferrum Pro", "price": 2980, "attributes": {"tool_material": "carbide", "coating": "tialn", "work_materials": ["steel", "cast_iron"], "diameter": 10.0, "corner_radius": 1.0, "flutes": 4, "length": 72, "shank_diameter": 10.0}},
+            {"sku": "RM-002", "name": "Фреза радиусная Ø12 мм R2.0, по нержавеющей стали", "brand": "Vektor", "price": 3560, "attributes": {"tool_material": "carbide", "coating": "ticn", "work_materials": ["stainless", "steel"], "diameter": 12.0, "corner_radius": 2.0, "flutes": 4, "length": 83, "shank_diameter": 12.0}},
+            {"sku": "RM-003", "name": "Фреза радиусная Ø6 мм R0.5, по титану", "brand": "Prisma", "price": 3120, "attributes": {"tool_material": "carbide", "coating": "altin", "work_materials": ["titanium"], "diameter": 6.0, "corner_radius": 0.5, "flutes": 5, "length": 57, "shank_diameter": 6.0}}
+          ]
+        },
+        {
+          "name": "Фрезы сферические",
+          "attributes": [
+            {"code": "diameter", "required": true},
+            {"code": "flutes"},
+            {"code": "length"},
+            {"code": "shank_diameter"}
+          ],
+          "products": [
+            {"sku": "BM-001", "name": "Фреза сферическая Ø6 мм (R3), по стали", "brand": "Norden", "price": 2290, "attributes": {"tool_material": "carbide", "coating": "tialn", "work_materials": ["steel", "cast_iron"], "diameter": 6.0, "flutes": 2, "length": 57, "shank_diameter": 6.0}},
+            {"sku": "BM-002", "name": "Фреза сферическая Ø4 мм (R2), по закалённым сталям", "brand": "Metalix", "price": 2450, "attributes": {"tool_material": "carbide", "coating": "altin", "work_materials": ["hardened"], "diameter": 4.0, "flutes": 2, "length": 50, "shank_diameter": 4.0}},
+            {"sku": "BM-003", "name": "Фреза сферическая Ø10 мм (R5), по алюминию", "brand": "Ferrum Pro", "price": 3050, "attributes": {"tool_material": "carbide", "coating": "none", "work_materials": ["aluminium"], "diameter": 10.0, "flutes": 2, "length": 72, "shank_diameter": 10.0}}
+          ]
+        },
+        {
+          "name": "Фрезы со сменными пластинами",
+          "children": [
+            {
+              "name": "Корпуса",
+              "attributes": [
+                {"code": "diameter", "required": true},
+                {"code": "flutes"},
+                {"code": "length"}
+              ],
+              "products": [
+                {"sku": "FI-B-001", "name": "Корпус фрезы Ø32 мм, 4 пластины", "brand": "Vektor", "price": 18900, "attributes": {"work_materials": ["steel"], "diameter": 32.0, "flutes": 4, "length": 40}},
+                {"sku": "FI-B-002", "name": "Корпус фрезы Ø40 мм, 5 пластин", "brand": "Prisma", "price": 24600, "attributes": {"work_materials": ["steel", "cast_iron"], "diameter": 40.0, "flutes": 5, "length": 40}},
+                {"sku": "FI-B-003", "name": "Корпус фрезы Ø50 мм, 6 пластин", "brand": "Norden", "price": 31200, "attributes": {"work_materials": ["steel", "cast_iron"], "diameter": 50.0, "flutes": 6, "length": 40}}
+              ]
+            },
+            {
+              "name": "Пластины",
+              "attributes": [
+                {"code": "insert_code", "required": true},
+                {"code": "grade"}
+              ],
+              "products": [
+                {"sku": "FI-P-001", "name": "Пластина фрезерная APMT 1604PDER", "brand": "Metalix", "price": 290, "attributes": {"tool_material": "carbide", "coating": "tialn", "work_materials": ["steel"], "insert_code": "APMT 1604PDER", "grade": "PC5300"}},
+                {"sku": "FI-P-002", "name": "Пластина фрезерная SEKT 1204AFTN", "brand": "Ferrum Pro", "price": 270, "attributes": {"tool_material": "carbide", "coating": "tin", "work_materials": ["steel", "cast_iron"], "insert_code": "SEKT 1204AFTN", "grade": "PC3500"}},
+                {"sku": "FI-P-003", "name": "Пластина фрезерная XPHT 160408", "brand": "Vektor", "price": 310, "attributes": {"tool_material": "carbide", "coating": "altin", "work_materials": ["steel", "stainless"], "insert_code": "XPHT 160408", "grade": "PC5400"}}
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Проходные резцы",
+          "attributes": [
+            {"code": "shank_section"},
+            {"code": "hand"},
+            {"code": "insert_code"}
+          ],
+          "products": [
+            {"sku": "TH-001", "name": "Резец проходной PCLNR 2020K12", "brand": "Prisma", "price": 5900, "attributes": {"shank_section": "20x20", "hand": "right", "insert_code": "CNMG 120408"}},
+            {"sku": "TH-002", "name": "Резец проходной PCLNL 2525M12 (левый)", "brand": "Norden", "price": 6400, "attributes": {"shank_section": "25x25", "hand": "left", "insert_code": "CNMG 120408"}},
+            {"sku": "TH-003", "name": "Резец проходной MVJNR 2020K16", "brand": "Metalix", "price": 6100, "attributes": {"shank_section": "20x20", "hand": "right", "insert_code": "VNMG 160408"}}
+          ]
+        },
+        {
+          "name": "Расточные резцы",
+          "attributes": [
+            {"code": "diameter", "required": true},
+            {"code": "length"},
+            {"code": "hand"},
+            {"code": "coolant_through"}
+          ],
+          "products": [
+            {"sku": "BO-001", "name": "Расточная оправка Ø16 мм S16R-SCLCR09", "brand": "Ferrum Pro", "price": 8900, "attributes": {"diameter": 16.0, "length": 200, "hand": "right", "coolant_through": false}},
+            {"sku": "BO-002", "name": "Расточная оправка Ø20 мм S20S-SCLCR09 с подводом СОЖ", "brand": "Vektor", "price": 12400, "attributes": {"diameter": 20.0, "length": 250, "hand": "right", "coolant_through": true}},
+            {"sku": "BO-003", "name": "Расточная оправка Ø25 мм S25T-SDUCL11 (левая)", "brand": "Prisma", "price": 14800, "attributes": {"diameter": 25.0, "length": 300, "hand": "left", "coolant_through": true}}
+          ]
+        },
+        {
+          "name": "Токарные твердосплавные пластины",
+          "attributes": [
+            {"code": "insert_code", "required": true},
+            {"code": "grade"}
+          ],
+          "products": [
+            {"sku": "TI-001", "name": "Пластина токарная CNMG 120408-PM", "brand": "Norden", "price": 420, "attributes": {"tool_material": "carbide", "coating": "tialn", "work_materials": ["steel"], "insert_code": "CNMG 120408-PM", "grade": "TP3000"}},
+            {"sku": "TI-002", "name": "Пластина токарная DNMG 150608-PM", "brand": "Metalix", "price": 450, "attributes": {"tool_material": "carbide", "coating": "tialn", "work_materials": ["steel"], "insert_code": "DNMG 150608-PM", "grade": "TP3000"}},
+            {"sku": "TI-003", "name": "Пластина токарная WNMG 080408-MA", "brand": "Ferrum Pro", "price": 380, "attributes": {"tool_material": "carbide", "coating": "ticn", "work_materials": ["steel", "stainless"], "insert_code": "WNMG 080408-MA", "grade": "TP2500"}}
+          ]
+        },
+        {
+          "name": "Канавочные резцы",
+          "children": [
+            {
+              "name": "Отрезные/канавочные резцы",
+              "attributes": [
+                {"code": "shank_section"},
+                {"code": "hand"},
+                {"code": "groove_width"},
+                {"code": "insert_code"}
+              ],
+              "products": [
+                {"sku": "GR-O-001", "name": "Резец отрезной MGEHR 2020-3", "brand": "Vektor", "price": 5200, "attributes": {"shank_section": "20x20", "hand": "right", "groove_width": 3.0, "insert_code": "MGMN 300"}},
+                {"sku": "GR-O-002", "name": "Резец отрезной MGEHR 2525-4", "brand": "Prisma", "price": 5600, "attributes": {"shank_section": "25x25", "hand": "right", "groove_width": 4.0, "insert_code": "MGMN 400"}},
+                {"sku": "GR-O-003", "name": "Резец канавочный MGEHL 2020-2 (левый)", "brand": "Norden", "price": 5100, "attributes": {"shank_section": "20x20", "hand": "left", "groove_width": 2.0, "insert_code": "MGMN 200"}}
+              ]
+            },
+            {
+              "name": "Резцы для торцевых канавок",
+              "attributes": [
+                {"code": "shank_section"},
+                {"code": "hand"},
+                {"code": "groove_width"},
+                {"code": "insert_code"}
+              ],
+              "products": [
+                {"sku": "GR-F-001", "name": "Резец для торцевых канавок FGHR 2020-3", "brand": "Metalix", "price": 7900, "attributes": {"shank_section": "20x20", "hand": "right", "groove_width": 3.0, "insert_code": "MGMN 300"}},
+                {"sku": "GR-F-002", "name": "Резец для торцевых канавок FGHL 2020-3 (левый)", "brand": "Ferrum Pro", "price": 7900, "attributes": {"shank_section": "20x20", "hand": "left", "groove_width": 3.0, "insert_code": "MGMN 300"}},
+                {"sku": "GR-F-003", "name": "Резец для торцевых канавок FGHR 2525-4", "brand": "Vektor", "price": 8400, "attributes": {"shank_section": "25x25", "hand": "right", "groove_width": 4.0, "insert_code": "MGMN 400"}}
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Канавочные пластины",
+          "attributes": [
+            {"code": "insert_code", "required": true},
+            {"code": "groove_width"},
+            {"code": "grade"}
+          ],
+          "products": [
+            {"sku": "GI-001", "name": "Пластина канавочная MGMN 300-M", "brand": "Prisma", "price": 380, "attributes": {"tool_material": "carbide", "coating": "tialn", "work_materials": ["steel", "stainless"], "insert_code": "MGMN 300-M", "groove_width": 3.0, "grade": "TP2500"}},
+            {"sku": "GI-002", "name": "Пластина канавочная MGMN 400-M", "brand": "Norden", "price": 410, "attributes": {"tool_material": "carbide", "coating": "tialn", "work_materials": ["steel", "stainless"], "insert_code": "MGMN 400-M", "groove_width": 4.0, "grade": "TP2500"}},
+            {"sku": "GI-003", "name": "Пластина канавочная MGMN 200-G", "brand": "Metalix", "price": 360, "attributes": {"tool_material": "carbide", "coating": "tin", "work_materials": ["steel"], "insert_code": "MGMN 200-G", "groove_width": 2.0, "grade": "TP1500"}}
+          ]
+        },
+        {
+          "name": "Резьбовые державки",
+          "attributes": [
+            {"code": "shank_section"},
+            {"code": "hand"},
+            {"code": "insert_code"}
+          ],
+          "products": [
+            {"sku": "TD-001", "name": "Державка резьбовая SER 2020K16 (наружная)", "brand": "Ferrum Pro", "price": 6800, "attributes": {"shank_section": "20x20", "hand": "right", "insert_code": "16ER AG60"}},
+            {"sku": "TD-002", "name": "Державка резьбовая SEL 2020K16 (левая)", "brand": "Vektor", "price": 6800, "attributes": {"shank_section": "20x20", "hand": "left", "insert_code": "16ER AG60"}},
+            {"sku": "TD-003", "name": "Державка резьбовая SNR 0016M16 (внутренняя)", "brand": "Prisma", "price": 9400, "attributes": {"shank_section": "Ø16", "hand": "right", "insert_code": "16IR AG60"}}
+          ]
+        },
+        {
+          "name": "Резьбовые пластины",
+          "attributes": [
+            {"code": "insert_code", "required": true},
+            {"code": "thread_standard", "required": true},
+            {"code": "pitch"},
+            {"code": "grade"}
+          ],
+          "products": [
+            {"sku": "TT-001", "name": "Пластина резьбовая 16ER 1.5 ISO", "brand": "Norden", "price": 520, "attributes": {"tool_material": "carbide", "coating": "tialn", "insert_code": "16ER 1.5 ISO", "thread_standard": "metric", "pitch": 1.5, "grade": "TP1000"}},
+            {"sku": "TT-002", "name": "Пластина резьбовая 16ER 1.0 ISO", "brand": "Metalix", "price": 520, "attributes": {"tool_material": "carbide", "coating": "tialn", "insert_code": "16ER 1.0 ISO", "thread_standard": "metric", "pitch": 1.0, "grade": "TP1000"}},
+            {"sku": "TT-003", "name": "Пластина резьбовая 16ER 14W (трубная)", "brand": "Ferrum Pro", "price": 560, "attributes": {"tool_material": "carbide", "coating": "tin", "insert_code": "16ER 14W", "thread_standard": "bsp", "pitch": 1.814, "grade": "TP1000"}}
+          ]
+        },
+        {
+          "name": "Микрорезцы",
+          "attributes": [
+            {"code": "diameter", "required": true},
+            {"code": "shank_diameter"},
+            {"code": "hand"},
+            {"code": "length"}
+          ],
+          "products": [
+            {"sku": "MC-001", "name": "Микрорезец расточной Ø3 мм", "brand": "Vektor", "price": 9800, "attributes": {"tool_material": "carbide", "coating": "none", "diameter": 3.0, "shank_diameter": 6.0, "hand": "right", "length": 50}},
+            {"sku": "MC-002", "name": "Микрорезец расточной Ø5 мм", "brand": "Prisma", "price": 9400, "attributes": {"tool_material": "carbide", "coating": "none", "diameter": 5.0, "shank_diameter": 8.0, "hand": "right", "length": 60}},
+            {"sku": "MC-003", "name": "Микрорезец отрезной Ø6 мм, левый", "brand": "Norden", "price": 10200, "attributes": {"tool_material": "carbide", "coating": "tialn", "diameter": 6.0, "shank_diameter": 8.0, "hand": "left", "length": 60}}
+          ]
+        },
+        {
+          "name": "Резьбофрезы",
+          "attributes": [
+            {"code": "diameter", "required": true},
+            {"code": "flutes"},
+            {"code": "thread_standard", "required": true},
+            {"code": "pitch"}
+          ],
+          "products": [
+            {"sku": "TM-001", "name": "Резьбофреза твердосплавная Ø6 мм под M8x1.25", "brand": "Metalix", "price": 4900, "attributes": {"tool_material": "carbide", "coating": "tialn", "work_materials": ["steel", "cast_iron"], "diameter": 6.0, "flutes": 3, "thread_standard": "metric", "pitch": 1.25}},
+            {"sku": "TM-002", "name": "Резьбофреза твердосплавная Ø8.5 мм под M10x1.5", "brand": "Ferrum Pro", "price": 5400, "attributes": {"tool_material": "carbide", "coating": "tialn", "work_materials": ["steel", "stainless"], "diameter": 8.5, "flutes": 3, "thread_standard": "metric", "pitch": 1.5}},
+            {"sku": "TM-003", "name": "Резьбофреза твердосплавная Ø12 мм под UNC 1/2-13", "brand": "Vektor", "price": 6200, "attributes": {"tool_material": "carbide", "coating": "altin", "work_materials": ["steel"], "diameter": 12.0, "flutes": 4, "thread_standard": "unc", "pitch": 1.954}}
+          ]
+        },
+        {
+          "name": "Метчики",
+          "attributes": [
+            {"code": "thread_standard", "required": true},
+            {"code": "thread_size", "required": true},
+            {"code": "tap_type"},
+            {"code": "length"}
+          ],
+          "products": [
+            {"sku": "TP-001", "name": "Метчик машинный M8x1.25", "brand": "Prisma", "price": 340, "attributes": {"tool_material": "r6m5", "coating": "none", "work_materials": ["steel", "cast_iron"], "thread_standard": "metric", "thread_size": "M8x1.25", "tap_type": "straight", "length": 70}},
+            {"sku": "TP-002", "name": "Метчик спиральный M10x1.5 с покрытием", "brand": "Norden", "price": 520, "attributes": {"tool_material": "r6m5k5", "coating": "tin", "work_materials": ["steel", "stainless"], "thread_standard": "metric", "thread_size": "M10x1.5", "tap_type": "spiral", "length": 90}},
+            {"sku": "TP-003", "name": "Метчик бесстружечный M6x1", "brand": "Metalix", "price": 480, "attributes": {"tool_material": "r6m5k5", "coating": "tin", "work_materials": ["steel", "aluminium"], "thread_standard": "metric", "thread_size": "M6x1", "tap_type": "forming", "length": 62}}
+          ]
+        },
+        {
+          "name": "Плашки",
+          "attributes": [
+            {"code": "thread_standard", "required": true},
+            {"code": "thread_size", "required": true},
+            {"code": "diameter"}
+          ],
+          "products": [
+            {"sku": "PL-001", "name": "Плашка M8x1.25", "brand": "Ferrum Pro", "price": 190, "attributes": {"tool_material": "r6m5", "work_materials": ["steel"], "thread_standard": "metric", "thread_size": "M8x1.25", "diameter": 25.0}},
+            {"sku": "PL-002", "name": "Плашка M12x1.75", "brand": "Vektor", "price": 260, "attributes": {"tool_material": "r6m5", "work_materials": ["steel"], "thread_standard": "metric", "thread_size": "M12x1.75", "diameter": 38.0}},
+            {"sku": "PL-003", "name": "Плашка трубная G1/2", "brand": "Prisma", "price": 480, "attributes": {"tool_material": "r6m5k5", "work_materials": ["steel"], "thread_standard": "bsp", "thread_size": "G1/2", "diameter": 45.0}}
+          ]
+        },
+        {
+          "name": "Прочий инструмент",
+          "products": [
+            {"sku": "OT-001", "name": "Набор зенковок 6 шт, 90°", "brand": "Norden", "price": 3900, "attributes": {"tool_material": "r6m5", "work_materials": ["steel", "cast_iron"]}},
+            {"sku": "OT-002", "name": "Развёртка машинная Ø10 H7", "brand": "Metalix", "price": 1250, "attributes": {"tool_material": "r6m5k5", "coating": "none", "work_materials": ["steel"]}},
+            {"sku": "OT-003", "name": "Борфреза твердосплавная цилиндрическая Ø6 мм", "brand": "Ferrum Pro", "price": 780, "attributes": {"tool_material": "carbide", "work_materials": ["steel", "cast_iron"]}}
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Оснастка",
+      "children": [
+        {
+          "name": "Датчики привязки и щупы",
+          "attributes": [
+            {"code": "diameter"},
+            {"code": "compat", "filterable": false}
+          ],
+          "products": [
+            {"sku": "PR-001", "name": "Электронный 3D-щуп, шарик Ø6 мм", "brand": "Vektor", "price": 18500, "attributes": {"diameter": 6.0, "compat": "Фрезерные обрабатывающие центры"}},
+            {"sku": "PR-002", "name": "Кромкоискатель электронный Ø10 мм", "brand": "Prisma", "price": 3400, "attributes": {"diameter": 10.0, "compat": "Фрезерные станки"}},
+            {"sku": "PR-003", "name": "Датчик длины инструмента", "brand": "Norden", "price": null, "attributes": {"compat": "Фрезерные обрабатывающие центры"}}
+          ]
+        },
+        {
+          "name": "Прижимная оснастка",
+          "attributes": [
+            {"code": "length"},
+            {"code": "set_pieces"}
+          ],
+          "products": [
+            {"sku": "CL-001", "name": "Набор прижимов 58 предметов (M12)", "brand": "Metalix", "price": 6800, "attributes": {"set_pieces": 58}},
+            {"sku": "CL-002", "name": "Планка прижимная ступенчатая 200 мм", "brand": "Ferrum Pro", "price": 420, "attributes": {"length": 200.0, "set_pieces": 1}},
+            {"sku": "CL-003", "name": "Т-образные болты M12 (10 шт)", "brand": "Vektor", "price": 780, "attributes": {"length": 70.0, "set_pieces": 10}}
+          ]
+        },
+        {
+          "name": "Тиски и принадлежности",
+          "attributes": [
+            {"code": "jaw_width", "required": true},
+            {"code": "jaw_opening"}
+          ],
+          "products": [
+            {"sku": "VS-001", "name": "Тиски станочные прецизионные 125 мм", "brand": "Prisma", "price": 15800, "attributes": {"jaw_width": 125.0, "jaw_opening": 150.0}},
+            {"sku": "VS-002", "name": "Тиски станочные 160 мм", "brand": "Norden", "price": 19900, "attributes": {"jaw_width": 160.0, "jaw_opening": 200.0}},
+            {"sku": "VS-003", "name": "Тиски самоцентрирующие 100 мм", "brand": "Metalix", "price": 28500, "attributes": {"jaw_width": 100.0, "jaw_opening": 120.0}}
+          ]
+        },
+        {
+          "name": "Фрезерная инструментальная оснастка",
+          "attributes": [
+            {"code": "interface", "required": true},
+            {"code": "collet_size"},
+            {"code": "length"},
+            {"code": "diameter"}
+          ],
+          "products": [
+            {"sku": "MH-001", "name": "Патрон цанговый ER32 BT40", "brand": "Ferrum Pro", "price": 5200, "attributes": {"interface": "bt40", "collet_size": "er32", "length": 100.0}},
+            {"sku": "MH-002", "name": "Патрон цанговый ER20 BT30", "brand": "Vektor", "price": 4300, "attributes": {"interface": "bt30", "collet_size": "er20", "length": 70.0}},
+            {"sku": "MH-003", "name": "Оправка торцевая Ø32 мм BT40", "brand": "Prisma", "price": 6900, "attributes": {"interface": "bt40", "diameter": 32.0, "length": 60.0}}
+          ]
+        },
+        {
+          "name": "Токарная инструментальная оснастка",
+          "attributes": [
+            {"code": "shank_section"},
+            {"code": "diameter"}
+          ],
+          "products": [
+            {"sku": "TL-001", "name": "Втулка переходная для расточных оправок Ø20/25 мм", "brand": "Norden", "price": 1900, "attributes": {"shank_section": "25x25", "diameter": 20.0}},
+            {"sku": "TL-002", "name": "Блок инструментальный VDI40 для резцов 20x20", "brand": "Metalix", "price": 8800, "attributes": {"shank_section": "20x20"}},
+            {"sku": "TL-003", "name": "Оправка цанговая для токарных станков Ø16 мм", "brand": "Ferrum Pro", "price": 5600, "attributes": {"diameter": 16.0}}
+          ]
+        },
+        {
+          "name": "Кулачки и трехкулачковые патроны",
+          "attributes": [
+            {"code": "diameter", "required": true},
+            {"code": "set_pieces"}
+          ],
+          "products": [
+            {"sku": "CH-001", "name": "Патрон токарный 3-кулачковый Ø200 мм", "brand": "Vektor", "price": 38900, "attributes": {"diameter": 200.0}},
+            {"sku": "CH-002", "name": "Патрон токарный 3-кулачковый Ø250 мм", "brand": "Prisma", "price": 52400, "attributes": {"diameter": 250.0}},
+            {"sku": "CH-003", "name": "Комплект обратных кулачков (3 шт) для Ø200 мм", "brand": "Norden", "price": 7400, "attributes": {"diameter": 200.0, "set_pieces": 3}}
+          ]
+        },
+        {
+          "name": "Цанги",
+          "attributes": [
+            {"code": "collet_size", "required": true},
+            {"code": "diameter"}
+          ],
+          "products": [
+            {"sku": "CO-001", "name": "Цанга ER32 Ø10 мм", "brand": "Metalix", "price": 640, "attributes": {"collet_size": "er32", "diameter": 10.0}},
+            {"sku": "CO-002", "name": "Цанга ER32 Ø6 мм", "brand": "Ferrum Pro", "price": 640, "attributes": {"collet_size": "er32", "diameter": 6.0}},
+            {"sku": "CO-003", "name": "Цанга ER20 Ø8 мм", "brand": "Vektor", "price": 520, "attributes": {"collet_size": "er20", "diameter": 8.0}}
+          ]
+        },
+        {
+          "name": "Втулки редукционные",
+          "attributes": [
+            {"code": "interface", "required": true},
+            {"code": "length"}
+          ],
+          "products": [
+            {"sku": "RS-001", "name": "Втулка редукционная Морзе 3 → Морзе 2", "brand": "Prisma", "price": 1450, "attributes": {"interface": "mt3", "length": 100.0}},
+            {"sku": "RS-002", "name": "Втулка редукционная Морзе 4 → Морзе 3", "brand": "Norden", "price": 1850, "attributes": {"interface": "mt4", "length": 120.0}},
+            {"sku": "RS-003", "name": "Втулка редукционная Морзе 4 → Морзе 2", "brand": "Metalix", "price": 1650, "attributes": {"interface": "mt4", "length": 140.0}}
+          ]
+        },
+        {
+          "name": "Ключи и приспособления",
+          "attributes": [
+            {"code": "set_pieces"},
+            {"code": "length"}
+          ],
+          "products": [
+            {"sku": "KY-001", "name": "Ключ для цанговых гаек ER32", "brand": "Ferrum Pro", "price": 380, "attributes": {"set_pieces": 1, "length": 120.0}},
+            {"sku": "KY-002", "name": "Набор шестигранных ключей 9 шт", "brand": "Vektor", "price": 520, "attributes": {"set_pieces": 9, "length": 90.0}},
+            {"sku": "KY-003", "name": "Ключ динамометрический для патронов", "brand": "Prisma", "price": 6900, "attributes": {"set_pieces": 1, "length": 300.0}}
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Измерительный инструмент",
+      "attributes": [
+        {"code": "range_max"},
+        {"code": "resolution"}
+      ],
+      "children": [
+        {
+          "name": "Штангенинструмент",
+          "attributes": [
+            {"code": "digital"}
+          ],
+          "products": [
+            {"sku": "CAL-001", "name": "Штангенциркуль цифровой ШЦЦ-150", "brand": "Norden", "price": 2800, "attributes": {"range_max": 150.0, "resolution": 0.01, "digital": true}},
+            {"sku": "CAL-002", "name": "Штангенциркуль ШЦ-I-300 (нониус)", "brand": "Metalix", "price": 1900, "attributes": {"range_max": 300.0, "resolution": 0.05, "digital": false}},
+            {"sku": "CAL-003", "name": "Штангенглубиномер цифровой 200 мм", "brand": "Ferrum Pro", "price": 5400, "attributes": {"range_max": 200.0, "resolution": 0.01, "digital": true}}
+          ]
+        },
+        {
+          "name": "Микрометрический инструмент",
+          "attributes": [
+            {"code": "digital"}
+          ],
+          "products": [
+            {"sku": "MIC-001", "name": "Микрометр гладкий МК-25", "brand": "Vektor", "price": 1700, "attributes": {"range_max": 25.0, "resolution": 0.01, "digital": false}},
+            {"sku": "MIC-002", "name": "Микрометр цифровой МКЦ-50", "brand": "Prisma", "price": 4900, "attributes": {"range_max": 50.0, "resolution": 0.001, "digital": true}},
+            {"sku": "MIC-003", "name": "Микрометр цифровой МКЦ-100", "brand": "Norden", "price": 7800, "attributes": {"range_max": 100.0, "resolution": 0.001, "digital": true}}
+          ]
+        },
+        {
+          "name": "Индикаторный инструмент",
+          "attributes": [
+            {"code": "digital"}
+          ],
+          "products": [
+            {"sku": "IND-001", "name": "Индикатор часового типа ИЧ-10", "brand": "Metalix", "price": 1300, "attributes": {"range_max": 10.0, "resolution": 0.01, "digital": false}},
+            {"sku": "IND-002", "name": "Индикатор цифровой 12.7 мм", "brand": "Ferrum Pro", "price": 3900, "attributes": {"range_max": 12.7, "resolution": 0.01, "digital": true}},
+            {"sku": "IND-003", "name": "Нутромер индикаторный 18-35 мм", "brand": "Vektor", "price": 6200, "attributes": {"range_max": 35.0, "resolution": 0.01, "digital": false}}
+          ]
+        },
+        {
+          "name": "Стойки и штативы",
+          "products": [
+            {"sku": "STD-001", "name": "Стойка магнитная для индикатора", "brand": "Prisma", "price": 2400, "attributes": {}},
+            {"sku": "STD-002", "name": "Штатив универсальный ШМ-IIН", "brand": "Norden", "price": 3100, "attributes": {}},
+            {"sku": "STD-003", "name": "Стойка С-IV с плитой", "brand": "Metalix", "price": 4400, "attributes": {}}
+          ]
+        },
+        {
+          "name": "Угломеры и угольники",
+          "attributes": [
+            {"code": "digital"},
+            {"code": "angle"}
+          ],
+          "products": [
+            {"sku": "ANG-001", "name": "Угольник слесарный 90°, 250 мм", "brand": "Ferrum Pro", "price": 1200, "attributes": {"digital": false, "angle": 90.0}},
+            {"sku": "ANG-002", "name": "Угломер цифровой 0–360°", "brand": "Vektor", "price": 5600, "attributes": {"digital": true}},
+            {"sku": "ANG-003", "name": "Угольник цилиндрический 90°", "brand": "Prisma", "price": 8900, "attributes": {"digital": false, "angle": 90.0}}
+          ]
+        },
+        {
+          "name": "Приборы и станочные принадлежности",
+          "products": [
+            {"sku": "INS-001", "name": "Плита поверочная 400x400 мм", "brand": "Norden", "price": null, "attributes": {}},
+            {"sku": "INS-002", "name": "Призмы поверочные (пара)", "brand": "Metalix", "price": 3600, "attributes": {}},
+            {"sku": "INS-003", "name": "Лупа измерительная 10x", "brand": "Ferrum Pro", "price": 1100, "attributes": {}}
+          ]
+        },
+        {
+          "name": "Концевые меры и калибры",
+          "attributes": [
+            {"code": "set_pieces"}
+          ],
+          "products": [
+            {"sku": "GB-001", "name": "Набор плоскопараллельных концевых мер, 87 шт, кл. 1", "brand": "Vektor", "price": null, "attributes": {"set_pieces": 87}},
+            {"sku": "GB-002", "name": "Калибр-пробка гладкий Ø10 H7 (ПР/НЕ)", "brand": "Prisma", "price": 900, "attributes": {"set_pieces": 2}},
+            {"sku": "GB-003", "name": "Набор щупов 0.02–1.00 мм (20 шт)", "brand": "Norden", "price": 650, "attributes": {"set_pieces": 20}}
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Инструмент для листообработки",
+      "children": [
+        {
+          "name": "Гибочный инструмент",
+          "attributes": [
+            {"code": "length"},
+            {"code": "angle"}
+          ],
+          "children": [
+            {
+              "name": "Пуансоны",
+              "products": [
+                {"sku": "PU-001", "name": "Пуансон прямой 88°, 835 мм", "brand": "Metalix", "price": 18500, "attributes": {"length": 835.0, "angle": 88.0}},
+                {"sku": "PU-002", "name": "Пуансон «гусиная шея» 30°, 835 мм", "brand": "Ferrum Pro", "price": 21500, "attributes": {"length": 835.0, "angle": 30.0}},
+                {"sku": "PU-003", "name": "Пуансон радиусный R3, 500 мм", "brand": "Vektor", "price": 16900, "attributes": {"length": 500.0}}
+              ]
+            },
+            {
+              "name": "Матрицы",
+              "attributes": [
+                {"code": "v_width"}
+              ],
+              "products": [
+                {"sku": "MAT-001", "name": "Матрица одноручьевая V12, 88°", "brand": "Prisma", "price": 14800, "attributes": {"length": 835.0, "angle": 88.0, "v_width": 12.0}},
+                {"sku": "MAT-002", "name": "Матрица одноручьевая V16, 88°", "brand": "Norden", "price": 16200, "attributes": {"length": 835.0, "angle": 88.0, "v_width": 16.0}},
+                {"sku": "MAT-003", "name": "Матрица двухручьевая V12/V24, 88°", "brand": "Metalix", "price": 21400, "attributes": {"length": 835.0, "angle": 88.0, "v_width": 12.0}}
+              ]
+            },
+            {
+              "name": "Аксессуары",
+              "products": [
+                {"sku": "ACC-001", "name": "Адаптер для пуансонов (комплект)", "brand": "Ferrum Pro", "price": 6400, "attributes": {}},
+                {"sku": "ACC-002", "name": "Упор задний пальцевый", "brand": "Vektor", "price": 3900, "attributes": {}},
+                {"sku": "ACC-003", "name": "Секционная вставка 100 мм", "brand": "Prisma", "price": 5200, "attributes": {"length": 100.0}}
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Пробивной инструмент",
+          "attributes": [
+            {"code": "diameter", "required": true},
+            {"code": "compat", "filterable": false}
+          ],
+          "products": [
+            {"sku": "PUN-001", "name": "Пуансон пробивной круглый Ø10 мм", "brand": "Norden", "price": 1900, "attributes": {"diameter": 10.0, "compat": "Станция типа B"}},
+            {"sku": "PUN-002", "name": "Матрица пробивная Ø10.2 мм", "brand": "Metalix", "price": 1700, "attributes": {"diameter": 10.2, "compat": "Станция типа B"}},
+            {"sku": "PUN-003", "name": "Пуансон пробивной круглый Ø6.5 мм", "brand": "Ferrum Pro", "price": 1500, "attributes": {"diameter": 6.5, "compat": "Станция типа A"}}
+          ]
+        },
+        {
+          "name": "Расходные материалы для лазерной резки",
+          "attributes": [
+            {"code": "diameter"},
+            {"code": "compat", "filterable": false}
+          ],
+          "products": [
+            {"sku": "LAS-001", "name": "Сопло лазерное Ø1.5 мм, однослойное", "brand": "Vektor", "price": 480, "attributes": {"diameter": 1.5, "compat": "Волоконные лазеры 1–6 кВт"}},
+            {"sku": "LAS-002", "name": "Сопло лазерное Ø2.0 мм, двухслойное", "brand": "Prisma", "price": 560, "attributes": {"diameter": 2.0, "compat": "Волоконные лазеры 1–6 кВт"}},
+            {"sku": "LAS-003", "name": "Защитное стекло Ø27 мм", "brand": "Norden", "price": 1200, "attributes": {"diameter": 27.0, "compat": "Волоконные лазеры 1–6 кВт"}}
+          ]
+        }
+      ]
+    },
+    {
+      "name": "СОЖ и масла",
+      "children": [
+        {
+          "name": "СОЖ",
+          "attributes": [
+            {"code": "volume", "required": true},
+            {"code": "oil_base"}
+          ],
+          "products": [
+            {"sku": "COL-001", "name": "СОЖ синтетическая для шлифования, 20 л", "brand": "Metalix", "price": 7800, "attributes": {"volume": 20.0, "oil_base": "synthetic"}},
+            {"sku": "COL-002", "name": "СОЖ полусинтетическая универсальная, 20 л", "brand": "Ferrum Pro", "price": 6900, "attributes": {"volume": 20.0, "oil_base": "semi"}},
+            {"sku": "COL-003", "name": "СОЖ масляная для глубокого сверления, 20 л", "brand": "Vektor", "price": 9400, "attributes": {"volume": 20.0, "oil_base": "mineral"}}
+          ]
+        },
+        {
+          "name": "Масла и смазки",
+          "attributes": [
+            {"code": "volume", "required": true},
+            {"code": "oil_base"},
+            {"code": "viscosity"}
+          ],
+          "products": [
+            {"sku": "OIL-001", "name": "Масло гидравлическое ISO VG 46, 20 л", "brand": "Prisma", "price": 5400, "attributes": {"volume": 20.0, "oil_base": "mineral", "viscosity": 46}},
+            {"sku": "OIL-002", "name": "Масло направляющих скольжения ISO VG 68, 5 л", "brand": "Norden", "price": 2100, "attributes": {"volume": 5.0, "oil_base": "mineral", "viscosity": 68}},
+            {"sku": "OIL-003", "name": "Смазка пластичная медная, 400 г", "brand": "Metalix", "price": 790, "attributes": {"volume": 0.4, "oil_base": "mineral"}}
+          ]
+        },
+        {
+          "name": "Приборы",
+          "products": [
+            {"sku": "DEV-001", "name": "Рефрактометр для СОЖ 0–32% Brix", "brand": "Ferrum Pro", "price": 5800, "attributes": {}},
+            {"sku": "DEV-002", "name": "pH-метр портативный", "brand": "Vektor", "price": 4900, "attributes": {}},
+            {"sku": "DEV-003", "name": "Тест-полоски для контроля концентрации СОЖ (50 шт)", "brand": "Prisma", "price": 650, "attributes": {}}
+          ]
+        }
+      ]
+    }
+  ]
+}

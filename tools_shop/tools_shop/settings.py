@@ -16,10 +16,14 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = config("SECRET_KEY")
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = config("DEBUG", default=False, cast=bool)
 
 
-ALLOWED_HOSTS = config("ALLOWED_HOSTS", default="").split(",")
+ALLOWED_HOSTS = config("ALLOWED_HOSTS", default="localhost,127.0.0.1", cast=Csv())
+
+# за nginx: доверяем его заголовкам о схеме/хосте
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+USE_X_FORWARDED_HOST = True
 
 INTERNAL_IPS = [
     # ...
@@ -38,6 +42,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     "users.apps.UsersConfig",
     "shop.apps.ShopConfig",
+    "django.contrib.postgres",
+    "treebeard",
     "django_extensions",
     "debug_toolbar",
     "django_q",
@@ -149,6 +155,8 @@ MEDIA_URL = "/media/"
 
 
 AUTH_USER_MODEL = "users.User"
+
+LOGOUT_REDIRECT_URL = "shop:index"
 
 
 # Читаем строку и сразу бьем её по запятым

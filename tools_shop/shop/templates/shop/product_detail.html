@@ -1,0 +1,64 @@
+{% extends "shop/base.html" %}
+{% block title %}{{ product.name }}{% endblock %}
+{% block content %}
+    <nav class="breadcrumbs">
+        <a href="{% url 'shop:catalog' %}">Каталог</a>
+        {% for ancestor in ancestors %}
+            <span class="sep">/</span> <a href="{{ ancestor.get_absolute_url }}">{{ ancestor.name }}</a>
+        {% endfor %}
+        <span class="sep">/</span> <a href="{{ product.category.get_absolute_url }}">{{ product.category.name }}</a>
+        <span class="sep">/</span> <span>{{ product.name }}</span>
+    </nav>
+
+    <div class="product-detail">
+        <div class="product-detail-main">
+            {% if product.brand %}<span class="product-brand">{{ product.brand }}</span>{% endif %}
+            <h1>{{ product.name }}</h1>
+            <p class="sku">Артикул: {{ product.sku }}</p>
+            {% if product.description %}<div class="description">{{ product.description|linebreaks }}</div>{% endif %}
+        </div>
+
+        <aside class="product-detail-side">
+            <div class="price-box">
+                <span class="price-label">Цена</span>
+                {% if product.price is not None %}
+                    <span class="price">{{ product.price }} ₽</span>
+                {% else %}
+                    <span class="price on-request">Цена по запросу</span>
+                {% endif %}
+                <button type="button" class="btn btn-primary btn-block">Запросить</button>
+                <p class="note">Ответим с ценой и сроками поставки.</p>
+            </div>
+        </aside>
+    </div>
+
+    <h2 class="section-title">Характеристики</h2>
+    {% if specs %}
+        <table class="spec-table">
+            <tbody>
+                {% for spec in specs %}
+                    <tr><th>{{ spec.label }}</th><td>{{ spec.value }}</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p class="help">Характеристики не заполнены.</p>
+    {% endif %}
+
+    {% if siblings %}
+        <h2 class="section-title">Другие товары категории</h2>
+        <div class="product-grid">
+            {% for item in siblings %}
+                <article class="product-card">
+                    <a class="product-card-link" href="{{ item.get_absolute_url }}">
+                        <h2 class="product-name">{{ item.name }}</h2>
+                    </a>
+                    <div class="product-foot">
+                        <span class="sku">{{ item.sku }}</span>
+                        {% if item.price is not None %}<span class="price">{{ item.price }} ₽</span>{% else %}<span class="price on-request">Цена по запросу</span>{% endif %}
+                    </div>
+                </article>
+            {% endfor %}
+        </div>
+    {% endif %}
+{% endblock %}

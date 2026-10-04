@@ -1,6 +1,23 @@
 {% extends "shop/base.html" %}
 {% block title %}{{ title }}{% endblock %}
 {% block content %}
-    <h2>Добро пожаловать в наш магазин инструментов!</h2>
-    <p>Здесь вы найдете широкий ассортимент инструментов для любых задач.</p>
+    <section class="hero">
+        <span class="hero-eyebrow">B2B · промышленный инструмент</span>
+        <h1>Добро пожаловать в наш магазин инструментов!</h1>
+        <p>Промышленный инструмент, оснастка и комплектующие для B2B.</p>
+        <a class="btn btn-primary" href="{% url 'shop:catalog' %}">Перейти в каталог →</a>
+    </section>
+
+    <h2 class="section-title">Категории</h2>
+    <div class="category-grid">
+        {% for root in root_categories %}
+            <a class="category-tile" href="{{ root.get_absolute_url }}">
+                <h2>{{ root.name }}</h2>
+                <span class="meta">{{ root.get_descendant_count }} подкатегорий</span>
+                <span class="arrow" aria-hidden="true">→</span>
+            </a>
+        {% empty %}
+            <p class="empty">Каталог ещё не заполнен. Загрузите данные: <code>python manage.py seed_shop</code>.</p>
+        {% endfor %}
+    </div>
 {% endblock %}

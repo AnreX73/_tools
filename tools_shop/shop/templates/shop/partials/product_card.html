@@ -1,0 +1,19 @@
+{% load shop_search %}
+<article class="product-card">
+    {% if show_category %}<span class="product-category">{{ item.product.category.name }}</span>{% endif %}
+    <a class="product-card-link" href="{{ item.product.get_absolute_url }}">
+        {% if item.product.brand %}<span class="product-brand">{{ item.product.brand }}</span>{% endif %}
+        <h2 class="product-name">{% if query %}{{ item.product.name|highlight:query }}{% else %}{{ item.product.name }}{% endif %}</h2>
+    </a>
+    {% if item.specs %}
+    <dl class="product-specs">
+        {% for spec in item.specs %}
+            <div><dt>{{ spec.label }}</dt><dd>{{ spec.value }}</dd></div>
+        {% endfor %}
+    </dl>
+    {% endif %}
+    <div class="product-foot">
+        <span class="sku">{{ item.product.sku }}</span>
+        {% if item.product.price is not None %}<span class="price">{{ item.product.price }} ₽</span>{% else %}<span class="price on-request">Цена по запросу</span>{% endif %}
+    </div>
+</article>

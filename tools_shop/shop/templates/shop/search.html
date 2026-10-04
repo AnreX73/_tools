@@ -1,0 +1,54 @@
+{% extends "shop/base.html" %}
+{% load shop_search %}
+{% block title %}{{ title }}{% endblock %}
+{% block content %}
+    <nav class="breadcrumbs">
+        <a href="{% url 'shop:catalog' %}">Каталог</a>
+        <span class="sep">/</span> <span>Поиск</span>
+    </nav>
+
+    {% if not query %}
+        <h1>Поиск по каталогу</h1>
+        <p class="empty"><span class="empty-icon" aria-hidden="true">🔍</span>Введите название товара или артикул в строку поиска вверху страницы.</p>
+    {% elif not searchable %}
+        <h1>Поиск по каталогу</h1>
+        <p class="empty"><span class="empty-icon" aria-hidden="true">✍️</span>Запрос слишком короткий — введите хотя бы {{ min_length }} символа.</p>
+    {% else %}
+        <h1>Результаты по запросу «{{ query }}»</h1>
+
+        {% if categories %}
+            <div class="subcategories">
+                {% for category in categories %}
+                    <a class="subcategory" href="{{ category.get_absolute_url }}">{{ category.name|highlight:query }}</a>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        {% if products %}
+            <div class="results-head">
+                <p class="results-count">Найдено товаров: <strong>{{ total }}</strong></p>
+            </div>
+            <div class="product-grid">
+                {% for item in products %}
+                    {% include "shop/partials/product_card.html" with show_category=True %}
+                {% endfor %}
+            </div>
+
+            {% if page.has_other_pages %}
+                <nav class="pagination">
+                    {% if page.has_previous %}
+                        <a href="?q={{ query|urlencode }}&amp;page={{ page.previous_page_number }}">← Назад</a>
+                    {% endif %}
+                    <span class="page-info">Страница {{ page.number }} из {{ page.paginator.num_pages }}</span>
+                    {% if page.has_next %}
+                        <a href="?q={{ query|urlencode }}&amp;page={{ page.next_page_number }}">Вперёд →</a>
+                    {% endif %}
+                </nav>
+            {% endif %}
+        {% else %}
+            <p class="empty"><span class="empty-icon" aria-hidden="true">🔍</span>
+                По запросу «{{ query }}» товаров не нашлось.<br>Проверьте написание, попробуйте часть названия или артикул{% if categories %}, либо загляните в подходящие категории выше{% endif %}.
+            </p>
+        {% endif %}
+    {% endif %}
+{% endblock %}

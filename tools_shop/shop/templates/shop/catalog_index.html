@@ -1,0 +1,19 @@
+{% extends "shop/base.html" %}
+{% block title %}{{ title }}{% endblock %}
+{% block content %}
+    <h1>Каталог</h1>
+    <ul class="category-grid">
+        {% for root in root_categories %}
+            <li class="category-tile">
+                <a class="category-tile-title" href="{{ root.get_absolute_url }}">{{ root.name }}</a>
+                {% if root.numchild %}
+                    <ul class="category-children">
+                        {% for child in root.children_list %}
+                            <li><a href="{{ child.get_absolute_url }}">{{ child.name }}</a></li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+            </li>
+        {% endfor %}
+    </ul>
+{% endblock %}

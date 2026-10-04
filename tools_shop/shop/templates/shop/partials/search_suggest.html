@@ -1,0 +1,48 @@
+{% load shop_search %}{% if searchable %}
+    {% if categories %}
+        <div class="suggest-group">
+            <div class="suggest-title">Категории</div>
+            {% for category in categories %}
+                <a id="suggest-c{{ category.pk }}" class="suggest-item suggest-category" role="option" aria-selected="false"
+                   data-suggest-item href="{{ category.get_absolute_url }}">
+                    <span class="suggest-icon" aria-hidden="true">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+                    </span>
+                    <span class="suggest-text">{{ category.name|highlight:query }}</span>
+                </a>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    {% if products %}
+        <div class="suggest-group">
+            <div class="suggest-title">Товары</div>
+            {% for product in products %}
+                <a id="suggest-p{{ product.pk }}" class="suggest-item suggest-product" role="option" aria-selected="false"
+                   data-suggest-item href="{{ product.get_absolute_url }}">
+                    <span class="suggest-text">
+                        <span class="suggest-name">{{ product.name|highlight:query }}</span>
+                        <span class="suggest-meta">
+                            <span class="sku">{{ product.sku|highlight:query }}</span>
+                            · {{ product.category.name }}{% if product.brand %} · {{ product.brand }}{% endif %}
+                        </span>
+                    </span>
+                    {% if product.price is not None %}
+                        <span class="suggest-price">{{ product.price }} ₽</span>
+                    {% else %}
+                        <span class="suggest-price on-request">по запросу</span>
+                    {% endif %}
+                </a>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    {% if total %}
+        <a id="suggest-all" class="suggest-item suggest-all" role="option" aria-selected="false"
+           data-suggest-item href="{% url 'shop:search' %}?q={{ query|urlencode }}">
+            Все результаты <span class="suggest-count">{{ total }}</span> <span aria-hidden="true">→</span>
+        </a>
+    {% elif not categories %}
+        <div class="suggest-empty">Ничего не нашлось по запросу «{{ query }}».<br>Проверьте написание или поищите по артикулу.</div>
+    {% endif %}
+{% endif %}
