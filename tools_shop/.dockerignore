@@ -19,6 +19,5 @@ Dockerfile
 compose*.yml
 docker-compose*.yml
 .dockerignore
-conf
 =
 link[code]
