@@ -53,7 +53,15 @@ services:
     environment:
       <<: *app-env
       RUN_MIGRATIONS: "1"
-    # ... остальное без изменений
+    volumes:
+      - static_data:/app/staticfiles
+      - media_data:/app/media
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS -o /dev/null -H 'Host: localhost' http://127.0.0.1:8000/ || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+      start_period: 30s
 
   qcluster:
     <<: *app          # без build, берёт образ tools_shop_app
