@@ -17,8 +17,8 @@
     <header class="site-header">
         <div class="container header-inner">
             <a class="logo" href="{% url 'shop:index' %}">
-                <span class="logo-mark" aria-hidden="true">⚙</span>
-                <span class="logo-text">Магазин инструментов</span>
+                <img class="logo-img" src="{% static 'shop/images/tools_logo.png' %}"
+                     alt="Магазин инструментов" width="512" height="333" decoding="async">
             </a>
             <form class="site-search" role="search" action="{% url 'shop:search' %}" method="get"
                   x-data="searchBox" @submit="submit($event)"
@@ -46,8 +46,8 @@
             </form>
             {% with url_name=request.resolver_match.url_name %}
             <nav class="main-nav">
-                <a href="{% url 'shop:index' %}"{% if url_name == 'index' %} class="active"{% endif %}>Главная</a>
-                <a href="{% url 'shop:catalog' %}"{% if url_name == 'catalog' or url_name == 'category' or url_name == 'product' %} class="active"{% endif %}>Каталог</a>
+                <a href="{% url 'shop:index' %}" class="{% if url_name == 'index' %}active{% endif %}">Главная</a>
+                <a href="{% url 'shop:catalog' %}" class="{% if url_name == 'catalog' or url_name == 'category' or url_name == 'product' %}active{% endif %}">Каталог</a>
             </nav>
             {% endwith %}
         </div>

@@ -1,10 +1,15 @@
 {% extends "shop/base.html" %}
+{% load static %}
 {% block title %}{{ title }}{% endblock %}
 {% block content %}
     <section class="hero">
-        <span class="hero-eyebrow">B2B · промышленный инструмент</span>
-        <h1>Добро пожаловать в наш магазин инструментов!</h1>
-        <p>Промышленный инструмент, оснастка и комплектующие для B2B.</p>
+        <span class="hero-eyebrow">B2B · Промышленный инструмент </span>
+        <h1 class="hero-logo">
+            <img src="{% static 'shop/images/tools_logo_dark.png' %}"
+                 alt="Магазин инструментов"
+                 width="1264" height="848" decoding="async">
+        </h1>
+        <p>Промышленный инструмент, оснастка и комплектующие.</p>
         <a class="btn btn-primary" href="{% url 'shop:catalog' %}">Перейти в каталог →</a>
     </section>
 
