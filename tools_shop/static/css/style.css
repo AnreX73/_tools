@@ -16,6 +16,7 @@
     --accent-soft: #eef4ff;
     --accent-ring: rgba(37, 99, 235, .18);
     --warm: #f97316;
+    --content-width: 1400px;
 
     --radius-sm: 8px;
     --radius: 12px;
@@ -28,7 +29,45 @@
     --ease: cubic-bezier(.2, .7, .2, 1);
     --header-h: 64px;
     --rail-w: 280px;
+
+    /* новые токены, вынесенные из захардкоженных значений */
+    --header-bg: rgba(255, 255, 255, .82);
+    --accent-tint: rgba(37, 99, 235, .12);
+    --mark-bg: #fef08a;
+
+    color-scheme: light;
 }
+
+/* --- тёмная тема: переопределяем только переменные --- */
+:root[data-theme="dark"] {
+    color-scheme: dark;
+
+    --bg: #0b0f17;
+    --panel: #151b27;
+    --panel-2: #1b2331;
+    --border: #263042;
+    --border-strong: #354258;
+    --text: #e6e9f0;
+    --text-2: #c3cad6;
+    --muted: #8b95a7;
+    --accent: #4f83ee;
+    --accent-hover: #7aa3f5;
+    --accent-soft: rgba(79, 131, 238, .15);
+    --accent-ring: rgba(79, 131, 238, .30);
+    
+
+    --shadow-xs: 0 1px 2px rgba(0, 0, 0, .40);
+    --shadow-sm: 0 1px 3px rgba(0, 0, 0, .50), 0 1px 2px rgba(0, 0, 0, .30);
+    --shadow-md: 0 8px 24px -6px rgba(0, 0, 0, .60), 0 2px 6px -2px rgba(0, 0, 0, .40);
+
+    --header-bg: rgba(21, 27, 39, .82);
+    --accent-tint: rgba(79, 131, 238, .22);
+    --mark-bg: #854d0e;
+    --mark-text: #fef9c3;
+}
+
+/* hero и так тёмный — отделяем его от тёмного фона рамкой */
+:root[data-theme="dark"] .hero { box-shadow: inset 0 0 0 1px var(--border); }
 
 *, *::before, *::after { box-sizing: border-box; }
 
@@ -53,7 +92,7 @@ body {
  display: none !important;
  }
 
-.container { width: 100%; max-width: 1240px; margin: 0 auto; padding: 0 20px; }
+.container { width: 100%; max-width: var(--content-width); margin: 0 auto; padding: 0 20px; }
 
 a { color: var(--accent); text-decoration: none; transition: color .15s var(--ease); }
 a:hover { color: var(--accent-hover); }
@@ -65,7 +104,7 @@ a:hover { color: var(--accent-hover); }
 .site-header {
 
     position: sticky; top: 0; z-index: 30;
-    background: rgba(255, 255, 255, .82);
+    background: var(--header-bg);
     backdrop-filter: saturate(180%) blur(12px);
     -webkit-backdrop-filter: saturate(180%) blur(12px);
     border-bottom: 1px solid var(--border);
@@ -92,6 +131,14 @@ a:hover { color: var(--accent-hover); }
 .main-nav a.active {
  background: var(--accent-soft); color: var(--accent); }
 
+
+/* --- переключатель темы --- */
+.theme-toggle {
+    display: grid; place-items: center; flex: none; width: 38px; height: 38px; padding: 0;
+    border: 1px solid var(--border); border-radius: 999px; background: var(--panel); color: var(--text-2);
+    cursor: pointer; transition: border-color .15s var(--ease), color .15s var(--ease);
+}
+.theme-toggle:hover { border-color: var(--border-strong); color: var(--text); }
 
 main.container {
  flex: 1; padding-top: 24px; padding-bottom: 64px; }
@@ -192,7 +239,7 @@ code {
 .hero-eyebrow {
     display: inline-block; margin-bottom: 14px; padding: 4px 12px; border-radius: 999px;
     background: rgba(255, 255, 255, .08); border: 1px solid rgba(255, 255, 255, .12);
-    font-size: 18px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: #cbd5e1;
+    font-size: 12px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: #cbd5e1;
 }
 
 /* hero на десктопе: слоган крупно по центру колонки, мобильная раскладка не меняется */
@@ -230,7 +277,7 @@ code {
 .cascade-rail {
 
         position: fixed; z-index: 20; top: var(--header-h); bottom: 0;
-        left: max(0px, calc((100vw - 1240px) / 2));
+        left: max(0px, calc((100vw - var(--content-width)) / 2));
         width: var(--rail-w); overflow-y: auto; overscroll-behavior: contain;
         background: var(--panel); border-right: 1px solid var(--border);
         padding: 16px 12px; scrollbar-width: thin;
@@ -510,7 +557,7 @@ a.category-tile:hover .arrow { background: var(--accent); color: #fff; transform
 .chip:hover { border-color: var(--accent); color: var(--accent); }
 .chip-x {
     display: grid; place-items: center; width: 18px; height: 18px; border-radius: 999px;
-    background: rgba(37, 99, 235, .12); font-weight: 700; font-size: 12px; line-height: 1;
+    background: var(--accent-tint); font-weight: 700; font-size: 12px; line-height: 1;
 }
 .chip-reset { background: transparent; color: var(--muted); border-color: var(--border); padding-right: 12px; }
 .chip-reset:hover { color: var(--text); border-color: var(--border-strong); }
@@ -575,7 +622,7 @@ a.category-tile:hover .arrow { background: var(--accent); color: #fff; transform
 .image-modal img { display: block; width: 100%; height: auto; max-height: 80vh; object-fit: contain; border-radius: inherit; }
 .image-modal-close {
     position: absolute; top: -12px; right: -12px; width: 32px; height: 32px; padding: 0;
-    border: 0; border-radius: 50%; background: var(--text); color: #fff; font-size: 20px; line-height: 1; cursor: pointer;
+    border: 0; border-radius: 50%; background: var(--text); color: var(--bg); font-size: 20px; line-height: 1; cursor: pointer;
 }
 .image-modal-close:hover { background: var(--accent); }
 @media (max-width: 560px) {
@@ -748,7 +795,7 @@ a.category-tile:hover .arrow { background: var(--accent); color: #fff; transform
 .suggest-empty {
  padding: 18px 12px; text-align: center; color: var(--muted); font-size: 14px; }
 
-mark { background: #fef08a; color: inherit; border-radius: 3px; padding: 0 1px; }
+mark { background: var(--mark-bg); color: var(--mark-text, inherit); border-radius: 3px; padding: 0 1px; }
 .product-category { display: block; margin-bottom: 4px; color: var(--accent); font-size: 12px; font-weight: 500; }
 
 /* --- адаптив --- */
