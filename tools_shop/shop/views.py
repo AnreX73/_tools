@@ -106,6 +106,7 @@ def cascade_level(request, slug):
         scope, page, products = _category_products(category, schema, state, request)
         context.update({
             "is_leaf": True,
+            "ancestors": category.path_ancestors(),
             "page": page,
             "products": products,
             "total": page.paginator.count,

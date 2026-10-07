@@ -4,10 +4,20 @@
 {# состояние узла живёт на самой кнопке в предыдущей колонке (или в левой #}
 {# панели cascade_root.html) — здесь только список детей текущего уровня  #}
 {# или, для листа, список товаров (тот же компонент, что и у поиска).     #}
-<div class="cascade-column" data-depth="{{ depth }}" id="cascade-col-{{ depth }}">
+<div class="cascade-column" data-depth="{{ depth }}" id="cascade-col-{{ depth }}"
+     data-leaf="{% if is_leaf %}1{% else %}0{% endif %}">
     <div class="cascade-column-head">
-        <span class="cascade-column-title">{{ category.name }}</span>
-    </div>
+    {% if is_leaf and ancestors %}
+        <nav class="cascade-crumbs" aria-label="Путь по каталогу">
+            <a href="{% url 'shop:catalog' %}">Каталог</a>
+            {% for a in ancestors %}
+                <span class="sep">/</span>
+                <a href="{{ a.get_absolute_url }}" data-crumb-slug="{{ a.slug }}">{{ a.name }}</a>
+            {% endfor %}
+        </nav>
+    {% endif %}
+    <span class="cascade-column-title">{{ category.name }}</span>
+</div>
     <div class="cascade-column-body">
         {% if is_leaf %}
             {% if products %}

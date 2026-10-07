@@ -43,3 +43,7 @@ __pycache__/
 
 *.ctl
 *.sock
+
+# Исключение для папки с логотипами
+!/shop/static/shop/images/
+!/shop/static/shop/images/**/*

@@ -52,37 +52,41 @@
     // Чтобы было место для колонок каскада: hero на главной скрывается не только при
     // поиске, но и как только появилась хотя бы одна колонка каскада.
     function syncWorkspaceVisibility() {
-        var columns = columnsEl();
-        var hasColumns = !!(columns && columns.querySelector(".cascade-column"));
-        document.body.classList.toggle("cascade-active", hasColumns);
+    var columns = columnsEl();
+    var cols = columns ? Array.prototype.slice.call(columns.querySelectorAll(".cascade-column")) : [];
+    document.body.classList.toggle("cascade-active", cols.length > 0);
+
+    // Режим «лист»: остаются левая панель и колонка с товарами,
+    // все промежуточные колонки подкатегорий скрыты.
+    var hasLeaf = cols.some(function (col) { return col.dataset.leaf === "1"; });
+    cols.forEach(function (col) {
+        col.classList.toggle("is-collapsed", hasLeaf && col.dataset.leaf !== "1");
+    });
+    if (columns) columns.classList.toggle("has-leaf", hasLeaf);
+}
+
+    document.body.addEventListener("htmx:beforeRequest", function (evt) {
+    var btn = evt.detail.elt;
+    if (!btn || !btn.classList || !btn.classList.contains("cascade-node-head")) return;
+
+    var depth = Number(btn.closest(".cascade-node").dataset.depth);
+    var alreadyOpen = btn.classList.contains("is-active") &&
+                      btn.getAttribute("aria-expanded") === "true";
+
+    pruneBelow(depth - 1);
+
+    if (alreadyOpen) {
+        evt.preventDefault();       // повторный клик: схлопнуть, запрос не нужен
+        syncWorkspaceVisibility();  // hero возвращается только при реальном схлопывании
+        return;
     }
 
-    window.cascadeNav = {
-        // Клик по кнопке узла. event — клик, depth — уровень узла (1..N).
-        toggle: function (event, depth) {
-            var btn = event.currentTarget;
-            var alreadyOpen = btn.classList.contains("is-active") && btn.getAttribute("aria-expanded") === "true";
-
-            if (alreadyOpen) {
-                // Повторный клик по раскрытому узлу: схлопнуть, убрать колонки правее,
-                // без запроса к серверу.
-                event.preventDefault();
-                pruneBelow(depth - 1);
-                syncWorkspaceVisibility();
-                return;
-            }
-
-            // Раскрываем новый узел: сначала убираем всё правее текущего уровня
-            // (включая колонку depth, которая будет перезаписана ответом сервера)
-            // и снимаем активность с братьев на этом же уровне.
-            pruneBelow(depth - 1);
-            clearActiveAt(depth);
-            btn.classList.add("is-active");
-            btn.setAttribute("aria-expanded", "true");
-            // htmx продолжит запрос сам (hx-get на этой же кнопке).
-        },
-    };
-
+    // Открываем новый узел: cascade-active не трогаем,
+    // его обновит htmx:afterSwap после вставки колонки.
+    clearActiveAt(depth);
+    btn.classList.add("is-active");
+    btn.setAttribute("aria-expanded", "true");
+});
     document.body.addEventListener("htmx:afterSwap", function (evt) {
         if (evt.target && evt.target.id === "cascade-columns") {
             scrollToEnd();
@@ -116,4 +120,19 @@
         }
         openNext(0);
     });
+    
+    // Клик по крошке = клик по кнопке этой категории в каскаде (без перезагрузки страницы).
+document.addEventListener("click", function (e) {
+    var link = e.target.closest("a[data-crumb-slug]");
+    if (!link || window.htmx === undefined) return;
+
+    var btn = document.querySelector('.cascade-node-head[hx-get="/cascade/' + link.dataset.crumbSlug + '/"]');
+    if (!btn) return;            // кнопки нет в DOM: сработает обычная ссылка
+
+    e.preventDefault();
+    // Сбрасываем «раскрыто», иначе повторный клик по открытому узлу его схлопнет.
+    btn.classList.remove("is-active");
+    btn.setAttribute("aria-expanded", "false");
+    btn.click();                 // дальше всё делает htmx:beforeRequest и hx-push-url
+});
 })();

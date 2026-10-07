@@ -145,6 +145,9 @@ main.container {
 
 /* десктоп: показ/скрытие между мобильным и десктопным маркапом (каскад) */
 .desktop-only { display: none; }
+.cascade-rail,
+.cascade-columns,
+.cascade-placeholder { display: none; }
 
 /* --- типографика --- */
 h1 { font-size: clamp(24px, 2.6vw, 32px); line-height: 1.2; letter-spacing: -.02em; margin: 8px 0 12px; }
@@ -244,6 +247,14 @@ code {
 
 /* hero на десктопе: слоган крупно по центру колонки, мобильная раскладка не меняется */
 @media (min-width: 901px) {
+    .cascade-crumbs {
+    display: flex; flex-wrap: wrap; align-items: center; gap: 2px;
+    margin-bottom: 6px; font-size: 12px; color: var(--muted);
+    }
+    .cascade-crumbs a { color: var(--muted); }
+    .cascade-crumbs a:hover { color: var(--accent); }
+    .cascade-crumbs .sep { margin: 0 4px; color: var(--border-strong); }
+
     .hero {
         display: grid;
         grid-template-columns: minmax(0, 1fr) minmax(260px, 430px);
@@ -275,7 +286,7 @@ code {
     /* левая колонка на всю высоту окна, своя прокрутка, не часть document flow */
     
 .cascade-rail {
-
+        display: block;
         position: fixed; z-index: 20; top: var(--header-h); bottom: 0;
         left: max(0px, calc((100vw - var(--content-width)) / 2));
         width: var(--rail-w); overflow-y: auto; overscroll-behavior: contain;
@@ -370,7 +381,7 @@ code {
 
     /* hero скрывается, как только пошёл поиск или раскрыт хотя бы один узел каскада */
     body.search-active .hero, body.cascade-active .hero { display: none; }
-    body.cascade-active .cascade-placeholder { display: none; }
+    body.cascade-active .cascade-placeholder { display: block; margin-top: 24px; }
     .cascade-placeholder { margin-top: 24px; }
     .search-reset { margin-top: 16px; }
 
@@ -797,6 +808,38 @@ a.category-tile:hover .arrow { background: var(--accent); color: #fff; transform
 
 mark { background: var(--mark-bg); color: var(--mark-text, inherit); border-radius: 3px; padding: 0 1px; }
 .product-category { display: block; margin-bottom: 4px; color: var(--accent); font-size: 12px; font-weight: 500; }
+
+/* Скрытые колонки слева от «предыдущей» */
+.cascade-column.is-collapsed { display: none; }
+
+/* Левая панель основных категорий в режиме листа */
+body.cascade-leaf .cascade-root { display: none; }
+
+/* Колонка с товарами занимает всё оставшееся место */
+#cascade-columns.has-leaf .cascade-column[data-leaf="1"] {
+    flex: 1 1 0;
+    min-width: 0;
+    width: auto;
+    max-width: none;
+}
+
+    /* === режим листа: колонка с товарами занимает всё место === */
+
+    /* колонки левее «предыдущей» скрыты (остаются в DOM, чтобы pruneBelow работал как раньше) */
+    .cascade-column.is-collapsed { display: none; }
+
+    /* колонка с товарами растягивается на всю свободную ширину */
+    .cascade-columns.has-leaf .cascade-column[data-leaf="1"] {
+        flex: 1 1 0;
+        min-width: 0;
+    }
+
+ 
+
+    /* колонка листа выше: больше строк товаров на экране */
+    .cascade-columns.has-leaf .cascade-column[data-leaf="1"] {
+        max-height: calc(100vh - var(--header-h) - 32px);
+    }
 
 /* --- адаптив --- */
 
