@@ -157,6 +157,63 @@ class CatalogTestCase(TestCase):
         self.assertContains(response, "attributes__diameter")
         self.assertContains(response, "attributes__tool_material")
 
+    # ---- десктоп: каскадная навигация и инлайн-карточка товара ----
+    def test_category_page_passes_cascade_path(self):
+        response = self.client.get(self.leaf.get_absolute_url())
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context["cascade_path"], [self.root.slug, self.leaf.slug])
+        self.assertIn(self.root, list(response.context["root_categories"]))
+        self.assertContains(response, 'id="cascade-columns"')
+
+        # htmx-загрузка не затронута — отдаёт тот же мобильный партиал, без cascade_path
+        partial = self.client.get(self.leaf.get_absolute_url(), HTTP_HX_REQUEST="true")
+        self.assertNotIn("cascade_path", partial.context)
+
+    def test_cascade_root_endpoint(self):
+        response = self.client.get("/cascade/")
+        self.assertEqual(response.status_code, 200)
+        self.assertNotContains(response, "<html")
+        self.assertContains(response, self.root.name)
+        self.assertContains(response, f'hx-get="/cascade/{self.root.slug}/"')
+
+    def test_cascade_level_non_leaf_returns_children(self):
+        response = self.client.get(f"/cascade/{self.root.slug}/")
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, f'id="cascade-col-{self.root.depth}"')
+        self.assertContains(response, self.leaf.name)
+
+    def test_cascade_toggle_closes_on_repeat_click_is_pure_client_state(self):
+        # Сервер не знает про раскрыто/свёрнуто — проверяем, что каждая кнопка
+        # узла в ответе уникальна (нет дублирующего узла с тем же hx-get в ответе),
+        # иначе cascadeNav.toggle на клиенте не сможет надёжно отследить is-active.
+        response = self.client.get(f"/cascade/{self.root.slug}/")
+        self.assertEqual(
+            response.content.decode().count(f'hx-get="/cascade/{self.leaf.slug}/"'), 1
+        )
+
+    def test_cascade_level_leaf_returns_products(self):
+        response = self.client.get(f"/cascade/{self.leaf.slug}/")
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, f'id="cascade-col-{self.leaf.depth}"')
+        self.assertContains(response, self.p1.sku)
+        self.assertContains(response, self.p2.sku)
+        self.assertContains(response, self.p3.sku)
+
+    def test_product_card_endpoint(self):
+        response = self.client.get(f"/product/{self.p1.slug}/card/")
+        self.assertEqual(response.status_code, 200)
+        self.assertNotContains(response, "<html")
+        self.assertContains(response, "В корзину")
+        self.assertContains(response, self.p1.get_absolute_url())
+
+    def test_index_page_has_desktop_rail_and_mobile_tiles(self):
+        response = self.client.get("/")
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'id="cascade-columns"')
+        self.assertContains(response, 'class="cascade-rail"')
+        self.assertContains(response, 'class="hero"')
+        self.assertContains(response, self.root.name)
+
 
 class SearchTestCase(TestCase):
     @classmethod
@@ -240,3 +297,14 @@ class SearchTestCase(TestCase):
 
         for q in ("", "с"):
             self.assertEqual(self.client.get("/search/", {"q": q}).status_code, 200)
+
+    def test_results_page_breadcrumb_for_desktop_rows(self):
+        response = self.client.get("/search/", {"q": "сверло"})
+        breadcrumb_map = {
+            item["product"].pk: item["breadcrumb"] for item in response.context["products"]
+        }
+        self.assertEqual(
+            breadcrumb_map[self.drill6.pk],
+            [self.root.name, self.leaf.name],
+        )
+        self.assertContains(response, "Металлорежущий инструмент → Свёрла по металлу")

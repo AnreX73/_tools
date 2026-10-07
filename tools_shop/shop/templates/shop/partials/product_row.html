@@ -1,0 +1,33 @@
+{% load shop_search %}
+{# Десктоп: строка товара как дропдаун. Клик раскрывает карточку на месте #}
+{# (htmx-подгрузка shop:product_card), без перехода на страницу товара.    #}
+{# Переиспользуется и каскадом каталога, и результатами поиска.           #}
+<div class="prow" x-data="{ open: false }">
+    <button type="button" class="prow-head" @click="open = !open" :aria-expanded="open"
+            aria-controls="prow-body-{{ item.product.pk }}">
+        {% if item.breadcrumb %}
+            <span class="prow-path">{{ item.breadcrumb|join:" → " }}</span>
+        {% endif %}
+        <span class="prow-main">
+            {% if item.product.brand %}<span class="product-brand">{{ item.product.brand }}</span>{% endif %}
+            <span class="prow-name">{% if query %}{{ item.product.name|highlight:query }}{% else %}{{ item.product.name }}{% endif %}</span>
+            {% if item.specs %}
+            <span class="prow-specs">
+                {% for spec in item.specs %}<span class="prow-spec">{{ spec.label }}: {{ spec.value }}</span>{% endfor %}
+            </span>
+            {% endif %}
+        </span>
+        <span class="prow-sku">{{ item.product.sku }}{% if item.product.image %}<svg class="photo-badge" role="img" aria-label="Есть фото" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><title>Есть фото</title><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>{% endif %}</span>
+        {% if item.product.price is not None %}<span class="prow-price">{{ item.product.price }} ₽</span>{% else %}<span class="prow-price on-request">по запросу</span>{% endif %}
+        <span class="prow-chev" aria-hidden="true">▾</span>
+    </button>
+    <div id="prow-body-{{ item.product.pk }}" class="prow-body" x-show="open" x-cloak
+         x-transition:enter.duration.160ms x-transition:leave.duration.120ms>
+        <div class="prow-body-inner"
+             hx-get="{% url 'shop:product_card' item.product.slug %}"
+             hx-trigger="intersect once"
+             hx-swap="innerHTML">
+            <p class="prow-loading">Загрузка…</p>
+        </div>
+    </div>
+</div>

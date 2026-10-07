@@ -28,7 +28,16 @@
             <div class="results-head">
                 <p class="results-count">Найдено товаров: <strong>{{ total }}</strong></p>
             </div>
-            <div class="product-grid">
+
+            {# Десктоп: тот же компонент строк-дропдаунов, что и каскад каталога (п.4 ТЗ). #}
+            <div class="desktop-only prow-list">
+                {% for item in products %}
+                    {% include "shop/partials/product_row.html" %}
+                {% endfor %}
+            </div>
+
+            {# Мобильная версия: сетка карточек со ссылкой на страницу товара, без изменений. #}
+            <div class="mobile-only product-grid">
                 {% for item in products %}
                     {% include "shop/partials/product_card.html" with show_category=True %}
                 {% endfor %}
@@ -48,6 +57,7 @@
         {% else %}
             <p class="empty"><span class="empty-icon" aria-hidden="true">🔍</span>
                 По запросу «{{ query }}» товаров не нашлось.<br>Проверьте написание, попробуйте часть названия или артикул{% if categories %}, либо загляните в подходящие категории выше{% endif %}.
+                <br><a class="btn btn-ghost search-reset" href="{% url 'shop:search' %}">Сбросить поиск</a>
             </p>
         {% endif %}
     {% endif %}

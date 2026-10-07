@@ -1,0 +1,45 @@
+{% load shop_search %}
+{# Десктоп: один уровень каскада — колонка справа, вставляется в          #}
+{# #cascade-columns через htmx (hx-swap="beforeend"). Активное/раскрытое  #}
+{# состояние узла живёт на самой кнопке в предыдущей колонке (или в левой #}
+{# панели cascade_root.html) — здесь только список детей текущего уровня  #}
+{# или, для листа, список товаров (тот же компонент, что и у поиска).     #}
+<div class="cascade-column" data-depth="{{ depth }}" id="cascade-col-{{ depth }}">
+    <div class="cascade-column-head">
+        <span class="cascade-column-title">{{ category.name }}</span>
+    </div>
+    <div class="cascade-column-body">
+        {% if is_leaf %}
+            {% if products %}
+                <div class="prow-list">
+                    {% for item in products %}
+                        {% include "shop/partials/product_row.html" %}
+                    {% endfor %}
+                </div>
+                {% if page.has_other_pages %}
+                    <nav class="pagination">
+                        {% if page.has_previous %}
+                            <a href="?{% if base_query %}{{ base_query }}&{% endif %}page={{ page.previous_page_number }}"
+                               hx-get="{% url 'shop:cascade_level' category.slug %}?{% if base_query %}{{ base_query }}&{% endif %}page={{ page.previous_page_number }}"
+                               hx-target="#cascade-col-{{ depth }}" hx-swap="outerHTML">← Назад</a>
+                        {% endif %}
+                        <span class="page-info">Страница {{ page.number }} из {{ page.paginator.num_pages }}</span>
+                        {% if page.has_next %}
+                            <a href="?{% if base_query %}{{ base_query }}&{% endif %}page={{ page.next_page_number }}"
+                               hx-get="{% url 'shop:cascade_level' category.slug %}?{% if base_query %}{{ base_query }}&{% endif %}page={{ page.next_page_number }}"
+                               hx-target="#cascade-col-{{ depth }}" hx-swap="outerHTML">Вперёд →</a>
+                        {% endif %}
+                    </nav>
+                {% endif %}
+            {% else %}
+                <p class="empty cascade-empty-products">В этой категории пока нет товаров.</p>
+            {% endif %}
+        {% else %}
+            <div class="cascade-children" role="list">
+                {% for child in children %}
+                    {% include "shop/partials/cascade_node.html" with node=child node_depth=depth|add:1 %}
+                {% endfor %}
+            </div>
+        {% endif %}
+    </div>
+</div>

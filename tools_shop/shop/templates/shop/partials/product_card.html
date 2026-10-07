@@ -13,7 +13,7 @@
     </dl>
     {% endif %}
     <div class="product-foot">
-        <span class="sku">{{ item.product.sku }}</span>
+        <span class="sku">{{ item.product.sku }}{% if item.product.image %}<svg class="photo-badge" role="img" aria-label="Есть фото" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><title>Есть фото</title><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>{% endif %}</span>
         {% if item.product.price is not None %}<span class="price">{{ item.product.price }} ₽</span>{% else %}<span class="price on-request">Цена по запросу</span>{% endif %}
     </div>
 </article>

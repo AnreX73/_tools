@@ -25,7 +25,7 @@ from django.db.models import F, FloatField, Max, Min, Q
 from django.db.models.fields.json import KeyTextTransform
 from django.db.models.functions import Cast
 
-from .models import Attribute
+from .models import Attribute, Category
 
 VALUE_PREFIX = "a__"
 MIN_SUFFIX = "__min"
@@ -307,6 +307,31 @@ def format_attribute_value(attr, labels, value) -> str:
     else:
         text = str(_short(value)) if isinstance(value, float) else str(value)
     return f"{text} {attr.unit}".strip() if attr.unit else text
+
+
+def category_breadcrumb_map(categories) -> dict[int, list[str]]:
+    """
+    {category.pk: [имя корня, ..., имя этой категории]} для набора категорий
+    (например категорий товаров в выдаче поиска), одним доп запросом на всех
+    предков сразу, без N+1.
+    """
+    categories = list(categories)
+    if not categories:
+        return {}
+    steplen = Category.steplen
+    prefixes = set()
+    for cat in categories:
+        prefixes.update(cat.path[:i] for i in range(steplen, len(cat.path), steplen))
+    names_by_path = {cat.path: cat.name for cat in categories}
+    if prefixes:
+        names_by_path.update(
+            Category.objects.filter(path__in=prefixes).values_list("path", "name")
+        )
+    result = {}
+    for cat in categories:
+        own_prefixes = [cat.path[:i] for i in range(steplen, len(cat.path) + steplen, steplen)]
+        result[cat.pk] = [names_by_path[p] for p in own_prefixes if p in names_by_path]
+    return result
 
 
 def product_specs(product, attrs, labels, codes=None, limit=None) -> list[dict]:

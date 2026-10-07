@@ -1,0 +1,59 @@
+{# Десктоп: содержимое карточки товара, раскрываемой на месте в списке     #}
+{# (строка-дропдаун каталога или поиска). Полное описание, характеристики, #}
+{# цена, выбор количества, кнопка «В корзину». Страница товара как отдельный #}
+{# экран на десктопе не используется — но доступна по прямой ссылке и для  #}
+{# мобильной версии (shop:product).                                       #}
+<div class="pcard" x-data="{ qty: 1 }">
+    <div class="pcard-main">
+        {% if product.image %}
+        <button type="button" class="pcard-photo" aria-label="Увеличить изображение: {{ product.name }}"
+                onclick="document.getElementById('pcard-modal-{{ product.pk }}').showModal()">
+            <img src="{{ product.image.url }}" alt="{{ product.name }}" decoding="async" loading="lazy">
+        </button>
+        <dialog id="pcard-modal-{{ product.pk }}" class="image-modal" aria-label="Изображение товара">
+            <button type="button" class="image-modal-close" aria-label="Закрыть" onclick="this.closest('dialog').close()">&times;</button>
+            <img src="{{ product.image.url }}" alt="{{ product.name }}">
+        </dialog>
+        {% endif %}
+
+        <div class="pcard-body">
+            {% if product.description %}
+                <div class="description">{{ product.description|linebreaks }}</div>
+            {% endif %}
+
+            {% if specs %}
+                <table class="spec-table spec-table-compact">
+                    <tbody>
+                        {% for spec in specs %}
+                            <tr><th>{{ spec.label }}</th><td>{{ spec.value }}</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% endif %}
+
+            <a class="pcard-permalink" href="{{ product.get_absolute_url }}">Открыть страницу товара →</a>
+        </div>
+    </div>
+
+    <div class="pcard-side">
+        <span class="price-label">Цена</span>
+        {% if product.price is not None %}
+            <span class="price">{{ product.price }} ₽</span>
+        {% else %}
+            <span class="price on-request">Цена по запросу</span>
+        {% endif %}
+
+        <div class="pcard-qty">
+            <label for="qty-{{ product.pk }}">Количество</label>
+            <div class="qty-stepper">
+                <button type="button" aria-label="Уменьшить количество" @click="qty = Math.max(1, qty - 1)">−</button>
+                <input id="qty-{{ product.pk }}" type="number" inputmode="numeric" min="1" step="1"
+                       x-model.number="qty" @change="qty = Math.max(1, qty || 1)">
+                <button type="button" aria-label="Увеличить количество" @click="qty = qty + 1">+</button>
+            </div>
+        </div>
+
+        <button type="button" class="btn btn-primary btn-block">В корзину</button>
+        <p class="note">Ответим с ценой и сроками поставки.</p>
+    </div>
+</div>

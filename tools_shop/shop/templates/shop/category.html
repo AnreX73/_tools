@@ -1,24 +1,42 @@
 {% extends "shop/base.html" %}
 {% block title %}{{ category.name }}{% endblock %}
+
+{% block desktop_rail %}
+    <aside class="cascade-rail" aria-label="Каталог">
+        {% include "shop/partials/cascade_root.html" %}
+    </aside>
+{% endblock %}
+
+{% block main_class %} container--with-rail{% endblock %}
+
 {% block content %}
-    <nav class="breadcrumbs">
-        <a href="{% url 'shop:catalog' %}">Каталог</a>
-        {% for ancestor in ancestors %}
-            <span class="sep">/</span> <a href="{{ ancestor.get_absolute_url }}">{{ ancestor.name }}</a>
-        {% endfor %}
-        <span class="sep">/</span> <span>{{ category.name }}</span>
-    </nav>
+    {# Десктоп: каскад раскрывается JS-ом (cascade.js) по data-cascade-path —  #}
+    {# те же данные и разметка, что при клике по колонкам (shop:cascade_level). #}
+    <div id="cascade-columns" class="cascade-columns"
+         data-cascade-path="{{ cascade_path|join:',' }}"></div>
 
-    <h1>{{ category.name }}</h1>
-    {% if category.description %}<p class="lead">{{ category.description }}</p>{% endif %}
-
-    {% if children %}
-        <div class="subcategories">
-            {% for child in children %}
-                <a class="subcategory" href="{{ child.get_absolute_url }}">{{ child.name }}</a>
+    {# Мобильная версия: страница категории с фильтрами и сеткой товаров,     #}
+    {# полностью без изменений.                                               #}
+    <div class="mobile-only">
+        <nav class="breadcrumbs">
+            <a href="{% url 'shop:catalog' %}">Каталог</a>
+            {% for ancestor in ancestors %}
+                <span class="sep">/</span> <a href="{{ ancestor.get_absolute_url }}">{{ ancestor.name }}</a>
             {% endfor %}
-        </div>
-    {% endif %}
+            <span class="sep">/</span> <span>{{ category.name }}</span>
+        </nav>
 
-    {% include "shop/partials/catalog_body.html" %}
+        <h1>{{ category.name }}</h1>
+        {% if category.description %}<p class="lead">{{ category.description }}</p>{% endif %}
+
+        {% if children %}
+            <div class="subcategories">
+                {% for child in children %}
+                    <a class="subcategory" href="{{ child.get_absolute_url }}">{{ child.name }}</a>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        {% include "shop/partials/catalog_body.html" %}
+    </div>
 {% endblock %}

@@ -7,8 +7,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}{{ title }}{% endblock %}</title>
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <script src="{% static 'js/main.js' %}" defer></script>
     <script src="{% static 'vendor/htmx.min.js' %}" defer></script>
     <script src="{% static 'js/search.js' %}" defer></script>
+    <script src="{% static 'js/cascade.js' %}" defer></script>
     <script src="{% static 'vendor/alpine-persist.min.js' %}" defer></script>
     <script src="{% static 'vendor/alpine.min.js' %}" defer></script>
     {% block head %}{% endblock %}
@@ -38,7 +40,9 @@
                        hx-indicator=".site-search"
                        @focus="show()" @click="show()"
                        @keydown.down.prevent="move(1)"
-                       @keydown.up.prevent="move(-1)">
+                       @keydown.up.prevent="move(-1)"
+                       @input="document.body.classList.toggle('search-active', $event.target.value.length > 0)"
+                       @search="document.body.classList.toggle('search-active', $event.target.value.length > 0)">
                 <span class="site-search-spinner" aria-hidden="true"></span>
                 <kbd class="site-search-kbd" aria-hidden="true">/</kbd>
                 <div id="search-suggest" class="search-panel" role="listbox" aria-label="Подсказки поиска"
@@ -53,13 +57,15 @@
         </div>
     </header>
 
-    <main class="container">
+    {% block desktop_rail %}{% endblock %}
+
+    <main class="container{% block main_class %}{% endblock %}">
         {% block content %}{% endblock %}
     </main>
 
     <footer class="site-footer">
         <div class="container">
-            <p>&copy; {% now "Y" %} Магазин инструментов. Все права защищены.</p>
+            <p>&copy; {% now "Y" %} ТУЛЗ СЕРВИС. Все права защищены.</p>
         </div>
     </footer>
 

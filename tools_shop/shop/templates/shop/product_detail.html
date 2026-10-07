@@ -15,6 +15,12 @@
             {% if product.brand %}<span class="product-brand">{{ product.brand }}</span>{% endif %}
             <h1>{{ product.name }}</h1>
             <p class="sku">Артикул: {{ product.sku }}</p>
+            {% if product.image %}
+            <button type="button" class="product-photo" aria-label="Увеличить изображение"
+                    onclick="document.getElementById('image-modal').showModal()">
+                <img src="{{ product.image.url }}" alt="{{ product.name }}" decoding="async">
+            </button>
+            {% endif %}
             {% if product.description %}<div class="description">{{ product.description|linebreaks }}</div>{% endif %}
         </div>
 
@@ -60,5 +66,20 @@
                 </article>
             {% endfor %}
         </div>
+    {% endif %}
+{% endblock %}
+{% block scripts %}
+    {% if product.image %}
+    <dialog id="image-modal" class="image-modal" aria-label="Изображение товара">
+        <button type="button" class="image-modal-close" aria-label="Закрыть" onclick="this.closest('dialog').close()">&times;</button>
+        <img src="{{ product.image.url }}" alt="{{ product.name }}">
+    </dialog>
+    <script>
+        (function () {
+            var dlg = document.getElementById('image-modal');
+            // клик по подложке (вне картинки) закрывает окно
+            dlg.addEventListener('click', function (e) { if (e.target === dlg) dlg.close(); });
+        })();
+    </script>
     {% endif %}
 {% endblock %}

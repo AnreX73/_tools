@@ -1,19 +1,37 @@
 {% extends "shop/base.html" %}
 {% block title %}{{ title }}{% endblock %}
+
+{% block desktop_rail %}
+    <aside class="cascade-rail" aria-label="Каталог">
+        {% include "shop/partials/cascade_root.html" %}
+    </aside>
+{% endblock %}
+
+{% block main_class %} container--with-rail{% endblock %}
+
 {% block content %}
-    <h1>Каталог</h1>
-    <ul class="category-grid">
-        {% for root in root_categories %}
-            <li class="category-tile">
-                <a class="category-tile-title" href="{{ root.get_absolute_url }}">{{ root.name }}</a>
-                {% if root.numchild %}
-                    <ul class="category-children">
-                        {% for child in root.children_list %}
-                            <li><a href="{{ child.get_absolute_url }}">{{ child.name }}</a></li>
-                        {% endfor %}
-                    </ul>
-                {% endif %}
-            </li>
-        {% endfor %}
-    </ul>
+    <div id="cascade-columns" class="cascade-columns" data-cascade-path=""></div>
+
+    <div class="desktop-only cascade-placeholder">
+        <p class="help">Выберите категорию слева, чтобы перейти к товарам.</p>
+    </div>
+
+    {# Мобильная версия: плоский список категорий, без изменений. #}
+    <div class="mobile-only">
+        <h1>Каталог</h1>
+        <ul class="category-grid">
+            {% for root in root_categories %}
+                <li class="category-tile">
+                    <a class="category-tile-title" href="{{ root.get_absolute_url }}">{{ root.name }}</a>
+                    {% if root.numchild %}
+                        <ul class="category-children">
+                            {% for child in root.children_list %}
+                                <li><a href="{{ child.get_absolute_url }}">{{ child.name }}</a></li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+                </li>
+            {% endfor %}
+        </ul>
+    </div>
 {% endblock %}

@@ -1,7 +1,21 @@
 {% extends "shop/base.html" %}
 {% load static %}
 {% block title %}{{ title }}{% endblock %}
+
+{% block desktop_rail %}
+    <aside class="cascade-rail" aria-label="Каталог">
+        {% include "shop/partials/cascade_root.html" %}
+    </aside>
+{% endblock %}
+
+{% block main_class %} container--with-rail{% endblock %}
+
 {% block content %}
+    {# Десктоп: рабочая область каскада/поиска. Пустая и скрыта, пока не выбрана  #}
+    {# категория и не идёт поиск — тогда виден hero ниже. Клик по категории в     #}
+    {# левой колонке (cascade-rail) и начало ввода в поиске показывают её.        #}
+    <div id="cascade-columns" class="cascade-columns" data-cascade-path=""></div>
+
     <section class="hero">
         <span class="hero-eyebrow">B2B · Промышленный инструмент </span>
         <h1 class="hero-logo">
@@ -13,16 +27,20 @@
         <a class="btn btn-primary" href="{% url 'shop:catalog' %}">Перейти в каталог →</a>
     </section>
 
-    <h2 class="section-title">Категории</h2>
-    <div class="category-grid">
-        {% for root in root_categories %}
-            <a class="category-tile" href="{{ root.get_absolute_url }}">
-                <h2>{{ root.name }}</h2>
-                <span class="meta">{{ root.get_descendant_count }} подкатегорий</span>
-                <span class="arrow" aria-hidden="true">→</span>
-            </a>
-        {% empty %}
-            <p class="empty">Каталог ещё не заполнен. Загрузите данные: <code>python manage.py seed_shop</code>.</p>
-        {% endfor %}
+    {# Мобильная версия: плитки категорий, без изменений. На десктопе скрыты #}
+    {# CSS-брейкпоинтом — слева уже есть колонка категорий (cascade-rail).   #}
+    <div class="mobile-only">
+        <h2 class="section-title">Категории</h2>
+        <div class="category-grid">
+            {% for root in root_categories %}
+                <a class="category-tile" href="{{ root.get_absolute_url }}">
+                    <h2>{{ root.name }}</h2>
+                    <span class="meta">{{ root.get_descendant_count }} подкатегорий</span>
+                    <span class="arrow" aria-hidden="true">→</span>
+                </a>
+            {% empty %}
+                <p class="empty">Каталог ещё не заполнен. Загрузите данные: <code>python manage.py seed_shop</code>.</p>
+            {% endfor %}
+        </div>
     </div>
 {% endblock %}

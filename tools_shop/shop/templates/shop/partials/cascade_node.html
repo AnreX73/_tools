@@ -1,0 +1,19 @@
+{# Десктоп: один узел каскада — кнопка категории. Используется и в левой    #}
+{# колонке (cascade_root.html), и в колонках каскада (cascade_level.html).  #}
+{# Активное/раскрытое состояние (is-active + aria-expanded) живёт только на #}
+{# этой самой кнопке — у узла нет собственного дочернего дропдауна, список  #}
+{# детей показывается только колонкой справа (#cascade-col-N+1). Это и     #}
+{# есть "аккордеон": кнопка подсвечивается и разворачивает колонку рядом,   #}
+{# повторный клик по той же кнопке — всегда cascadeNav.toggle, закрывает.  #}
+<div class="cascade-node" data-depth="{{ node_depth }}">
+    <button type="button" class="cascade-node-head"
+            aria-expanded="false"
+            hx-get="{% url 'shop:cascade_level' node.slug %}"
+            hx-target="#cascade-columns"
+            hx-swap="beforeend"
+            hx-push-url="{{ node.get_absolute_url }}"
+            @click="window.cascadeNav && window.cascadeNav.toggle($event, {{ node_depth }})">
+        <span class="cascade-node-label">{{ node.name }}</span>
+        <span class="cascade-node-chev" aria-hidden="true">▸</span>
+    </button>
+</div>

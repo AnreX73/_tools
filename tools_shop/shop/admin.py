@@ -199,7 +199,7 @@ class ProductAdmin(admin.ModelAdmin):
     search_fields = ("sku", "name")
     readonly_fields = ("slug", "created_at", "updated_at")
     fieldsets = (
-        (None, {"fields": ("category", "sku", "name", "brand", "price", "is_active", "description")}),
+        (None, {"fields": ("category", "sku", "name", "brand", "price", "is_active", "description", "image")}),
         ("Характеристики", {"fields": ("attributes",)}),
         ("Служебное", {"fields": ("slug", "created_at", "updated_at"), "classes": ("collapse",)}),
     )
@@ -283,5 +283,5 @@ class BrandAdmin(admin.ModelAdmin):
 
 
 
-admin.site.site_header = "It`s Tools — time"
-admin.site.site_title = "It`s Tools — time"
+admin.site.site_header = "Тулз сервис — админка"
+admin.site.site_title = "Тулз сервис — админка"

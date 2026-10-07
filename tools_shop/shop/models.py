@@ -289,6 +289,7 @@ class Product(SlugWithIdMixin, models.Model):
     sku = models.CharField("Артикул", max_length=64, unique=True)
     name = models.CharField("Название", max_length=255)
     description = models.TextField("Описание", blank=True)
+    image = models.ImageField("Изображение", upload_to="products/%Y/%m/", blank=True)
     # Целая цена в основных единицах валюты. NULL = «цена по запросу».
     price = models.PositiveIntegerField("Цена", null=True, blank=True,
                                         help_text="Пусто = цена по запросу")
