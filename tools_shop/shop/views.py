@@ -1,8 +1,13 @@
+
+
 from django.core.paginator import Paginator
 from django.shortcuts import get_object_or_404, render
 
 from . import catalog, search
 from .models import Category, Product
+
+from .sorting import order_products
+from .sorting import get_sort_rules, order_products, sort_attribute_codes
 
 PAGE_SIZE = 24
 SUGGEST_PRODUCTS = 6
@@ -32,16 +37,23 @@ def catalog_index(request):
 def _category_products(category, schema, state, request):
     """Товары листовой категории + их характеристики для отображения в списке."""
     scope = category.product_scope()
-    products_qs = catalog.apply_sort(
-        catalog.apply_filters(scope, state.values, state.ranges, schema), state.sort
-    )
+    filtered = catalog.apply_filters(scope, state.values, state.ranges, schema)
+
+    rules = get_sort_rules(category)                  # правила объявляем ДО использования
+    if state.sort == catalog.DEFAULT_SORT:
+        products_qs = order_products(filtered, category, rules)   # порядок из админки
+    else:
+        products_qs = catalog.apply_sort(filtered, state.sort)    # клиент выбрал сам
+
     page = Paginator(products_qs, PAGE_SIZE).get_page(request.GET.get("page"))
 
     attrs, labels = catalog.attribute_display_maps()
     spec_codes = list(schema) if category.numchild == 0 else None
+    sort_codes = sort_attribute_codes(rules)
     products = [
         {"product": product,
-         "specs": catalog.product_specs(product, attrs, labels, spec_codes, limit=4)}
+         "specs": catalog.product_specs(product, attrs, labels, spec_codes, limit=4),
+         "short": catalog.short_spec(product, attrs, labels, sort_codes)}
         for product in page
     ]
     return scope, page, products
@@ -192,3 +204,5 @@ def search_results(request):
         "total": page.paginator.count,
     }
     return render(request, "shop/search.html", context)
+
+

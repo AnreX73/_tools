@@ -32,12 +32,13 @@ MIN_SUFFIX = "__min"
 MAX_SUFFIX = "__max"
 
 SORT_CHOICES = [
+    ("default", "По умолчанию"),      # <- новый пункт, порядок из админки
     ("name", "По названию"),
     ("price", "Сначала дешёвые"),
     ("-price", "Сначала дорогие"),
     ("-created_at", "Сначала новые"),
 ]
-DEFAULT_SORT = "name"
+DEFAULT_SORT = "default"              # было "name"
 _SORT_KEYS = {key for key, _ in SORT_CHOICES}
 
 T = Attribute.DataType
@@ -295,7 +296,7 @@ def attribute_display_maps():
     return attrs, labels
 
 
-def format_attribute_value(attr, labels, value) -> str:
+def format_attribute_value(attr, labels, value, with_unit=True) -> str:
     if value in (None, "", []):
         return ""
     if attr.data_type == T.BOOLEAN:
@@ -306,7 +307,7 @@ def format_attribute_value(attr, labels, value) -> str:
         text = ", ".join(labels.get(attr.code, {}).get(v, str(v)) for v in value)
     else:
         text = str(_short(value)) if isinstance(value, float) else str(value)
-    return f"{text} {attr.unit}".strip() if attr.unit else text
+    return f"{text} {attr.unit}".strip() if (attr.unit and with_unit) else text
 
 
 def category_breadcrumb_map(categories) -> dict[int, list[str]]:
@@ -351,3 +352,54 @@ def product_specs(product, attrs, labels, codes=None, limit=None) -> list[dict]:
         if limit and len(specs) >= limit:
             break
     return specs
+
+
+def short_spec(product, attrs, labels, codes, sep="*") -> dict:
+    """
+    Компактная строка для кнопки товара в списке: «10×72 · TiAlN».
+
+    codes — коды характеристик в порядке приоритета (из правил сортировки);
+    значения выводятся СТРОГО в этом порядке. Числовые характеристики, идущие
+    подряд, склеиваются через «×», всё остальное разделяется « · »:
+        диаметр, длина, покрытие  ->  10×72 · TiAlN
+        покрытие, диаметр, длина  ->  TiAlN · 10×72
+        диаметр, покрытие, длина  ->  10 · TiAlN · 72
+    Единицы и подписи не выводятся: их объясняет "hint" — текст для всплывающей
+    подсказки («Диаметр, мм × Длина, мм · Покрытие»).
+    Если у товара нет числа в середине цепочки, ставится «–», чтобы позиции не
+    «съезжали»; пустой хвост цепочки отбрасывается. Нечисловое значение, которого
+    нет, пропускается. Логические и множественные характеристики не выводятся.
+    """
+    runs = []   # [is_numeric, [значения], [названия]]
+    for code in codes:
+        attr = attrs.get(code)
+        if attr is None or attr.data_type in (T.BOOLEAN, T.MULTI):
+            continue
+        value = product.attributes.get(code)
+        text = "" if value in (None, "", []) else format_attribute_value(
+            attr, labels, value, with_unit=False)
+        name = f"{attr.name}, {attr.unit}" if attr.unit else attr.name
+        numeric = attr.data_type in (T.INTEGER, T.DECIMAL)
+
+        if not numeric and not text:
+            continue
+        if numeric and runs and runs[-1][0]:          # продолжаем цепочку чисел
+            runs[-1][1].append(text or "–")
+            runs[-1][2].append(name)
+        else:
+            runs.append([numeric, [text or "–"], [name]])
+
+    parts, names = [], []
+    for numeric, texts, run_names in runs:
+        if numeric:
+            while texts and texts[-1] == "–":         # хвост без значений не показываем
+                texts.pop()
+                run_names.pop()
+            if not texts:
+                continue
+            parts.append(sep.join(texts))
+            names.append(f" {sep} ".join(run_names))
+        else:
+            parts.append(texts[0])
+            names.append(run_names[0])
+    return {"text": " · ".join(parts), "hint": " · ".join(names)}

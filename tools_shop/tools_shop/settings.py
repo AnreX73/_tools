@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     "users.apps.UsersConfig",
     "shop.apps.ShopConfig",
+    "adminsortable2",
     "django_browser_reload",    
     "django.contrib.postgres",
     "treebeard",

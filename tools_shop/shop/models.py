@@ -376,3 +376,37 @@ class Product(SlugWithIdMixin, models.Model):
         if errors:
             raise ValidationError({"attributes": errors})
         return clean
+
+
+class CategorySortRule(models.Model):
+    """
+    Одно правило сортировки выдачи для категории.
+    Правила категории применяются по порядку sort_order (сверху вниз):
+    «сначала по названию, потом по диаметру» = два правила.
+
+    field — либо ключ встроенного поля ("name", "price" ...),
+            либо "attr:<Attribute.code>" для характеристики из JSONB.
+    Attribute.code после создания не меняется, поэтому хранить его строкой безопасно;
+    если характеристику удалят/отключат — правило просто пропускается.
+    """
+    ATTR_PREFIX = "attr:"
+    BUILTIN_LABELS = {
+        "name": "Название",
+        "sku": "Артикул",
+        "price": "Цена",
+        "brand": "Бренд",
+        "created_at": "Дата добавления",
+    }
+
+    category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name="sort_rules")
+    field = models.CharField("Сортировать по", max_length=80)
+    descending = models.BooleanField("По убыванию", default=False)
+    sort_order = models.PositiveIntegerField("Порядок", default=0, db_index=True)
+
+    class Meta:
+        verbose_name = "Правило сортировки"
+        verbose_name_plural = "Правила сортировки выдачи"
+        ordering = ["sort_order"]  # adminsortable2 берёт поле порядка отсюда
+
+    def __str__(self):
+        return f"{self.field} {'↓' if self.descending else '↑'}"

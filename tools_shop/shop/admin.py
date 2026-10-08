@@ -5,6 +5,7 @@ shop/admin.py
 При смене категории фрагмент с полями подгружается через fetch (см. product_attributes.js),
 введённые в остальные поля данные не теряются.
 """
+from adminsortable2.admin import SortableAdminBase, SortableInlineAdminMixin
 from django import forms
 from django.contrib import admin
 from django.core.exceptions import PermissionDenied
@@ -15,8 +16,10 @@ from treebeard.admin import TreeAdmin
 from treebeard.forms import movenodeform_factory
 
 from .models import (
-    Attribute, AttributeOption, Brand, Category, CategoryAttribute, Product,
+    Attribute, AttributeOption, Brand, Category, CategoryAttribute, CategorySortRule,
+    Product,
 )
+from .sorting import sort_field_choices
 
 T = Attribute.DataType
 
@@ -238,12 +241,43 @@ class CategoryAttributeInline(admin.TabularInline):
     autocomplete_fields = ("attribute",)
 
 
+class CategorySortRuleForm(forms.ModelForm):
+    field = forms.ChoiceField(label="Сортировать по")
+
+    class Meta:
+        model = CategorySortRule
+        fields = ["field", "descending"]
+
+
+class CategorySortRuleInline(SortableInlineAdminMixin, admin.TabularInline):
+    """Порядок выдачи товаров: строки перетаскиваются, верхнее правило главнее."""
+    model = CategorySortRule
+    form = CategorySortRuleForm
+    extra = 0
+    verbose_name = "правило сортировки"
+    verbose_name_plural = ("Порядок выдачи товаров (перетаскивайте строки: верхнее правило "
+                           "главнее; если пусто — берётся у родительской категории, "
+                           "а если нигде не задано — по названию)")
+
+    def get_formset(self, request, obj=None, **kwargs):
+        # choices считаем один раз на весь формсет, а не на каждую строку
+        choices = sort_field_choices()
+
+        class Form(CategorySortRuleForm):
+            def __init__(self, *args, **kw):
+                super().__init__(*args, **kw)
+                self.fields["field"].choices = choices
+
+        kwargs["form"] = Form
+        return super().get_formset(request, obj, **kwargs)
+
+
 @admin.register(Category)
-class CategoryAdmin(TreeAdmin):
+class CategoryAdmin(SortableAdminBase, TreeAdmin):
     form = movenodeform_factory(Category)
     list_display = ("name", "is_active")
     search_fields = ("name",)
-    inlines = [CategoryAttributeInline]
+    inlines = [CategoryAttributeInline, CategorySortRuleInline]
     readonly_fields = ("slug", "inherited_attributes")
 
     @admin.display(description="Унаследованные характеристики")

@@ -9,12 +9,12 @@
             <span class="prow-path">{{ item.breadcrumb|join:" → " }}</span>
         {% endif %}
         <span class="prow-main">
-            {% if item.product.brand %}<span class="product-brand">{{ item.product.brand }}</span>{% endif %}
+            {% comment %} {% if item.product.brand %}<span class="product-brand">{{ item.product.brand }}</span>{% endif %} {% endcomment %}
             <span class="prow-name">{% if query %}{{ item.product.name|highlight:query }}{% else %}{{ item.product.name }}{% endif %}</span>
-            {% if item.specs %}
-            <span class="prow-specs">
-                {% for spec in item.specs %}<span class="prow-spec">{{ spec.label }}: {{ spec.value }}</span>{% endfor %}
-            </span>
+            {% if item.short.text %}
+            <div class="prow-specs">
+                <span class="prow-spec" title="{{ item.short.hint }}">{{ item.short.text }}</span>
+            </div>
             {% endif %}
         </span>
         <span class="prow-sku">{{ item.product.sku }}{% if item.product.image %}<svg class="photo-badge" role="img" aria-label="Есть фото" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><title>Есть фото</title><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>{% endif %}</span>
