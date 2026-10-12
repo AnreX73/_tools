@@ -1,0 +1,20 @@
+<p class="chat-status" role="status" x-text="status"></p>
+<div class="chat-messages" x-ref="messages" role="log" aria-live="polite" aria-label="Переписка">
+    <p class="chat-empty" x-show="!messages.length">Здесь появится переписка. Ответ менеджера появится в этом окне, когда он подключится.</p>
+    <template x-for="message in messages" :key="message.id">
+        <article class="chat-message" :class="{ 'chat-message-own': message.is_staff === operator }">
+            <small x-text="message.is_staff ? 'Менеджер' : (operator ? 'Посетитель' : 'Вы')"></small>
+            <p x-text="message.text"></p>
+            <time :datetime="message.created_at" x-text="formatTime(message.created_at)"></time>
+        </article>
+    </template>
+</div>
+<p class="chat-error" role="alert" x-show="error" x-text="error" x-cloak></p>
+<button class="chat-retry" type="button" x-show="!connected && !connecting" @click="connect()" x-cloak>Подключиться снова</button>
+<form class="chat-form" @submit.prevent="send()">
+    {% csrf_token %}
+    <label class="chat-input-label" for="{% if conversation %}operator{% else %}visitor{% endif %}-chat-input">Ваше сообщение</label>
+    <textarea id="{% if conversation %}operator{% else %}visitor{% endif %}-chat-input" x-ref="input" x-model="draft"
+              maxlength="2000" rows="3" placeholder="Ваш вопрос…" @keydown.ctrl.enter.prevent="send()"></textarea>
+    <button type="submit" :disabled="!connected || sending || !draft.trim()" x-text="sending ? 'Отправляем…' : 'Отправить'">Отправить</button>
+</form>

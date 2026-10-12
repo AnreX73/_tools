@@ -57,7 +57,7 @@ services:
       - static_data:/app/staticfiles
       - media_data:/app/media
     healthcheck:
-      # просто проверяем, что gunicorn слушает порт 8000
+      # проверяем, что ASGI-сервер слушает порт 8000
       test: ["CMD", "python", "-c", "import socket; socket.create_connection(('127.0.0.1', 8000), 3)"]
       interval: 10s
       timeout: 5s

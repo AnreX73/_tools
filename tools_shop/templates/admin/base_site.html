@@ -1,0 +1,23 @@
+{% extends "admin/base.html" %}
+{% load static %}
+
+{% block title %}{{ title }} | ТУЛЗ СЕРВИС — управление{% endblock %}
+
+{% block dark-mode-vars %}
+    <link rel="stylesheet" href="{% static 'admin/css/dark_mode.css' %}">
+    <script src="{% static 'js/admin-theme.js' %}"></script>
+{% endblock %}
+
+{% block extrastyle %}
+    {{ block.super }}
+    <link rel="stylesheet" href="{% static 'css/admin-theme.css' %}">
+    <link rel="icon" type="image/png" href="{% static 'shop/images/favicon-32x32.png' %}">
+{% endblock %}
+
+{% block branding %}
+    <a class="admin-brand" href="{% url 'admin:index' %}">
+        <img class="admin-brand-logo admin-brand-logo-light" src="{% static 'shop/images/tools_logo.png' %}" alt="ТУЛЗ СЕРВИС" width="512" height="333">
+        <img class="admin-brand-logo admin-brand-logo-dark" src="{% static 'shop/images/logo_dark_header.png' %}" alt="ТУЛЗ СЕРВИС" width="512" height="333">
+        <span class="admin-brand-label">Панель управления</span>
+    </a>
+{% endblock %}

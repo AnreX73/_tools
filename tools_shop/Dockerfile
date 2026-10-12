@@ -46,9 +46,4 @@ USER app
 EXPOSE 8000
 
 ENTRYPOINT ["docker-entrypoint.sh"]
-CMD ["gunicorn", "tools_shop.wsgi:application", \
-     "--bind", "0.0.0.0:8000", \
-     "--workers", "3", \
-     "--timeout", "60", \
-     "--access-logfile", "-", \
-     "--error-logfile", "-"]
+CMD ["daphne", "-b", "0.0.0.0", "-p", "8000", "tools_shop.asgi:application"]

@@ -34,14 +34,17 @@ INTERNAL_IPS = [
 # Application definition
 
 INSTALLED_APPS = [
+    'daphne',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    "chat.apps.ChatConfig",
     "users.apps.UsersConfig",
     "shop.apps.ShopConfig",
+    "companies.apps.CompaniesConfig",
     "adminsortable2",
     "django_browser_reload",    
     "django.contrib.postgres",
@@ -82,6 +85,7 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'tools_shop.wsgi.application'
+ASGI_APPLICATION = 'tools_shop.asgi.application'
 
 
 # Database
@@ -172,6 +176,13 @@ CSRF_TRUSTED_ORIGINS = config(
 
 REDIS_HOST = config("REDIS_HOST", default="127.0.0.1")
 REDIS_PORT = config("REDIS_PORT", default=6379, cast=int)
+
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {"hosts": [(REDIS_HOST, REDIS_PORT)]},
+    }
+}
 
 Q_CLUSTER = {
     "name": "myshop",

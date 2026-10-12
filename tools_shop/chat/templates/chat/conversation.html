@@ -1,0 +1,9 @@
+{% extends 'shop/base.html' %}
+{% block title %}{{ conversation }}{% endblock %}
+{% block content %}
+<p><a href="{% url 'chat:inbox' %}">← Все диалоги</a></p>
+<h1>{{ conversation }}</h1>
+<div class="chat-operator" x-data="supportChat" data-socket-path="/ws/chat/operator/{{ conversation.pk }}/" x-init="show()">
+    {% include 'chat/messages.html' %}
+</div>
+{% endblock %}

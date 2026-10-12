@@ -1,0 +1,11 @@
+{% extends 'shop/base.html' %}
+{% block title %}Диалоги с посетителями{% endblock %}
+{% block content %}
+<h1>Диалоги с посетителями</h1>
+<p>Последние 100 диалогов. Обновите страницу, чтобы увидеть новые обращения.</p>
+<ul>
+{% for conversation in conversations %}
+    <li><a href="{% url 'chat:conversation' conversation.pk %}">{{ conversation }}</a> — {{ conversation.updated_at|date:'d.m.Y H:i' }}</li>
+{% empty %}<li>Обращений пока нет.</li>{% endfor %}
+</ul>
+{% endblock %}

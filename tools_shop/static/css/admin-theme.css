@@ -1,0 +1,381 @@
+/* Тема админки: те же токены и тот же стиль, что у сайта (static/css/style.css).
+   Подключается после стандартных стилей Django, поэтому переопределяет их переменные. */
+
+html[data-theme="light"],
+html[data-theme="dark"],
+:root {
+    --radius-sm: 8px;
+    --radius: 12px;
+    --radius-lg: 16px;
+    --ease: cubic-bezier(.2, .7, .2, 1);
+    --brand-gradient: radial-gradient(circle farthest-corner at center center, #3B4951 0%, #000000 100%);
+
+    --font-family-primary: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+}
+
+/* --- светлая тема --- */
+html[data-theme="light"],
+:root {
+    --site-bg: #f4f5f7;
+    --panel: #ffffff;
+    --panel-2: #f8f9fb;
+    --border: #e4e7ec;
+    --border-strong: #d0d5dd;
+    --text: #101828;
+    --text-2: #344054;
+    --muted: #667085;
+    --site-accent: #5d5e5f;
+    --site-accent-hover: #5d5e5f;
+    --accent-soft: #eef4ff;
+    --accent-ring: rgba(37, 99, 235, .18);
+    --shadow-xs: 0 1px 2px rgba(16, 24, 40, .05);
+    --shadow-sm: 0 1px 3px rgba(16, 24, 40, .08), 0 1px 2px rgba(16, 24, 40, .04);
+    --shadow-md: 0 8px 24px -6px rgba(16, 24, 40, .12), 0 2px 6px -2px rgba(16, 24, 40, .06);
+    --header-glass: rgba(255, 255, 255, .82);
+
+    --message-success-bg: #ecfdf3;
+    --message-warning-bg: #fffaeb;
+    --message-error-bg: #fef3f2;
+    --error-fg: #d92d20;
+    --selected-row: #eef4ff;
+}
+
+/* --- тёмная тема --- */
+html[data-theme="dark"] {
+    --site-bg: #0b0f17;
+    --panel: #151b27;
+    --panel-2: #1b2331;
+    --border: #263042;
+    --border-strong: #354258;
+    --text: #e6e9f0;
+    --text-2: #c3cad6;
+    --muted: #8b95a7;
+    --site-accent: #929292;
+    --site-accent-hover: #5d5e5f;
+    --accent-soft: rgba(79, 131, 238, .15);
+    --accent-ring: rgba(79, 131, 238, .30);
+    --shadow-xs: 0 1px 2px rgba(0, 0, 0, .40);
+    --shadow-sm: 0 1px 3px rgba(0, 0, 0, .50), 0 1px 2px rgba(0, 0, 0, .30);
+    --shadow-md: 0 8px 24px -6px rgba(0, 0, 0, .60), 0 2px 6px -2px rgba(0, 0, 0, .40);
+    --header-glass: rgba(21, 27, 39, .82);
+
+    --message-success-bg: rgba(18, 183, 106, .16);
+    --message-warning-bg: rgba(247, 144, 9, .16);
+    --message-error-bg: rgba(240, 68, 56, .16);
+    --error-fg: #f97066;
+    --selected-row: rgba(79, 131, 238, .15);
+}
+
+/* --- переменные Django --- */
+html[data-theme="light"],
+html[data-theme="dark"],
+:root {
+    --primary: var(--site-accent);
+    --secondary: var(--panel-2);
+    --accent: var(--site-accent);
+    --primary-fg: #fff;
+
+    --body-fg: var(--text);
+    --body-bg: var(--site-bg);
+    --body-quiet-color: var(--muted);
+    --body-medium-color: var(--text-2);
+    --body-loud-color: var(--text);
+
+    --header-color: var(--text);
+    --header-branding-color: var(--text);
+    --header-bg: var(--panel);
+    --header-link-color: var(--text-2);
+
+    --breadcrumbs-fg: var(--muted);
+    --breadcrumbs-link-fg: var(--muted);
+    --breadcrumbs-bg: transparent;
+
+    --link-fg: var(--site-accent);
+    --link-hover-color: var(--site-accent-hover);
+    --link-selected-fg: var(--site-accent);
+
+    --hairline-color: var(--border);
+    --border-color: var(--border-strong);
+
+    --darkened-bg: var(--panel-2);
+    --selected-bg: var(--accent-soft);
+
+    --button-fg: #fff;
+    --button-bg: var(--site-accent);
+    --button-hover-bg: var(--site-accent-hover);
+    --default-button-bg: #26333a;
+    --default-button-hover-bg: var(--site-accent-hover);
+    --close-button-bg: var(--text-2);
+    --close-button-hover-bg: var(--text);
+    --delete-button-bg: #d92d20;
+    --delete-button-hover-bg: #b42318;
+
+    --object-tools-fg: var(--text-2);
+    --object-tools-bg: var(--panel);
+    --object-tools-hover-bg: var(--panel-2);
+}
+
+html, body { background: var(--site-bg); color: var(--text); }
+
+body {
+    font-size: 15px;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+}
+
+:focus-visible { outline: 2px solid var(--site-accent); outline-offset: 2px; border-radius: 6px; }
+
+/* --- шапка --- */
+#header {
+    position: sticky; top: 0; z-index: 30;
+    padding: 0 24px; min-height: 64px;
+    background: var(--header-glass);
+    backdrop-filter: saturate(180%) blur(12px);
+    -webkit-backdrop-filter: saturate(180%) blur(12px);
+    border-bottom: 1px solid var(--border);
+    color: var(--text);
+}
+#header a:link, #header a:visited { color: var(--text-2); }
+#header a:hover, #header a:focus { color: var(--text); text-decoration: none; }
+
+.admin-brand { display: inline-flex; align-items: center; gap: 14px; }
+.admin-brand-logo { display: block; height: 36px; width: auto; }
+.admin-brand-logo-dark { display: none; }
+html[data-theme="dark"] .admin-brand-logo-light { display: none; }
+html[data-theme="dark"] .admin-brand-logo-dark { display: block; }
+.admin-brand-label {
+    padding: 4px 12px; border-radius: 999px; background: var(--accent-soft); color: var(--site-accent);
+    font-size: 12px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase;
+}
+
+#user-tools { float: none; margin: 0; display: flex; align-items: center; gap: 4px; font-size: 13px; letter-spacing: 0; text-transform: none; }
+#user-tools, #logout-form button { font-weight: 500; font-size: 13px; letter-spacing: 0; text-transform: none; }
+#user-tools strong { color: var(--text); }
+#user-tools a, #logout-form button { border-bottom: 0; }
+#user-tools a, #logout-form button {
+    padding: 8px 12px; border-radius: 999px; color: var(--text-2);
+    transition: background .15s var(--ease), color .15s var(--ease);
+}
+#user-tools a:hover, #logout-form button:hover { background: var(--panel-2); color: var(--text); margin-bottom: 0; }
+#logout-form button { color: var(--text-2); }
+
+.theme-toggle {
+    display: inline-grid; place-items: center; width: 38px; height: 38px; margin: 0 0 0 6px;
+    border: 1px solid var(--border); border-radius: 999px; background: var(--panel);
+    transition: border-color .15s var(--ease);
+}
+.theme-toggle:hover { border-color: var(--border-strong); }
+.theme-toggle svg.theme-icon-when-auto,
+.theme-toggle svg.theme-icon-when-dark,
+.theme-toggle svg.theme-icon-when-light { fill: var(--text-2); color: var(--panel); }
+/* у сайта только два режима: если вдруг остался auto, показываем иконку по системной теме */
+html[data-theme="auto"] .theme-toggle svg.theme-icon-when-auto { display: block; }
+
+/* --- хлебные крошки --- */
+div.breadcrumbs { padding: 14px 24px 0; font-size: 13px; color: var(--muted); background: transparent; }
+div.breadcrumbs a { color: var(--muted); }
+div.breadcrumbs a:hover, div.breadcrumbs a:focus { color: var(--site-accent); }
+
+/* --- типографика --- */
+h1 { font-size: clamp(22px, 2.4vw, 28px); font-weight: 600; letter-spacing: -.02em; line-height: 1.2; color: var(--text); }
+h2 { color: var(--text); letter-spacing: -.01em; }
+h3 { color: var(--text-2); }
+.content { padding: 8px 24px 48px; }
+#content { padding-top: 8px; }
+code, pre { background: var(--panel-2); border: 1px solid var(--border); border-radius: 6px; }
+mark { background: #fef08a; color: #101828; border-radius: 3px; }
+
+/* --- карточки-модули --- */
+.module, #changelist .paginator, #changelist-filter, .inline-group {
+    background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow-xs);
+}
+.module { overflow: hidden; margin-bottom: 24px; }
+.module h2, .module caption, .inline-group h2,
+fieldset .fieldset-heading, fieldset .inline-heading, :not(.inline-related) .collapse summary {
+    background: var(--panel-2); color: var(--text-2); border: 0; border-bottom: 1px solid var(--border);
+    font-size: 13px; font-weight: 600; padding: 12px 16px;
+}
+.module h2 a, .module caption a, .module h2 a:visited, .module caption a:visited { color: var(--text-2); }
+.module h2 a:hover, .module caption a:hover { color: var(--site-accent); }
+.module a.section:link, .module a.section:visited { color: var(--text-2); }
+fieldset.module { overflow: hidden; }
+.inline-related h3 { background: var(--panel-2); color: var(--text-2); border-bottom: 1px solid var(--border); }
+.inline-group { overflow: hidden; }
+.inline-group .tabular tr.add-row td { background: var(--panel-2); }
+
+/* --- таблицы --- */
+table { color: var(--text); }
+thead th, tfoot td { background: var(--panel-2); }
+thead th, thead th a:link, thead th a:visited { color: var(--muted); font-weight: 600; }
+thead th { border-bottom: 1px solid var(--border); }
+td, th { border-bottom: 1px solid var(--border); }
+tr:nth-child(even) td, tr:nth-child(even) th { background: transparent; }
+tbody tr:hover td, tbody tr:hover th { background: var(--panel-2); }
+tr.selected td, tr.selected th { background: var(--selected-row); }
+.module td, .module th { padding: 10px 16px; }
+#changelist table thead th { padding: 0; }
+#changelist table thead th .text a, #changelist table thead th .text span { padding: 10px 16px; }
+thead th.sorted { background: var(--accent-soft); }
+thead th.sorted .text a { color: var(--site-accent); }
+.change-list .actions { background: var(--panel-2); border-color: var(--border); color: var(--text-2); }
+.paginator { color: var(--muted); }
+.paginator a:link, .paginator a:visited { background: var(--panel-2); color: var(--text-2); border-radius: 6px; }
+.paginator a:hover { background: var(--site-accent); color: #fff; }
+.paginator .this-page { color: var(--text); }
+
+/* --- левая навигация и фильтры --- */
+#nav-sidebar { background: var(--panel); border-right: 1px solid var(--border); }
+#nav-sidebar .module { border: 0; border-radius: 0; box-shadow: none; margin-bottom: 0; }
+#nav-sidebar .module caption { background: transparent; border: 0; color: var(--muted); }
+#nav-sidebar .current-app .section:link, #nav-sidebar .current-app .section:visited { color: var(--text); }
+#nav-sidebar tr.current-model th, #nav-sidebar tr.current-model td { background: var(--accent-soft); }
+#nav-sidebar tr.current-model a { color: var(--site-accent); font-weight: 600; }
+#nav-filter { background: var(--panel-2); border: 1px solid var(--border); border-radius: 999px; color: var(--text); }
+.toggle-nav-sidebar { background: var(--panel); border-right: 1px solid var(--border); color: var(--muted); }
+.toggle-nav-sidebar:hover { background: var(--panel-2); color: var(--text); }
+
+#changelist-filter { overflow: hidden; }
+#changelist-filter h2 { background: var(--panel-2); color: var(--text-2); border-bottom: 1px solid var(--border); }
+#changelist-filter h3, #changelist-filter summary { color: var(--text-2); }
+#changelist-filter li.selected a { color: var(--site-accent); font-weight: 600; }
+#changelist-filter a { color: var(--text-2); }
+#changelist-filter a:hover { color: var(--site-accent); }
+#changelist-filter-clear a { color: var(--muted); }
+
+/* --- поля форм --- */
+input[type=text], input[type=password], input[type=email], input[type=url], input[type=number],
+input[type=search], input[type=tel], input[type=date], input[type=time], input[type=datetime-local],
+textarea, select, .vTextField {
+    padding: 8px 10px; border: 1px solid var(--border); border-radius: 8px;
+    background: var(--panel); color: var(--text); font-family: inherit; font-size: 14px;
+    transition: border-color .15s var(--ease), box-shadow .15s var(--ease);
+}
+input[type=text]:hover, input[type=password]:hover, input[type=email]:hover, input[type=number]:hover,
+input[type=search]:hover, textarea:hover, select:hover { border-color: var(--border-strong); }
+input[type=text]:focus, input[type=password]:focus, input[type=email]:focus, input[type=url]:focus,
+input[type=number]:focus, input[type=search]:focus, input[type=tel]:focus, input[type=date]:focus,
+input[type=time]:focus, input[type=datetime-local]:focus, textarea:focus, select:focus {
+    outline: none; border-color: var(--site-accent); box-shadow: 0 0 0 4px var(--accent-ring);
+}
+input[type=checkbox], input[type=radio] { accent-color: var(--site-accent); }
+input::placeholder, textarea::placeholder { color: var(--muted); }
+select option { background: var(--panel); color: var(--text); }
+label, .aligned label { color: var(--text-2); font-weight: 500; }
+.required label, label.required { color: var(--text); font-weight: 600; }
+.help, form .aligned p.help, form .aligned div.help { color: var(--muted); }
+.form-row { border-bottom: 1px solid var(--border); }
+.form-row.errors, .errors { background: var(--message-error-bg); }
+.errorlist li { background: var(--error-fg); color: #fff; border-radius: 6px; }
+ul.errorlist { color: var(--error-fg); }
+fieldset { border-color: var(--border); }
+#changelist #toolbar { background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow-xs); }
+#changelist #toolbar form input[type=submit] { border-radius: 8px; }
+#changelist-search input[type=text] { border-radius: 999px; }
+.submit-row { background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow-xs); }
+
+/* --- кнопки --- */
+.button, input[type=submit], input[type=button], .submit-row input, a.button {
+    padding: 10px 18px; border-radius: 10px; font: inherit; font-size: 14px; font-weight: 600;
+    transition: background .15s var(--ease), box-shadow .15s var(--ease), transform .15s var(--ease);
+}
+a.button { padding: 6px 12px; }
+.button:active, input[type=submit]:active, input[type=button]:active { transform: translateY(1px); }
+
+.button.default, input[type=submit].default, .submit-row input.default {
+    background: var(--brand-gradient); font-weight: 600;
+    box-shadow: 0 1px 2px rgba(16, 24, 40, .1), inset 0 1px 0 rgba(255, 255, 255, .15);
+}
+.button.default:hover, input[type=submit].default:hover, .submit-row input.default:hover,
+.button.default:focus, input[type=submit].default:focus {
+    background: var(--site-accent-hover); box-shadow: 0 6px 16px -4px rgba(37, 99, 235, .5);
+}
+html[data-theme="dark"] .button.default,
+html[data-theme="dark"] input[type=submit].default { box-shadow: inset 0 0 0 1px var(--border-strong); }
+
+/* вторичные ссылки-кнопки: как .btn-ghost на сайте */
+.submit-row a.closelink, .submit-row a.deletelink, .submit-row .closelink {
+    border-radius: 10px; font-weight: 600;
+}
+.submit-row a.closelink:link, .submit-row a.closelink:visited {
+    background: var(--panel); color: var(--text-2); border: 1px solid var(--border);
+}
+.submit-row a.closelink:hover { border-color: var(--border-strong); color: var(--text); }
+.submit-row a.deletelink:link, .submit-row a.deletelink:visited { background: var(--delete-button-bg); color: #fff; }
+.submit-row a.deletelink:hover { background: var(--delete-button-hover-bg); }
+
+.object-tools a:link, .object-tools a:visited {
+    background: var(--panel); color: var(--text-2); border: 1px solid var(--border);
+    border-radius: 999px; box-shadow: var(--shadow-xs); font-weight: 500;
+}
+.object-tools a:hover, .object-tools a:focus { background: var(--panel-2); color: var(--text); border-color: var(--border-strong); }
+.object-tools a.addlink:link, .object-tools a.addlink:visited {
+    background: var(--brand-gradient); color: #fff; border-color: transparent;
+}
+.object-tools a.addlink:hover { background: var(--site-accent-hover); color: #fff; }
+
+/* --- сообщения --- */
+ul.messagelist li {
+    margin-bottom: 8px; border: 1px solid var(--border); border-radius: var(--radius-sm);
+    color: var(--text); background-color: var(--panel-2);
+}
+ul.messagelist li.success { background-color: var(--message-success-bg); }
+ul.messagelist li.warning { background-color: var(--message-warning-bg); }
+ul.messagelist li.error { background-color: var(--message-error-bg); }
+
+/* --- главная админки --- */
+.dashboard #content { width: auto; }
+#recent-actions-module { background: var(--panel); }
+.module .addlink, .module .changelink, .module .viewlink { font-weight: 500; }
+ul.actionlist li, .actionlist li { border-color: var(--border); }
+
+/* --- виджеты: календарь, выбор, автодополнение --- */
+.selector-chosen-title, .selector-available-title { background: var(--panel-2); color: var(--text-2); border-bottom: 1px solid var(--border); }
+.selector-chosen .list-footer-display { background: var(--panel-2); color: var(--text-2); }
+.selector .selector-filter { border-color: var(--border); color: var(--muted); }
+.aligned .selector-chosen-title label, .aligned .selector-available-title label { color: var(--text-2); }
+.calendarbox, .clockbox { background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow-md); overflow: hidden; }
+.calendar caption, .calendarbox h2 { background: var(--panel-2); color: var(--text-2); }
+.calendar th { background: var(--panel-2); color: var(--muted); }
+.calendar td.selected a { background: var(--site-accent); color: #fff; }
+.calendar td a:hover, .timelist a:hover { background: var(--site-accent); color: #fff; }
+.calendar-shortcuts, .calendar-cancel { background: var(--panel-2); color: var(--muted); border-color: var(--border); }
+.calendar-cancel a { color: var(--text-2); }
+.select2-container--admin-autocomplete .select2-selection--single,
+.select2-container--admin-autocomplete .select2-selection--multiple {
+    background: var(--panel); border-color: var(--border); border-radius: 8px;
+}
+.select2-container--admin-autocomplete .select2-dropdown { background: var(--panel); border-color: var(--border); }
+.select2-container--admin-autocomplete .select2-results__option--highlighted[aria-selected] { background-color: var(--site-accent); color: #fff; }
+.select2-container--admin-autocomplete .select2-selection--single .select2-selection__rendered,
+.select2-container--admin-autocomplete .select2-results__option { color: var(--text); }
+
+/* --- страница входа --- */
+.login #header { justify-content: center; padding: 14px 24px; }
+.login #container {
+    width: min(420px, calc(100vw - 32px)); height: auto; min-width: 0; margin: 10vh auto 0;
+    background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-md); overflow: hidden;
+}
+.login #header { position: static; background: var(--panel); backdrop-filter: none; -webkit-backdrop-filter: none; }
+.login #content { padding: 24px; }
+.login .form-row { border: 0; padding: 8px 0; }
+.login .form-row label { display: block; padding: 0 0 6px; float: none; width: auto; }
+.login .form-row input { width: 100%; }
+.login .submit-row { border: 0; box-shadow: none; padding: 16px 0 0; background: transparent; }
+.login .submit-row input { width: 100%; }
+
+/* --- popup-окна (+) --- */
+.popup #header { display: none; }
+.popup .content { padding: 16px; }
+
+@media (max-width: 767px) {
+    #header { padding: 8px 16px; flex-wrap: wrap; row-gap: 8px; }
+    .admin-brand-logo { height: 28px; }
+    .admin-brand-label { display: none; }
+    div.breadcrumbs { padding: 12px 16px 0; }
+    .content { padding: 8px 16px 40px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { transition: none !important; animation: none !important; }
+}
