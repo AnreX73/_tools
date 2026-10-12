@@ -26,8 +26,8 @@
         };
     </script>
     <title>{% block title %}{{ title }}{% endblock %}</title>
+    <link rel="shortcut icon" type="image/png" href="{% static 'shop/images/favicon-32x32.png' %}" sizes="32x32">
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
-    <script src="{% static 'js/main.js' %}" defer></script>
     <script src="{% static 'vendor/htmx.min.js' %}" defer></script>
     <script src="{% static 'js/search.js' %}" defer></script>
     <script src="{% static 'js/cascade.js' %}" defer></script>
@@ -75,7 +75,7 @@
             {% with url_name=request.resolver_match.url_name %}
             <nav class="main-nav">
                 <a href="{% url 'shop:index' %}" class="{% if url_name == 'index' %}active{% endif %}">Главная</a>
-                <a href="{% url 'shop:catalog' %}" class="{% if url_name == 'catalog' or url_name == 'category' or url_name == 'product' %}active{% endif %}">Каталог</a>
+                <a href="{% url 'shop:catalog' %}" class="desktop-hidden{% if url_name == 'catalog' or url_name == 'category' or url_name == 'product' %} active{% endif %}">Каталог</a>
             </nav>
             {% endwith %}
             <button type="button" class="theme-toggle"

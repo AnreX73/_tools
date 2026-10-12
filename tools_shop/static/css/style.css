@@ -131,6 +131,13 @@ a:hover { color: var(--accent-hover); }
 .main-nav a.active {
  background: var(--accent-soft); color: var(--accent); }
 
+/* Скрываем кнопку "Главная" на десктопе */
+@media (min-width: 901px) {
+    .main-nav a[href="/"] {
+        display: none;
+    }
+}
+
 
 /* --- переключатель темы --- */
 .theme-toggle {
@@ -201,7 +208,8 @@ code {
     font: inherit; font-weight: 600; cursor: pointer; text-decoration: none;
     transition: background .15s var(--ease), box-shadow .15s var(--ease), transform .15s var(--ease), border-color .15s var(--ease);
 }
-.btn-primary { background: var(--accent); color: #fff; box-shadow: 0 1px 2px rgba(16, 24, 40, .1), inset 0 1px 0 rgba(255, 255, 255, .15); }
+.btn-primary { background: #3B4951;
+background: radial-gradient(circle farthest-corner at center center, #3B4951 0%, #000000 100%);; color: #fff; box-shadow: 0 1px 2px rgba(16, 24, 40, .1), inset 0 1px 0 rgba(255, 255, 255, .15); }
 
 .btn-primary:hover {
  background: var(--accent-hover); color: #fff; box-shadow: 0 6px 16px -4px rgba(37, 99, 235, .5); }
@@ -223,11 +231,8 @@ code {
     position: relative; overflow: hidden;
     margin: 4px 0 32px; padding: clamp(28px, 5vw, 56px);
     border-radius: var(--radius-lg);
-    background:
-        radial-gradient(600px 300px at 90% -10%, rgba(124, 58, 237, .35), transparent 60%),
-        radial-gradient(500px 280px at 0% 110%, rgba(37, 99, 235, .45), transparent 60%),
-        #0f172a;
-    color: #e2e8f0;
+    background: #3B4951;
+background: radial-gradient(circle farthest-corner at center center, #3B4951 0%, #000000 100%);
 }
 
 .hero h1 {
@@ -237,11 +242,12 @@ code {
  max-width: none; margin: 4px 0 18px; }
 
 .hero-logo img {
- display: block; width: clamp(200px, 26vw, 340px); height: auto; }
-.hero p { margin: 0 0 24px; font-size: 17px; color: #94a3b8; max-width: 620px; }
+ display: block; width: clamp(150px, 26vw, 340px); height: auto; }
+.hero p { margin: 0 0 14px; font-size: 17px; color: #94a3b8; max-width: 620px; }
 .hero-eyebrow {
-    display: inline-block; margin-bottom: 14px; padding: 4px 12px; border-radius: 999px;
-    background: rgba(255, 255, 255, .08); border: 1px solid rgba(255, 255, 255, .12);
+    display: inline-block; margin-bottom: 12px; padding: 4px 12px; border-radius: 999px;
+    background: #3B4951;
+background: radial-gradient(circle farthest-corner at center center, #3B4951 0%, #000000 100%);
     font-size: 12px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: #cbd5e1;
 }
 
@@ -270,8 +276,8 @@ code {
     .hero p {
         grid-area: lead; align-self: center;
         margin: 0; max-width: none;
-        font-size: clamp(28px, 3.4vw, 48px); line-height: 1.2;
-        text-align: center; color: #cbd5e1; text-wrap: balance;
+        font-size: clamp(1.25rem, 3.529vw - 0.985rem, 3rem); line-height: 1.2;
+        text-align:right; color: #cbd5e1; text-wrap: balance;
     }
     .hero .btn { grid-area: cta; justify-self: start; }
 }
@@ -282,6 +288,7 @@ code {
 .mobile-only {
  display: none; }
     .desktop-only { display: block; }
+    .desktop-hidden { display: none; }
 
     /* левая колонка на всю высоту окна, своя прокрутка, не часть document flow */
     

@@ -1,6 +1,7 @@
 {# Десктоп: левая колонка основных категорий, на всю высоту окна. #}
 {# Клик по категории подсветит кнопку и добавит колонку справа (shop:cascade_level) #}
 <nav class="cascade-root" aria-label="Основные категории">
+    <h1>Каталог</h1>
     {% for root in root_categories %}
         {% include "shop/partials/cascade_node.html" with node=root node_depth=1 %}
     {% empty %}

@@ -20,7 +20,7 @@ def _root_categories():
 
 def index(request):
     context = {
-        "title": "Главная страница",
+        "title": "ТУЛЗ СЕРВИС",
         "root_categories": _root_categories(),
     }
     return render(request, "shop/index.html", context)
