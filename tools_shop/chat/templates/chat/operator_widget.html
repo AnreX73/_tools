@@ -1,0 +1,38 @@
+<div class="support-chat operator-chat" x-data="operatorInbox" @keydown.escape="open = false">
+    <section class="chat-panel" x-show="open" x-cloak x-transition.opacity role="region" aria-label="Диалоги с посетителями">
+        <header class="chat-header">
+            <div>
+                <strong x-show="!selected">Диалоги</strong>
+                <button type="button" class="chat-back" x-show="selected" x-cloak @click="selected = null">← Все диалоги <span class="chat-badge" x-show="awaitingOthers" x-text="awaitingOthers" x-cloak></span></button>
+                <small x-show="!online" x-cloak>Нет связи, переподключаемся…</small>
+            </div>
+            <button type="button" class="chat-close" @click="open = false" aria-label="Закрыть">×</button>
+        </header>
+
+        <ul class="chat-list" x-show="!selected">
+            <template x-for="c in conversations" :key="c.id">
+                <li>
+                    <button type="button" class="chat-item" :class="{ 'is-awaiting': !c.last_is_staff }" @click="selected = c.id">
+                        <span class="chat-item-top">
+                            <strong x-text="'Диалог ' + c.id.slice(0, 8)"></strong>
+                            <small x-text="formatTime(c.updated_at)"></small>
+                        </span>
+                        <span class="chat-item-text" x-text="(c.last_is_staff ? 'Вы: ' : '') + c.last_text"></span>
+                    </button>
+                </li>
+            </template>
+            <li class="chat-list-empty" x-show="!conversations.length" x-cloak>Пока нет диалогов</li>
+        </ul>
+
+        <template x-if="selected">
+            <div class="chat-thread" x-data="supportChat('/ws/chat/operator/' + selected + '/')" x-init="show()">
+                {% include 'chat/messages.html' %}
+            </div>
+        </template>
+    </section>
+
+    <button type="button" class="chat-launcher" @click="open = !open" :aria-expanded="open">
+        <span>Диалоги</span>
+        <span class="chat-badge" x-show="awaiting" x-text="awaiting" x-cloak></span>
+    </button>
+</div>

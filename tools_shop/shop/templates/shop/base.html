@@ -110,7 +110,7 @@
         </div>
     </footer>
 
-    {% include 'chat/widget.html' %}
+    {% if request.user.is_staff and perms.chat.reply_conversation %}{% include 'chat/operator_widget.html' %}{% else %}{% include 'chat/widget.html' %}{% endif %}
     {% block scripts %}{% endblock %}
 </body>
 </html>

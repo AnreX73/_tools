@@ -1,17 +1,18 @@
 document.addEventListener('alpine:init', () => {
-    Alpine.data('supportChat', () => ({
+    // socketPath можно передать параметром: x-data="supportChat('/ws/chat/operator/<id>/')"
+    Alpine.data('supportChat', (socketPathParam = '') => ({
         open: false, connected: false, connecting: false, sending: false,
         operator: false, messages: [], draft: '', error: '', status: '',
         socket: null, socketPath: '', retryTimer: null, retries: 0, pending: null,
         init() {
-            this.socketPath = this.$el.dataset.socketPath || '';
+            this.socketPath = socketPathParam || this.$root.dataset.socketPath || '';
             this.operator = Boolean(this.socketPath);
         },
         show() {
             this.open = true;
             this.retries = 0;
             this.connect();
-            this.$nextTick(() => this.$refs.input.focus());
+            this.$nextTick(() => this.$refs.input?.focus());
         },
         close() {
             this.open = false;
@@ -36,9 +37,9 @@ document.addEventListener('alpine:init', () => {
             this.status = 'Подключаемся…';
             try {
                 if (!this.socketPath) {
-                    const response = await fetch(this.$el.dataset.startUrl, {
+                    const response = await fetch(this.$root.dataset.startUrl, {
                         method: 'POST', credentials: 'same-origin',
-                        headers: { 'X-CSRFToken': this.$el.querySelector('[name=csrfmiddlewaretoken]').value },
+                        headers: { 'X-CSRFToken': this.$root.querySelector('[name=csrfmiddlewaretoken]').value },
                     });
                     if (!response.ok) throw new Error('Не удалось открыть чат. Попробуйте ещё раз.');
                     this.socketPath = (await response.json()).socket_path;
@@ -102,7 +103,7 @@ document.addEventListener('alpine:init', () => {
                 this.pending = null;
                 this.sending = false;
             }
-            this.$nextTick(() => { this.$refs.messages.scrollTop = this.$refs.messages.scrollHeight; });
+            this.$nextTick(() => { if (this.$refs.messages) this.$refs.messages.scrollTop = this.$refs.messages.scrollHeight; });
         },
         send() {
             if (!this.connected || this.sending || !this.draft.trim() || this.socket?.readyState !== WebSocket.OPEN) return;
@@ -118,6 +119,76 @@ document.addEventListener('alpine:init', () => {
             }
             this.sending = true;
             this.socket.send(JSON.stringify(this.pending));
+        },
+        formatTime(value) {
+            return new Date(value).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
+        },
+    }));
+
+    // Виджет оператора: живой список диалогов + переписка внутри плавающей панели.
+    Alpine.data('operatorInbox', () => ({
+        open: false, online: false, selected: null, conversations: [],
+        socket: null, retryTimer: null, retries: 0, baseTitle: document.title, audioCtx: null,
+        init() {
+            this.connect();
+            this.$watch('awaiting', (n) => { document.title = n ? `(${n}) ${this.baseTitle}` : this.baseTitle; });
+        },
+        destroy() {
+            clearTimeout(this.retryTimer);
+            const socket = this.socket;
+            this.socket = null;
+            socket?.close();
+        },
+        // Диалоги, где последнее сообщение от гостя, т.е. ждут ответа.
+        get awaiting() { return this.conversations.filter(c => !c.last_is_staff).length; },
+        // Ожидающие ответа диалоги, кроме того, который открыт сейчас.
+        get awaitingOthers() { return this.conversations.filter(c => !c.last_is_staff && c.id !== this.selected).length; },
+        connect() {
+            const socket = new WebSocket(`${location.protocol === 'https:' ? 'wss:' : 'ws:'}//${location.host}/ws/chat/operator/`);
+            this.socket = socket;
+            socket.onopen = () => { this.online = true; this.retries = 0; };
+            socket.onmessage = (event) => {
+                if (this.socket !== socket) return;
+                let data;
+                try { data = JSON.parse(event.data); } catch { return; }
+                if (data.type === 'inbox') {
+                    this.conversations = data.conversations;
+                    this.sortList();
+                } else if (data.type === 'update') {
+                    this.applyUpdate(data.conversation);
+                }
+            };
+            socket.onclose = (event) => {
+                if (this.socket !== socket) return;
+                this.socket = null;
+                this.online = false;
+                if (event.code === 4403) return;
+                const delay = Math.min(1000 * 2 ** this.retries++, 30000);
+                this.retryTimer = setTimeout(() => this.connect(), delay);
+            };
+        },
+        applyUpdate(item) {
+            const watching = this.open && this.selected === item.id && !document.hidden;
+            if (!item.last_is_staff && !watching) this.beep();
+            this.conversations = this.conversations.filter(c => c.id !== item.id);
+            this.conversations.push(item);
+            this.sortList();
+        },
+        sortList() {
+            this.conversations.sort((a, b) => new Date(b.updated_at) - new Date(a.updated_at));
+        },
+        beep() {
+            try {
+                this.audioCtx = this.audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+                const osc = this.audioCtx.createOscillator();
+                const gain = this.audioCtx.createGain();
+                gain.gain.value = 0.05;
+                osc.frequency.value = 880;
+                osc.connect(gain);
+                gain.connect(this.audioCtx.destination);
+                osc.start();
+                osc.stop(this.audioCtx.currentTime + 0.15);
+            } catch { /* звук необязателен */ }
         },
         formatTime(value) {
             return new Date(value).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
