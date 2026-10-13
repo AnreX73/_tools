@@ -50,7 +50,7 @@ pyOpenSSL==26.2.0
 python-dateutil==2.9.0.post0
 python-decouple==3.8
 pywebpush==2.3.0
-redis==8.1.0
+redis==6.4.0
 requests==2.33.1
 ruff==0.15.12
 service-identity==26.1.0
