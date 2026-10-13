@@ -166,6 +166,9 @@ AUTH_USER_MODEL = "users.User"
 LOGOUT_REDIRECT_URL = "shop:index"
 
 
+
+
+
 # Читаем строку и сразу бьем её по запятым
 CSRF_TRUSTED_ORIGINS = config(
     "CSRF_TRUSTED_ORIGINS",
@@ -184,6 +187,15 @@ CHANNEL_LAYERS = {
     }
 }
 
+
+CACHES = {
+    "default": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": f"redis://{REDIS_HOST}:{REDIS_PORT}/1",
+    }
+}
+
+
 Q_CLUSTER = {
     "name": "myshop",
     "workers": 2,
@@ -200,13 +212,6 @@ Q_CLUSTER = {
     "save_limit": 10000,
 }
 
-CACHES = {
-    "default": {
-        "BACKEND": "django_redis.cache.RedisCache",
-        "LOCATION": f"redis://{REDIS_HOST}:{REDIS_PORT}/1",
-    }
-}
-
 
 RU_EMAIL_PATTERN = r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.ru$"
 
@@ -219,6 +224,11 @@ SESSION_COOKIE_NAME = "sessionid_hairshop"
 
 # SESSION_COOKIE_SECURE = True  # Включить на деплое, чтобы куки передавались только по HTTPS
 # CSRF_COOKIE_SECURE = True  # Включить на деплое, чтобы куки передавались только по HTTPS
+# Web Push: use one persistent VAPID key pair for all deployments.
+VAPID_PUBLIC_KEY = config("VAPID_PUBLIC_KEY", default="")
+VAPID_PRIVATE_KEY = config("VAPID_PRIVATE_KEY", default="")
+VAPID_SUBJECT = config("VAPID_SUBJECT", default="")
+
 SESSION_COOKIE_HTTPONLY = True  # Куки сессии недоступны через JavaScript
 
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")

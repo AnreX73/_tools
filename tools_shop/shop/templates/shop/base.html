@@ -27,6 +27,9 @@
     </script>
     <title>{% block title %}{{ title }}{% endblock %}</title>
     <link rel="shortcut icon" type="image/png" href="{% static 'shop/images/favicon-32x32.png' %}" sizes="32x32">
+    <link rel="manifest" href="{% static 'manifest.json' %}">
+    <meta name="theme-color" content="#2563eb">
+    <link rel="apple-touch-icon" href="{% static 'shop/images/pwa-180.png' %}">
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
     <link rel="stylesheet" href="{% static 'css/chat.css' %}">
     <script src="{% static 'js/chat.js' %}" defer></script>
@@ -35,6 +38,7 @@
     <script src="{% static 'js/cascade.js' %}" defer></script>
     <script src="{% static 'vendor/alpine-persist.min.js' %}" defer></script>
     <script src="{% static 'vendor/alpine.min.js' %}" defer></script>
+    <script src="{% static 'js/pwa.js' %}" defer></script>
     {% block head %}{% endblock %}
 </head>
 <body hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
@@ -107,6 +111,12 @@
     <footer class="site-footer">
         <div class="container">
             <p>&copy; {% now "Y" %} ТУЛЗ СЕРВИС. Все права защищены.</p>
+            <div class="push-settings">
+                {% csrf_token %}
+                <button id="push-toggle" type="button" hidden
+                        data-operator="{% if request.user.is_staff and perms.chat.reply_conversation %}true{% else %}false{% endif %}">Включить уведомления о сообщениях</button>
+                <p id="push-status" role="status" aria-live="polite"></p>
+            </div>
         </div>
     </footer>
 

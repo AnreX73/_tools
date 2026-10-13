@@ -9,6 +9,7 @@ from django.db import transaction
 from django.utils import timezone
 
 from .models import Conversation, Message
+from .push import enqueue_message_push
 
 OPERATORS_GROUP = "chat.operators"
 
@@ -101,6 +102,7 @@ class ChatConsumer(JsonWebsocketConsumer):
             )
             if created:
                 Conversation.objects.filter(pk=self.conversation.pk).update(updated_at=timezone.now())
+                transaction.on_commit(lambda: enqueue_message_push(message.pk))
         assert self.group_name is not None
         async_to_sync(self.channel_layer.group_send)(self.group_name, {"type": "chat.message", "message": message.payload()})
         if created:

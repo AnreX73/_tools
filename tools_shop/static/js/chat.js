@@ -7,6 +7,7 @@ document.addEventListener('alpine:init', () => {
         init() {
             this.socketPath = socketPathParam || this.$root.dataset.socketPath || '';
             this.operator = Boolean(this.socketPath);
+            if (!this.operator && new URLSearchParams(location.search).get('chat') === 'open') this.show();
         },
         show() {
             this.open = true;

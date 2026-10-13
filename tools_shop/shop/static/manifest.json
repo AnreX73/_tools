@@ -1,0 +1,16 @@
+{
+  "id": "/",
+  "name": "ТУЛЗ СЕРВИС — Магазин инструментов",
+  "short_name": "ТУЛЗ СЕРВИС",
+  "description": "Магазин инструментов и чат с оператором",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#2563eb",
+  "icons": [
+    { "src": "/static/shop/images/pwa-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/static/shop/images/pwa-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" }
+  ],
+  "lang": "ru-RU"
+}
