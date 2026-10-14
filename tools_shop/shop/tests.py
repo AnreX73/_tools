@@ -4,7 +4,11 @@
 Запуск (нужен PostgreSQL):
     python manage.py test shop
 """
+# Django's dynamic ORM and test-client APIs are not fully represented by the
+# project's pyright stubs.
+# pyright: reportAttributeAccessIssue=false, reportGeneralTypeIssues=false
 from django.contrib.auth import get_user_model
+from django.core.exceptions import ValidationError
 from django.http import QueryDict
 from django.test import TestCase
 
@@ -55,10 +59,26 @@ class CatalogTestCase(TestCase):
 
     @classmethod
     def _product(cls, sku, name, attributes):
-        product = Product(sku=sku, name=name, category=cls.leaf, attributes=attributes)
+        product = Product(sku=sku, name=name, category=cls.leaf, price=100, attributes=attributes)
         product.full_clean()
         product.save()
         return product
+
+    # ---- цена ----
+    def test_active_product_requires_price(self):
+        product = Product(
+            sku="NO-PRICE", name="Товар без цены", category=self.leaf,
+            is_active=True, attributes={},
+        )
+        with self.assertRaises(ValidationError):
+            product.full_clean()
+
+    def test_inactive_product_may_have_no_price(self):
+        product = Product(
+            sku="HIDDEN", name="Скрытый товар", category=self.leaf,
+            is_active=False, attributes={},
+        )
+        product.full_clean()
 
     # ---- slug ----
     def test_slug_is_ascii_for_diameter_symbol(self):
@@ -148,7 +168,7 @@ class CatalogTestCase(TestCase):
 
     # ---- админская форма характеристик ----
     def test_admin_attributes_fields_endpoint(self):
-        user = get_user_model().objects.create_superuser(username="admin", password="x")
+        user = get_user_model().objects.create_superuser(username="admin", password="test-only")  # noqa: S106
         self.client.force_login(user)
         response = self.client.get(
             "/admin/shop/product/attributes-fields/", {"category": self.leaf.pk}

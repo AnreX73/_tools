@@ -652,7 +652,7 @@
           "products": [
             {"sku": "PR-001", "name": "Электронный 3D-щуп, шарик Ø6 мм", "brand": "Vektor", "price": 18500, "attributes": {"diameter": 6.0, "compat": "Фрезерные обрабатывающие центры"}},
             {"sku": "PR-002", "name": "Кромкоискатель электронный Ø10 мм", "brand": "Prisma", "price": 3400, "attributes": {"diameter": 10.0, "compat": "Фрезерные станки"}},
-            {"sku": "PR-003", "name": "Датчик длины инструмента", "brand": "Norden", "price": null, "attributes": {"compat": "Фрезерные обрабатывающие центры"}}
+            {"sku": "PR-003", "name": "Датчик длины инструмента", "brand": "Norden", "price": null, "is_active": false, "attributes": {"compat": "Фрезерные обрабатывающие центры"}}
           ]
         },
         {
@@ -818,7 +818,7 @@
         {
           "name": "Приборы и станочные принадлежности",
           "products": [
-            {"sku": "INS-001", "name": "Плита поверочная 400x400 мм", "brand": "Norden", "price": null, "attributes": {}},
+            {"sku": "INS-001", "name": "Плита поверочная 400x400 мм", "brand": "Norden", "price": null, "is_active": false, "attributes": {}},
             {"sku": "INS-002", "name": "Призмы поверочные (пара)", "brand": "Metalix", "price": 3600, "attributes": {}},
             {"sku": "INS-003", "name": "Лупа измерительная 10x", "brand": "Ferrum Pro", "price": 1100, "attributes": {}}
           ]
@@ -829,7 +829,7 @@
             {"code": "set_pieces"}
           ],
           "products": [
-            {"sku": "GB-001", "name": "Набор плоскопараллельных концевых мер, 87 шт, кл. 1", "brand": "Vektor", "price": null, "attributes": {"set_pieces": 87}},
+            {"sku": "GB-001", "name": "Набор плоскопараллельных концевых мер, 87 шт, кл. 1", "brand": "Vektor", "price": null, "is_active": false, "attributes": {"set_pieces": 87}},
             {"sku": "GB-002", "name": "Калибр-пробка гладкий Ø10 H7 (ПР/НЕ)", "brand": "Prisma", "price": 900, "attributes": {"set_pieces": 2}},
             {"sku": "GB-003", "name": "Набор щупов 0.02–1.00 мм (20 шт)", "brand": "Norden", "price": 650, "attributes": {"set_pieces": 20}}
           ]

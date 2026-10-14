@@ -19,7 +19,7 @@ import uuid
 
 from django.contrib.postgres.indexes import GinIndex
 from django.core.exceptions import ValidationError
-from django.core.validators import RegexValidator
+from django.core.validators import FileExtensionValidator, RegexValidator
 from django.db import models, transaction
 from treebeard.mp_tree import MP_Node
 
@@ -290,9 +290,9 @@ class Product(SlugWithIdMixin, models.Model):
     sku = models.CharField("Артикул", max_length=64, unique=True)
     name = models.CharField("Название", max_length=255)
     description = models.TextField("Описание", blank=True)
-    # Целая цена в основных единицах валюты. NULL = «цена по запросу».
+    # У активного товара всегда указана цена. Для скрытых товаров цена может быть пустой.
     price = models.PositiveIntegerField("Цена", null=True, blank=True,
-                                        help_text="Пусто = цена по запросу")
+                                        help_text="Обязательна для активного товара")
     is_active = models.BooleanField("Показывать на сайте", default=True)
 
     attributes = models.JSONField("Характеристики", default=dict, blank=True)
@@ -306,6 +306,12 @@ class Product(SlugWithIdMixin, models.Model):
         verbose_name = "Товар"
         verbose_name_plural = "Товары"
         ordering = ["name"]
+        constraints = [
+            models.CheckConstraint(
+                condition=models.Q(is_active=False) | models.Q(price__isnull=False),
+                name="active_product_requires_price",
+            ),
+        ]
         indexes = [
             models.Index(fields=["category", "is_active"], name="product_cat_active_idx"),
             GinIndex(fields=["attributes"], name="product_attrs_gin", opclasses=["jsonb_path_ops"]),
@@ -332,6 +338,8 @@ class Product(SlugWithIdMixin, models.Model):
     # ---- валидация и нормализация JSON по схеме категории ----
     def clean(self):
         super().clean()
+        if self.is_active and self.price is None:
+            raise ValidationError({"price": "Для активного товара необходимо указать цену."})
         if self.category_id is None:
             return
         if not self.category.is_leaf():
@@ -440,3 +448,47 @@ class CategorySortRule(models.Model):
 
     def __str__(self):
         return f"{self.field} {'↓' if self.descending else '↑'}"
+
+
+# --------------------------------------------------------------------------
+# Справочники (PDF-каталоги)
+# --------------------------------------------------------------------------
+class Catalog(SlugWithIdMixin, models.Model):
+    """
+    PDF-справочник/каталог (например, каталог фрез конкретного бренда).
+    Привязка к товарам, категориям и брендам — необязательная и независимая:
+    один каталог может закрывать как отдельные товары, так и целую категорию
+    или бренд целиком. На страницах товара показываем объединение всех трёх связей.
+    """
+    name = models.CharField("Название", max_length=255)
+    description = models.TextField("Описание", blank=True)
+    file = models.FileField(
+        "PDF-файл", upload_to="catalogs/%Y/%m/",
+        validators=[FileExtensionValidator(allowed_extensions=["pdf"])],
+    )
+    cover = models.ImageField("Обложка", upload_to="catalogs/covers/%Y/%m/", blank=True)
+
+    products = models.ManyToManyField(Product, verbose_name="Товары", blank=True,
+                                      related_name="catalogs")
+    categories = models.ManyToManyField(Category, verbose_name="Категории", blank=True,
+                                        related_name="catalogs")
+    brands = models.ManyToManyField(Brand, verbose_name="Бренды", blank=True,
+                                    related_name="catalogs")
+
+    is_active = models.BooleanField("Показывать на сайте", default=True)
+    sort_order = models.PositiveIntegerField("Порядок", default=0, db_index=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "Справочник"
+        verbose_name_plural = "Справочники"
+        ordering = ["sort_order", "name"]
+
+    def __str__(self):
+        return self.name
+
+    def get_absolute_url(self):
+        """Отдельной страницы у каталога нет — ссылка ведёт прямо на PDF-файл."""
+        return self.file.url

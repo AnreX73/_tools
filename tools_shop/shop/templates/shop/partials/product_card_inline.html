@@ -37,11 +37,7 @@
 
     <div class="pcard-side">
         <span class="price-label">Цена</span>
-        {% if product.price is not None %}
-            <span class="price">{{ product.price }} ₽</span>
-        {% else %}
-            <span class="price on-request">Цена по запросу</span>
-        {% endif %}
+        <span class="price">{{ product.price }} ₽</span>
 
         <div class="buy-inline">
             <button type="button" class="btn btn-primary incart-btn"
@@ -58,6 +54,5 @@
                 <span>В корзину</span>
             </button>
         </div>
-        <p class="note">Ответим с ценой и сроками поставки.</p>
     </div>
 </div>

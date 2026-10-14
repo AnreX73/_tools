@@ -147,11 +147,23 @@ a:hover { color: var(--accent-hover); }
 }
 .theme-toggle:hover { border-color: var(--border-strong); color: var(--text); }
 
+/* --- кнопка "Справочники" (десктоп) --- */
+.catalogs-link {
+    display: inline-flex; align-items: center; gap: 6px; flex: none;
+    padding: 0 16px; height: 38px; font-size: 14px; white-space: nowrap;
+}
+.catalogs-link.active { background: var(--accent-soft); color: var(--accent); border-color: transparent; }
+
 main.container {
  flex: 1; padding-top: 24px; padding-bottom: 64px; }
 
 /* десктоп: показ/скрытие между мобильным и десктопным маркапом (каскад) */
 .desktop-only { display: none; }
+/* !important — иначе .btn { display: inline-flex } (ниже по файлу, та же специфичность)
+   перебивает скрытие, и кнопка «Справочники» остаётся видимой на мобильных */
+@media (max-width: 900px) {
+    .desktop-only { display: none !important; }
+}
 .cascade-rail,
 .cascade-columns,
 .cascade-placeholder { display: none; }
@@ -288,6 +300,7 @@ background: radial-gradient(circle farthest-corner at center center, #3B4951 0%,
 .mobile-only {
  display: none; }
     .desktop-only { display: block; }
+    .desktop-only.catalogs-link { display: inline-flex; }
     .desktop-hidden { display: none; }
 
     /* левая колонка на всю высоту окна, своя прокрутка, не часть document flow */
@@ -446,25 +459,7 @@ background: radial-gradient(circle farthest-corner at center center, #3B4951 0%,
     .pcard-side .price-label { color: var(--muted); font-size: 12px; }
     .pcard-side .price { font-size: 22px; }
     .qty-stepper input:focus { outline: none; }
-    /* количество внутри кнопки (как у inpo.ru) */
-    .incart-btn { width: 100%; justify-content: space-between; padding: 6px 8px 6px 4px; gap: 6px; }
-    .incart-qty { display: inline-flex; align-items: center; gap: 0; min-width: 0; }
-    .incart-qty-btn {
-        display: inline-flex; align-items: center; justify-content: center;
-        width: 24px; height: 24px; border-radius: 6px; cursor: pointer; user-select: none;
-        font-size: 15px; line-height: 1; color: rgba(255,255,255,.75); transition: background .15s var(--ease);
-    }
-    .incart-qty-btn:hover { background: rgba(255,255,255,.15); color: #fff; }
-    .incart-qty-input {
-        width: 2.2em; min-width: 0; border: 0; padding: 2px; text-align: center;
-        background: rgba(255,255,255,.12); border-radius: 6px;
-        color: #fff; font: inherit; font-weight: 700; font-size: 14px;
-        appearance: textfield; -moz-appearance: textfield;
-    }
-    .incart-qty-input::-webkit-outer-spin-button,
-    .incart-qty-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
-    .incart-qty-input:focus { outline: none; background: rgba(255,255,255,.22); }
-    .incart-sep { flex: none; width: 1px; align-self: stretch; background: rgba(255,255,255,.25); }    .qty-stepper { display: flex; align-items: stretch; height: 36px; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; background: var(--panel); }
+    .qty-stepper { display: flex; align-items: stretch; height: 36px; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; background: var(--panel); }
     .qty-stepper button {
         flex: none; width: 32px; border: 0; background: var(--panel-2); color: var(--text-2);
         font-size: 16px; cursor: pointer; transition: background .15s var(--ease);
@@ -477,6 +472,30 @@ background: radial-gradient(circle farthest-corner at center center, #3B4951 0%,
     .qty-stepper input:focus { outline: none; }
     .pcard-side .note { margin: 2px 0 0; color: var(--muted); font-size: 12px; }
     
+}
+
+/* количество внутри кнопки (как у inpo.ru) */
+.incart-btn { width: 100%; justify-content: space-between; padding: 6px 8px 6px 4px; gap: 6px; }
+.incart-qty { display: inline-flex; align-items: center; gap: 0; min-width: 0; }
+.incart-qty-btn {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 24px; height: 24px; border-radius: 6px; cursor: pointer; user-select: none;
+    font-size: 15px; line-height: 1; color: rgba(255,255,255,.75); transition: background .15s var(--ease);
+}
+.incart-qty-btn:hover { background: rgba(255,255,255,.15); color: #fff; }
+.incart-qty-input {
+    width: 2.2em; min-width: 0; border: 0; padding: 2px; text-align: center;
+    background: rgba(255,255,255,.12); border-radius: 6px;
+    color: #fff; font: inherit; font-weight: 700; font-size: 14px;
+    appearance: textfield; -moz-appearance: textfield;
+}
+.incart-qty-input::-webkit-outer-spin-button,
+.incart-qty-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+.incart-qty-input:focus { outline: none; background: rgba(255,255,255,.22); }
+.incart-sep { flex: none; width: 1px; align-self: stretch; background: rgba(255,255,255,.25); }
+@media (max-width: 560px) {
+    .incart-qty-btn { width: 32px; height: 32px; font-size: 17px; }
+    .incart-qty-input { font-size: 15px; }
 }
 
 /* --- плитки категорий --- */
@@ -686,7 +705,6 @@ a.category-tile:hover .arrow { background: var(--accent); color: #fff; transform
 }
 .sku { color: var(--muted); font-size: 12px; font-family: ui-monospace, "SFMono-Regular", Consolas, monospace; }
 .price { font-size: 17px; font-weight: 700; letter-spacing: -.01em; white-space: nowrap; color: var(--text); }
-.price.on-request, .price .on-request { font-size: 13px; font-weight: 500; color: var(--muted); }
 
 /* --- пагинация --- */
 .pagination { display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 28px; }
@@ -715,7 +733,6 @@ a.category-tile:hover .arrow { background: var(--accent); color: #fff; transform
 }
 .price-box .price-label { color: var(--muted); font-size: 13px; margin-bottom: -10px; }
 .product-detail-side .price { font-size: 28px; }
-.product-detail-side .price.on-request { font-size: 18px; color: var(--text-2); }
 .price-box .note { margin: 0; color: var(--muted); font-size: 13px; }
 .description { color: var(--text-2); max-width: 760px; }
 
@@ -819,7 +836,6 @@ a.category-tile:hover .arrow { background: var(--accent); color: #fff; transform
 
 .suggest-price {
  flex: none; font-weight: 700; white-space: nowrap; }
-.suggest-price.on-request { font-weight: 500; font-size: 12px; color: var(--muted); }
 .suggest-all {
     justify-content: center; gap: 6px; margin-top: 4px; border-top: 1px solid var(--border);
     border-radius: 0 0 8px 8px; color: var(--accent); font-weight: 600;

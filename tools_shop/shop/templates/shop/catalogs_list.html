@@ -1,0 +1,37 @@
+{% extends "shop/base.html" %}
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+    <h1>Справочники</h1>
+    <p class="lead">PDF-справочники по категориям инструмента.</p>
+
+    {% for group in grouped_catalogs %}
+        <h2 class="section-title">{{ group.category.name }}</h2>
+        <div class="category-grid">
+            {% for item in group.catalogs %}
+                <a class="category-tile" href="{{ item.get_absolute_url }}" target="_blank" rel="noopener">
+                    <h2>{{ item.name }}</h2>
+                    {% if item.description %}<span class="meta">{{ item.description }}</span>{% endif %}
+                    <span class="arrow" aria-hidden="true">↓</span>
+                </a>
+            {% endfor %}
+        </div>
+    {% endfor %}
+
+    {% if uncategorized_catalogs %}
+        <h2 class="section-title">Другие каталоги</h2>
+        <div class="category-grid">
+            {% for item in uncategorized_catalogs %}
+                <a class="category-tile" href="{{ item.get_absolute_url }}" target="_blank" rel="noopener">
+                    <h2>{{ item.name }}</h2>
+                    {% if item.description %}<span class="meta">{{ item.description }}</span>{% endif %}
+                    <span class="arrow" aria-hidden="true">↓</span>
+                </a>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    {% if not grouped_catalogs and not uncategorized_catalogs %}
+        <p class="empty">Справочники пока не загружены.</p>
+    {% endif %}
+{% endblock %}

@@ -22,9 +22,11 @@ from django.core.exceptions import ValidationError
 from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction
 
-from shop.models import (
-    Attribute, AttributeOption, Brand, Category, CategoryAttribute, Product,
-)
+from shop.models import Attribute, AttributeOption, Brand, Category, CategoryAttribute, Product
+
+# Django's dynamic ORM and management-command APIs are not fully represented by
+# the project's pyright stubs.
+# pyright: reportAttributeAccessIssue=false, reportGeneralTypeIssues=false
 
 DEFAULT_FILE = Path(__file__).resolve().parents[2] / "data" / "seed_shop.json"
 
@@ -45,7 +47,7 @@ class Command(BaseCommand):
         try:
             data = json.loads(path.read_text(encoding="utf-8"))
         except json.JSONDecodeError as e:
-            raise CommandError(f"Некорректный JSON ({path.name}): {e}")
+            raise CommandError(f"Некорректный JSON ({path.name}): {e}") from e
 
         self.stats = {"attributes": 0, "options": 0, "categories": 0, "links": 0, "products": 0, "brands": 0}
         self.skip_products = opts["no_products"]
@@ -170,14 +172,14 @@ class Command(BaseCommand):
         product.category = category
         product.name = item["name"]
         product.brand = self._brand(item.get("brand"))
-        product.price = item.get("price")             # int или null («цена по запросу»)
+        product.price = item.get("price")             # int или null для скрытого товара
         product.description = item.get("description", "")
-        product.is_active = item.get("is_active", True)
+        product.is_active = item.get("is_active", item.get("price") is not None)
         product.attributes = item.get("attributes", {})
 
         try:
             product.clean()   # проверка по схеме категории + нормализация значений
         except ValidationError as e:
-            raise CommandError(f"Товар {item['sku']} «{item['name']}»: {e.message_dict if hasattr(e, 'error_dict') else e.messages}")
+            raise CommandError(f"Товар {item['sku']} «{item['name']}»: {e.message_dict if hasattr(e, 'error_dict') else e.messages}") from e
         product.save()
         self.stats["products"] += created

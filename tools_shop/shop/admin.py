@@ -21,7 +21,7 @@ from treebeard.admin import TreeAdmin
 from treebeard.forms import movenodeform_factory
 
 from .models import (
-    Attribute, AttributeOption, Brand, Category, CategoryAttribute, CategorySortRule,
+    Attribute, AttributeOption, Brand, Catalog, Category, CategoryAttribute, CategorySortRule,
     Product, ProductImage,
 )
 from .sorting import sort_field_choices
@@ -430,6 +430,20 @@ class AttributeAdmin(admin.ModelAdmin):
 @admin.register(Brand)
 class BrandAdmin(admin.ModelAdmin):
     search_fields = ("name",)
+
+
+@admin.register(Catalog)
+class CatalogAdmin(admin.ModelAdmin):
+    list_display = ("name", "is_active", "sort_order", "updated_at")
+    list_filter = ("is_active",)
+    search_fields = ("name",)
+    autocomplete_fields = ("products", "categories", "brands")
+    readonly_fields = ("slug", "created_at", "updated_at")
+    fieldsets = (
+        (None, {"fields": ("name", "description", "file", "cover", "is_active", "sort_order")}),
+        ("Привязка", {"fields": ("products", "categories", "brands")}),
+        ("Служебное", {"fields": ("slug", "created_at", "updated_at"), "classes": ("collapse",)}),
+    )
 
 
 

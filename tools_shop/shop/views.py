@@ -3,7 +3,7 @@ from django.db.models import Prefetch
 from django.shortcuts import get_object_or_404, render
 
 from . import catalog, search
-from .models import Category, Product, ProductImage
+from .models import Catalog, Category, Product, ProductImage
 from .sorting import get_sort_rules, order_products, sort_attribute_codes
 
 PAGE_SIZE = 24
@@ -40,6 +40,34 @@ def catalog_index(request):
         "root_categories": _root_categories(),
     }
     return render(request, "shop/catalog_index.html", context)
+
+
+def catalogs_list(request):
+    """Страница со PDF-справочниками, сгруппированными по категориям (десктоп-онли)."""
+    catalogs = (
+        Catalog.objects.filter(is_active=True)  # type: ignore[attr-defined]
+        .prefetch_related("categories")
+        .order_by("sort_order", "name")
+    )
+
+    groups = {}  # category_id -> {"category": Category, "catalogs": [Catalog, ...]}
+    uncategorized = []
+    for item in catalogs:
+        cats = list(item.categories.all())
+        if not cats:
+            uncategorized.append(item)
+            continue
+        for cat in cats:
+            groups.setdefault(cat.pk, {"category": cat, "catalogs": []})["catalogs"].append(item)
+
+    grouped = sorted(groups.values(), key=lambda g: g["category"].name)
+
+    context = {
+        "title": "Справочники",
+        "grouped_catalogs": grouped,
+        "uncategorized_catalogs": uncategorized,
+    }
+    return render(request, "shop/catalogs_list.html", context)
 
 
 def _category_products(category, schema, state, request):

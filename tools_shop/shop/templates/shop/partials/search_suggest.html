@@ -27,11 +27,7 @@
                             · {{ product.category.name }}{% if product.brand %} · {{ product.brand }}{% endif %}
                         </span>
                     </span>
-                    {% if product.price is not None %}
-                        <span class="suggest-price">{{ product.price }} ₽</span>
-                    {% else %}
-                        <span class="suggest-price on-request">по запросу</span>
-                    {% endif %}
+                    <span class="suggest-price">{{ product.price }} ₽</span>
                 </a>
             {% endfor %}
         </div>
