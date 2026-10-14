@@ -1,0 +1,53 @@
+.product-images-existing {
+    display: none;
+}
+
+.dropzone {
+    min-height: 150px;
+    padding: 20px;
+    border: 2px dashed var(--border-strong, #d0d5dd);
+    border-radius: 12px;
+    background: var(--panel-2, #f8f9fb);
+}
+
+.dropzone .dz-message {
+    margin: 28px 0;
+    color: var(--muted, #667085);
+    font-weight: 600;
+}
+
+.dropzone .dz-preview {
+    cursor: grab;
+}
+
+.dropzone .dz-preview:active {
+    cursor: grabbing;
+}
+
+.dropzone .dz-preview .dz-image {
+    border-radius: 8px;
+}
+
+.dropzone .dz-preview .dz-remove,
+.dropzone .dz-preview .dz-cancel {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    color: var(--error-fg, #d92d20);
+    font-weight: 600;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.dropzone .dz-preview .dz-remove::before,
+.dropzone .dz-preview .dz-cancel::before {
+    content: "×";
+    font-size: 18px;
+    line-height: 1;
+}
+
+.dropzone .dz-preview .dz-remove:hover,
+.dropzone .dz-preview .dz-cancel:hover {
+    color: var(--delete-button-hover-bg, #b42318);
+    text-decoration: underline;
+}

@@ -1,3 +1,4 @@
+# pyright: reportGeneralTypeIssues=false, reportArgumentType=false, reportIncompatibleVariableOverride=false, reportIncompatibleMethodOverride=false, reportAttributeAccessIssue=false, reportOperatorIssue=false, reportIndexIssue=false, reportCallIssue=false
 """
 shop/models.py
 
@@ -289,7 +290,6 @@ class Product(SlugWithIdMixin, models.Model):
     sku = models.CharField("Артикул", max_length=64, unique=True)
     name = models.CharField("Название", max_length=255)
     description = models.TextField("Описание", blank=True)
-    image = models.ImageField("Изображение", upload_to="products/%Y/%m/", blank=True)
     # Целая цена в основных единицах валюты. NULL = «цена по запросу».
     price = models.PositiveIntegerField("Цена", null=True, blank=True,
                                         help_text="Пусто = цена по запросу")
@@ -317,6 +317,17 @@ class Product(SlugWithIdMixin, models.Model):
     def get_absolute_url(self):
         from django.urls import reverse
         return reverse("shop:product", args=[self.slug])
+
+    @property
+    def main_image(self):
+        """Первое изображение товара, оптимизировано для prefetch."""
+        # Если есть prefetch — берём из кэша, без запроса
+        if hasattr(self, "prefetched_images"):
+            first = self.prefetched_images[0] if self.prefetched_images else None
+        else:
+            # Fallback для мест, где prefetch не делался
+            first = self.images.first()
+        return first
 
     # ---- валидация и нормализация JSON по схеме категории ----
     def clean(self):
@@ -376,6 +387,25 @@ class Product(SlugWithIdMixin, models.Model):
         if errors:
             raise ValidationError({"attributes": errors})
         return clean
+
+
+class ProductImage(models.Model):
+    """Изображения товара. Первое по порядку = главное."""
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name="images")
+    image = models.ImageField("Изображение", upload_to="products/%Y/%m/")
+    sort_order = models.PositiveIntegerField("Порядок", default=0, db_index=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = "Изображение товара"
+        verbose_name_plural = "Изображения товара"
+        ordering = ["sort_order", "id"]
+        indexes = [
+            models.Index(fields=["product", "sort_order"], name="product_image_order_idx"),
+        ]
+
+    def __str__(self):
+        return f"{self.product.sku} — изображение {self.sort_order}"
 
 
 class CategorySortRule(models.Model):

@@ -5,11 +5,16 @@ shop/admin.py
 При смене категории фрагмент с полями подгружается через fetch (см. product_attributes.js),
 введённые в остальные поля данные не теряются.
 """
+import json
+
+# pyright: reportGeneralTypeIssues=false, reportAttributeAccessIssue=false, reportArgumentType=false
 from adminsortable2.admin import SortableAdminBase, SortableInlineAdminMixin
 from django import forms
 from django.contrib import admin
-from django.core.exceptions import PermissionDenied
-from django.http import HttpResponse
+from django.core.exceptions import PermissionDenied, ValidationError
+from django.db import transaction
+from django.db.models import Max
+from django.http import HttpResponse, JsonResponse
 from django.urls import path, reverse
 from django.utils.html import format_html, format_html_join
 from treebeard.admin import TreeAdmin
@@ -17,7 +22,7 @@ from treebeard.forms import movenodeform_factory
 
 from .models import (
     Attribute, AttributeOption, Brand, Category, CategoryAttribute, CategorySortRule,
-    Product,
+    Product, ProductImage,
 )
 from .sorting import sort_field_choices
 
@@ -200,15 +205,26 @@ class ProductAdmin(admin.ModelAdmin):
     list_filter = ("is_active", "brand", ("category", admin.RelatedOnlyFieldListFilter))
     list_select_related = ("category",)
     search_fields = ("sku", "name")
-    readonly_fields = ("slug", "created_at", "updated_at")
+    readonly_fields = ("slug", "created_at", "updated_at", "images_dropzone")
     fieldsets = (
-        (None, {"fields": ("category", "sku", "name", "brand", "price", "is_active", "description", "image")}),
+        (None, {"fields": ("category", "sku", "name", "brand", "price", "is_active", "description")}),
+        ("Изображения", {"fields": ("images_dropzone",)}),
         ("Характеристики", {"fields": ("attributes",)}),
         ("Служебное", {"fields": ("slug", "created_at", "updated_at"), "classes": ("collapse",)}),
     )
 
     class Media:
-        js = ("shop/admin/product_attributes.js",)
+        js = (
+            "vendor/dropzone.min.js",
+            "shop/admin/product_attributes.js",
+            "shop/admin/product_images.js",
+        )
+        css = {
+            "all": (
+                "vendor/dropzone.min.css",
+                "shop/admin/product_images.css",
+            )
+        }
 
     def get_urls(self):
         custom = [
@@ -217,8 +233,108 @@ class ProductAdmin(admin.ModelAdmin):
                 self.admin_site.admin_view(self.attributes_fields_view),
                 name="shop_product_attributes_fields",
             ),
+            path(
+                "images-upload/",
+                self.admin_site.admin_view(self.images_upload_view),
+                name="shop_product_images_upload",
+            ),
+            path(
+                "images/<int:image_id>/delete/",
+                self.admin_site.admin_view(self.image_delete_view),
+                name="shop_product_image_delete",
+            ),
+            path(
+                "images/reorder/",
+                self.admin_site.admin_view(self.images_reorder_view),
+                name="shop_product_images_reorder",
+            ),
         ]
         return custom + super().get_urls()
+
+    @admin.display(description="Изображения товара")
+    def images_dropzone(self, obj):
+        if not obj or not obj.pk:
+            return format_html('<p class="help">{}</p>', "Сначала сохраните товар, затем добавьте изображения.")
+        images = obj.images.all()
+        items = format_html_join(
+            "",
+            '<div class="product-image-existing" data-image-id="{}" data-url="{}">'
+            '<img src="{}" alt=""><button type="button" class="product-image-remove" '
+            'aria-label="Удалить изображение">×</button></div>',
+            ((image.pk, image.image.url, image.image.url) for image in images),
+        )
+        return format_html(
+            '<div id="product-images-dropzone" class="dropzone" data-product-id="{}" '
+            'data-upload-url="{}" data-reorder-url="{}" data-delete-url="{}" '
+            'data-csrf-cookie="csrftoken">'
+            '<div class="dz-message">Перетащите изображения сюда или нажмите для выбора</div>'
+            '</div><div id="product-images-existing" class="product-images-existing">{}</div>',
+            obj.pk,
+            reverse("admin:shop_product_images_upload", args=()),
+            reverse("admin:shop_product_images_reorder", args=()),
+            reverse("admin:shop_product_image_delete", args=(0,)).replace("/0/", "/{id}/"),
+            items,
+        )
+
+    def _image_product(self, request, image_id):
+        image = ProductImage.objects.select_related("product").filter(pk=image_id).first()  # type: ignore[attr-defined]
+        if not image or not self.has_change_permission(request, image.product):
+            raise PermissionDenied
+        return image
+
+    def images_upload_view(self, request):
+        if request.method != "POST":
+            return JsonResponse({"error": "Метод не поддерживается."}, status=405)
+        product = Product.objects.filter(pk=_int(request.POST.get("product"))).first()
+        if not product or not self.has_change_permission(request, product):
+            raise PermissionDenied
+        uploaded = request.FILES.get("file")
+        if not uploaded:
+            return JsonResponse({"error": "Файл не передан."}, status=400)
+        if uploaded.size > 10 * 1024 * 1024:
+            return JsonResponse({"error": "Изображение не должно быть больше 10 МБ."}, status=400)
+        try:
+            forms.ImageField().clean(uploaded, None)
+        except ValidationError:
+            return JsonResponse({"error": "Допустимы только корректные изображения."}, status=400)
+        with transaction.atomic():  # type: ignore[misc]
+            Product.objects.select_for_update().get(pk=product.pk)
+            last_order = product.images.aggregate(value=Max("sort_order"))["value"]
+            image = ProductImage.objects.create(  # type: ignore[attr-defined]
+                product=product, image=uploaded,
+                sort_order=0 if last_order is None else last_order + 1,
+            )
+        return JsonResponse({"id": image.pk, "url": image.image.url, "name": image.image.name})
+
+    def image_delete_view(self, request, image_id):
+        if request.method != "POST":
+            return JsonResponse({"error": "Метод не поддерживается."}, status=405)
+        image = self._image_product(request, image_id)
+        image.delete()
+        return JsonResponse({"ok": True})
+
+    def images_reorder_view(self, request):
+        if request.method != "POST":
+            return JsonResponse({"error": "Метод не поддерживается."}, status=405)
+        try:
+            payload = json.loads(request.body)
+            product_id = int(payload["product"])
+            ids = [int(value) for value in payload["ids"]]
+        except (KeyError, TypeError, ValueError, json.JSONDecodeError):
+            return JsonResponse({"error": "Некорректный порядок изображений."}, status=400)
+        product = Product.objects.filter(pk=product_id).first()
+        if not product or not self.has_change_permission(request, product):
+            raise PermissionDenied
+        images = list(ProductImage.objects.filter(pk__in=ids).select_related("product"))  # type: ignore[attr-defined]
+        if {image.pk for image in images} != set(ids) or any(image.product_id != product.pk for image in images):
+            return JsonResponse({"error": "Изображения принадлежат другому товару."}, status=400)
+        if len(ids) != len(set(ids)):
+            return JsonResponse({"error": "Повторяющиеся изображения."}, status=400)
+        by_id = {image.pk: image for image in images}
+        for position, image_id in enumerate(ids):
+            by_id[image_id].sort_order = position
+        ProductImage.objects.bulk_update(images, ["sort_order"])  # type: ignore[attr-defined]
+        return JsonResponse({"ok": True})
 
     def attributes_fields_view(self, request):
         """Фрагмент с полями характеристик для выбранной категории (вызывается из JS)."""
@@ -232,7 +348,7 @@ class ProductAdmin(admin.ModelAdmin):
         widget = AttributesWidget()
         widget.product_id = product.pk if product else None
         widget.links = list(category.get_attribute_schema().values()) if category else []
-        return HttpResponse(widget.render("attributes", values))
+        return HttpResponse(widget.render("attributes", values))  # type: ignore[arg-type]
 
 
 class CategoryAttributeInline(admin.TabularInline):
@@ -306,7 +422,7 @@ class AttributeAdmin(admin.ModelAdmin):
     search_fields = ("name", "code")   # нужно для autocomplete в CategoryAdmin
     inlines = [AttributeOptionInline]
 
-    def get_readonly_fields(self, request, obj=None):
+    def get_readonly_fields(self, request, obj=None):  # type: ignore[override]
         # код и тип менять после создания нельзя: на них завязаны сохранённые значения
         return ("code", "data_type") if obj else ()
 

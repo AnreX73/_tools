@@ -1,17 +1,25 @@
-
-
 from django.core.paginator import Paginator
+from django.db.models import Prefetch
 from django.shortcuts import get_object_or_404, render
 
 from . import catalog, search
-from .models import Category, Product
-
-from .sorting import order_products
+from .models import Category, Product, ProductImage
 from .sorting import get_sort_rules, order_products, sort_attribute_codes
 
 PAGE_SIZE = 24
 SUGGEST_PRODUCTS = 6
 SUGGEST_CATEGORIES = 4
+
+
+PRODUCT_IMAGES_PREFETCH = Prefetch(
+    "images",
+    queryset=ProductImage.objects.order_by("sort_order", "id"),  # type: ignore[attr-defined]
+    to_attr="prefetched_images",
+)
+
+
+def with_product_images(queryset):
+    return queryset.prefetch_related(PRODUCT_IMAGES_PREFETCH)
 
 
 def _root_categories():
@@ -45,7 +53,7 @@ def _category_products(category, schema, state, request):
     else:
         products_qs = catalog.apply_sort(filtered, state.sort)    # клиент выбрал сам
 
-    page = Paginator(products_qs, PAGE_SIZE).get_page(request.GET.get("page"))
+    page = Paginator(with_product_images(products_qs), PAGE_SIZE).get_page(request.GET.get("page"))
 
     attrs, labels = catalog.attribute_display_maps()
     spec_codes = list(schema) if category.numchild == 0 else None
@@ -137,7 +145,8 @@ def product_card(request, slug):
     каталога, и в результатах поиска — один и тот же компонент.
     """
     product = get_object_or_404(
-        Product.objects.select_related("category", "brand"), slug=slug, is_active=True
+        with_product_images(Product.objects.select_related("category", "brand")),
+        slug=slug, is_active=True,
     )
     attrs, labels = catalog.attribute_display_maps()
     schema = product.category.get_attribute_schema()
@@ -150,7 +159,8 @@ def product_card(request, slug):
 
 def product_detail(request, slug):
     product = get_object_or_404(
-        Product.objects.select_related("category", "brand"), slug=slug, is_active=True
+        with_product_images(Product.objects.select_related("category", "brand")),
+        slug=slug, is_active=True,
     )
     attrs, labels = catalog.attribute_display_maps()
     schema = product.category.get_attribute_schema()
@@ -159,10 +169,12 @@ def product_detail(request, slug):
         "product": product,
         "ancestors": product.category.path_ancestors(),
         "specs": catalog.product_specs(product, attrs, labels, list(schema)),
-        "siblings": (Product.objects.active()
-                     .filter(category=product.category)
-                     .exclude(pk=product.pk)
-                     .order_by("name")[:6]),
+        "siblings": with_product_images(
+            Product.objects.active()
+            .filter(category=product.category)
+            .exclude(pk=product.pk)
+            .order_by("name")[:6]
+        ),
     }
     return render(request, "shop/product_detail.html", context)
 
@@ -172,7 +184,7 @@ def search_suggest(request):
     query = search.clean_query(request.GET.get("q"))
     context = {"query": query, "searchable": search.is_searchable(query)}
     if context["searchable"]:
-        products_qs = search.search_products(query)
+        products_qs = with_product_images(search.search_products(query))
         context.update({
             "categories": search.search_categories(query, SUGGEST_CATEGORIES),
             "products": list(products_qs[:SUGGEST_PRODUCTS]),
@@ -185,7 +197,7 @@ def search_results(request):
     """Полная страница результатов поиска."""
     query = search.clean_query(request.GET.get("q"))
     searchable = search.is_searchable(query)
-    products_qs = search.search_products(query)
+    products_qs = with_product_images(search.search_products(query))
     page = Paginator(products_qs, PAGE_SIZE).get_page(request.GET.get("page"))
     products = list(page)
     breadcrumbs = catalog.category_breadcrumb_map(p.category for p in products)

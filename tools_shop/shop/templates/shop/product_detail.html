@@ -15,10 +15,10 @@
             {% if product.brand %}<span class="product-brand">{{ product.brand }}</span>{% endif %}
             <h1>{{ product.name }}</h1>
             <p class="sku">Артикул: {{ product.sku }}</p>
-            {% if product.image %}
+            {% if product.main_image %}
             <button type="button" class="product-photo" aria-label="Увеличить изображение"
                     onclick="document.getElementById('image-modal').showModal()">
-                <img src="{{ product.image.url }}" alt="{{ product.name }}" decoding="async">
+                <img src="{{ product.main_image.image.url }}" alt="{{ product.name }}" decoding="async">
             </button>
             {% endif %}
             {% if product.description %}<div class="description">{{ product.description|linebreaks }}</div>{% endif %}
@@ -69,10 +69,10 @@
     {% endif %}
 {% endblock %}
 {% block scripts %}
-    {% if product.image %}
+    {% if product.main_image %}
     <dialog id="image-modal" class="image-modal" aria-label="Изображение товара">
         <button type="button" class="image-modal-close" aria-label="Закрыть" onclick="this.closest('dialog').close()">&times;</button>
-        <img src="{{ product.image.url }}" alt="{{ product.name }}">
+        <img src="{{ product.main_image.image.url }}" alt="{{ product.name }}">
     </dialog>
     <script>
         (function () {

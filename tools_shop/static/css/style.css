@@ -445,8 +445,26 @@ background: radial-gradient(circle farthest-corner at center center, #3B4951 0%,
     }
     .pcard-side .price-label { color: var(--muted); font-size: 12px; }
     .pcard-side .price { font-size: 22px; }
-    .pcard-qty label { display: block; margin-bottom: 6px; color: var(--text-2); font-size: 13px; font-weight: 500; }
-    .qty-stepper { display: flex; align-items: stretch; height: 36px; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; background: var(--panel); }
+    .qty-stepper input:focus { outline: none; }
+    /* количество внутри кнопки (как у inpo.ru) */
+    .incart-btn { width: 100%; justify-content: space-between; padding: 6px 8px 6px 4px; gap: 6px; }
+    .incart-qty { display: inline-flex; align-items: center; gap: 0; min-width: 0; }
+    .incart-qty-btn {
+        display: inline-flex; align-items: center; justify-content: center;
+        width: 24px; height: 24px; border-radius: 6px; cursor: pointer; user-select: none;
+        font-size: 15px; line-height: 1; color: rgba(255,255,255,.75); transition: background .15s var(--ease);
+    }
+    .incart-qty-btn:hover { background: rgba(255,255,255,.15); color: #fff; }
+    .incart-qty-input {
+        width: 2.2em; min-width: 0; border: 0; padding: 2px; text-align: center;
+        background: rgba(255,255,255,.12); border-radius: 6px;
+        color: #fff; font: inherit; font-weight: 700; font-size: 14px;
+        appearance: textfield; -moz-appearance: textfield;
+    }
+    .incart-qty-input::-webkit-outer-spin-button,
+    .incart-qty-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+    .incart-qty-input:focus { outline: none; background: rgba(255,255,255,.22); }
+    .incart-sep { flex: none; width: 1px; align-self: stretch; background: rgba(255,255,255,.25); }    .qty-stepper { display: flex; align-items: stretch; height: 36px; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; background: var(--panel); }
     .qty-stepper button {
         flex: none; width: 32px; border: 0; background: var(--panel-2); color: var(--text-2);
         font-size: 16px; cursor: pointer; transition: background .15s var(--ease);
