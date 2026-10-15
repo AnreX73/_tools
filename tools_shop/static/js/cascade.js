@@ -32,7 +32,11 @@
         document.querySelectorAll(".cascade-node").forEach(function (node) {
             if (Number(node.dataset.depth) > depth) {
                 var btn = node.querySelector(".cascade-node-head");
-                if (btn) { btn.setAttribute("aria-expanded", "false"); btn.classList.remove("is-active"); }
+                if (btn) {
+                    btn.setAttribute("aria-expanded", "false");
+                    btn.classList.remove("is-active");
+                    if (Number(node.dataset.depth) === 1) setDropdown(btn, false);
+                }
             }
         });
     }
@@ -41,6 +45,53 @@
         document.querySelectorAll('.cascade-node[data-depth="' + depth + '"] .cascade-node-head').forEach(function (btn) {
             btn.classList.remove("is-active");
             btn.setAttribute("aria-expanded", "false");
+            if (depth === 1) setDropdown(btn, false);
+        });
+    }
+
+    function setDropdown(btn, open) {
+        var dropdown = btn.parentElement.querySelector(":scope > .cascade-dropdown");
+        if (dropdown) dropdown.hidden = !open;
+    }
+
+    function syncRootDropdown() {
+        // Ищем именно раскрытый узел первого уровня, а не первый в DOM:
+        // dropdown живёт под своей основной категорией.
+        var rootNode = null;
+        var nodes = document.querySelectorAll('.cascade-node[data-depth="1"]');
+        for (var i = 0; i < nodes.length; i++) {
+            var dd = nodes[i].querySelector(":scope > .cascade-dropdown");
+            if (dd && !dd.hidden) { rootNode = nodes[i]; break; }
+        }
+        if (!rootNode) return;
+        var dropdown = rootNode.querySelector(":scope > .cascade-dropdown");
+        if (!dropdown || dropdown.hidden) return;
+        
+        // Пытаемся получить активную подкатегорию из каскада
+        var slug = null;
+        var active = document.querySelector('.cascade-node[data-depth="2"] .cascade-node-head.is-active');
+        if (active) {
+            var hxGet = active.getAttribute("hx-get") || "";
+            var m = hxGet.match(/\/cascade\/([^\/]+)\//);  
+            if (m) slug = m[1];
+        }
+        
+        // Если активная подкатегория не найдена в каскаде, берём второй элемент
+        // cascade-path — это подкатегория, которой соответствует элемент dropdown
+        // (путь: основная категория, подкатегория, её детки, ...).
+        if (!slug) {
+            var columns = document.getElementById("cascade-columns");
+            if (columns && columns.dataset.cascadePath) {
+                var path = columns.dataset.cascadePath.split(",").filter(Boolean);
+                if (path.length > 1) {
+                    slug = path[1];
+                }
+            }
+        }
+        
+        dropdown.querySelectorAll(".cascade-dropdown-item").forEach(function (item) {
+            var isActive = !!slug && item.dataset.categorySlug === slug;
+            item.classList.toggle("is-active", isActive);
         });
     }
 
@@ -73,11 +124,20 @@
     var alreadyOpen = btn.classList.contains("is-active") &&
                       btn.getAttribute("aria-expanded") === "true";
 
+    if (depth === 1 && alreadyOpen) {
+        // Повторный клик по основной категории: закрываем dropdown и схлопываем её колонку.
+        setDropdown(btn, false);
+        pruneBelow(0);
+        syncWorkspaceVisibility();
+        evt.preventDefault();
+        return;
+    }
+
     pruneBelow(depth - 1);
 
     if (alreadyOpen) {
-        evt.preventDefault();       // повторный клик: схлопнуть, запрос не нужен
-        syncWorkspaceVisibility();  // hero возвращается только при реальном схлопывании
+        evt.preventDefault();       // повторный клик по подкатегории схлопывает её по прежним правилам
+        syncWorkspaceVisibility();
         return;
     }
 
@@ -86,11 +146,15 @@
     clearActiveAt(depth);
     btn.classList.add("is-active");
     btn.setAttribute("aria-expanded", "true");
+    // Dropdown основной категории остаётся открыт до выбора другой основной.
+    if (depth === 1) setDropdown(btn, true);
+    syncRootDropdown();
 });
     document.body.addEventListener("htmx:afterSwap", function (evt) {
         if (evt.target && evt.target.id === "cascade-columns") {
             scrollToEnd();
             syncWorkspaceVisibility();
+            syncRootDropdown();
         }
     });
 
@@ -110,23 +174,34 @@
         }
 
         function openNext(index) {
-            if (index >= path.length) return;
+            if (index >= path.length) {
+                // Весь путь восстановлен, финальная синхронизация dropdown
+                syncRootDropdown();
+                return;
+            }
             var btn = findNodeButton(path[index]);
             if (!btn) return;
             btn.classList.add("is-active");
             btn.setAttribute("aria-expanded", "true");
+            if (Number(btn.closest(".cascade-node").dataset.depth) === 1) setDropdown(btn, true);
             window.htmx.ajax("GET", btn.getAttribute("hx-get"), { target: "#cascade-columns", swap: "beforeend" })
-                .then(function () { openNext(index + 1); });
+                .then(function () { 
+                    syncRootDropdown();
+                    openNext(index + 1); 
+                });
         }
         openNext(0);
     });
     
-    // Клик по крошке = клик по кнопке этой категории в каскаде (без перезагрузки страницы).
+    // Клик по крошке или dropdown-элементу = клик по кнопке этой категории в каскаде (без перезагрузки страницы).
 document.addEventListener("click", function (e) {
-    var link = e.target.closest("a[data-crumb-slug]");
+    var link = e.target.closest("a[data-crumb-slug], a.cascade-dropdown-item");
     if (!link || window.htmx === undefined) return;
 
-    var btn = document.querySelector('.cascade-node-head[hx-get="/cascade/' + link.dataset.crumbSlug + '/"]');
+    var slug = link.dataset.crumbSlug || link.dataset.categorySlug;
+    if (!slug) return;
+
+    var btn = document.querySelector('.cascade-node-head[hx-get="/cascade/' + slug + '/"]');
     if (!btn) return;            // кнопки нет в DOM: сработает обычная ссылка
 
     e.preventDefault();

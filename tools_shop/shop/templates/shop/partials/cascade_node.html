@@ -15,4 +15,13 @@
         <span class="cascade-node-label">{{ node.name }}</span>
         <span class="cascade-node-chev" aria-hidden="true">▸</span>
     </button>
+    {% if node_depth == 1 and node.numchild %}
+        <div class="cascade-dropdown" hidden>
+            <div class="cascade-dropdown-list" role="list">
+                {% for child in node.children_list %}
+                    <a class="cascade-dropdown-item" role="listitem" href="{{ child.get_absolute_url }}" data-category-slug="{{ child.slug }}">{{ child.name }}</a>
+                {% endfor %}
+            </div>
+        </div>
+    {% endif %}
 </div>

@@ -368,6 +368,11 @@ ul.actionlist li, .actionlist li { border-color: var(--border); }
 .popup #header { display: none; }
 .popup .content { padding: 16px; }
 
+
+select{
+    min-height: 36px;
+}
+
 @media (max-width: 767px) {
     #header { padding: 8px 16px; flex-wrap: wrap; row-gap: 8px; }
     .admin-brand-logo { height: 28px; }

@@ -345,18 +345,22 @@ background: radial-gradient(circle farthest-corner at center center, #3B4951 0%,
 .cascade-dropdown[hidden] {
  display: none; }
     
-.cascade-dropdown-list {
- display: flex; flex-direction: column; gap: 1px; padding: 2px 0 6px 10px; }
+    .cascade-dropdown-list {
+ display: flex; flex-direction: column; gap: 3px; padding: 3px 0 8px 12px; }
     
 .cascade-dropdown-item {
 
-        display: block; padding: 8px 12px; border-radius: var(--radius-sm);
-        color: var(--text-2); font-size: 13px;
-        transition: background .15s var(--ease), color .15s var(--ease);
+        display: block; padding: 7px 10px; border-left: 2px solid var(--border-strong);
+        border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+        background: var(--panel-2); color: var(--text-2); font-size: 13px;
+        transition: background .15s var(--ease), color .15s var(--ease), border-color .15s var(--ease);
     }
     
-.cascade-dropdown-item:hover {
- background: var(--panel-2); color: var(--accent); }
+    .cascade-dropdown-item:hover {
+ background: var(--accent-soft); border-left-color: var(--accent); color: var(--accent); }
+    
+.cascade-dropdown-item.is-active {
+ background: var(--accent-soft); border-left-color: var(--accent); color: var(--accent); font-weight: 600; }
     
 .cascade-empty {
  padding: 10px 12px; font-size: 13px; }
