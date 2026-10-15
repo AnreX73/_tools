@@ -28,6 +28,13 @@ from .sorting import sort_field_choices
 
 T = Attribute.DataType
 
+from django.contrib import admin
+from django_q.models import Task, Success, Failure, Schedule, OrmQ
+
+for model in (Task, Success, Failure, Schedule, OrmQ):
+    if admin.site.is_registered(model):
+        admin.site.unregister(model)
+
 
 def _int(value):
     try:

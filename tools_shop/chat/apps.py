@@ -3,4 +3,4 @@ from django.apps import AppConfig
 
 class ChatConfig(AppConfig):
     name = "chat"
-    verbose_name = "Чат с посетителями"
+    verbose_name = "_Чат с посетителями"

@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    "django_q",
     "chat.apps.ChatConfig",
     "users.apps.UsersConfig",
     "shop.apps.ShopConfig",
@@ -51,7 +52,6 @@ INSTALLED_APPS = [
     "treebeard",
     "django_extensions",
     "debug_toolbar",
-    "django_q",
     "django_cleanup.apps.CleanupConfig",
 ]
 
