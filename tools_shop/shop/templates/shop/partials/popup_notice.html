@@ -1,0 +1,22 @@
+{% if popup_notice %}
+{# Всплывающее окно при входе на сайт. Показ один раз за сессию — static/js/popup.js #}
+<dialog id="site-popup" class="site-popup" data-popup-id="{{ popup_notice.pk }}"
+        {% if popup_notice.title %}aria-labelledby="site-popup-title"{% endif %}
+        {% if popup_notice.text %}aria-describedby="site-popup-text"{% endif %}>
+    <button type="button" class="site-popup-close" aria-label="Закрыть" data-popup-close>&times;</button>
+    <div class="site-popup-body">
+        {% if popup_notice.title %}<h2 id="site-popup-title" class="site-popup-title">{{ popup_notice.title }}</h2>{% endif %}
+        {% if popup_notice.image %}<img class="site-popup-image" src="{{ popup_notice.image.url }}" alt="" loading="lazy" decoding="async">{% endif %}
+        {% if popup_notice.text %}<div id="site-popup-text" class="site-popup-text">{{ popup_notice.text|linebreaksbr }}</div>{% endif %}
+        {% if popup_notice.button_text %}
+            <div class="site-popup-actions">
+                {% if popup_notice.button_url %}
+                    <a class="btn site-popup-btn" href="{{ popup_notice.button_url }}">{{ popup_notice.button_text }}</a>
+                {% else %}
+                    <button type="button" class="btn site-popup-btn" data-popup-close>{{ popup_notice.button_text }}</button>
+                {% endif %}
+            </div>
+        {% endif %}
+    </div>
+</dialog>
+{% endif %}

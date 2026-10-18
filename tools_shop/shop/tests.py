@@ -7,13 +7,18 @@
 # Django's dynamic ORM and test-client APIs are not fully represented by the
 # project's pyright stubs.
 # pyright: reportAttributeAccessIssue=false, reportGeneralTypeIssues=false
+from io import StringIO
+
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
+from django.core.management import call_command
+from django.core.management.base import CommandError
+from django.db import IntegrityError, transaction
 from django.http import QueryDict
 from django.test import TestCase
 
 from . import catalog
-from .models import Attribute, AttributeOption, Category, CategoryAttribute, Product
+from .models import Attribute, AttributeOption, Category, CategoryAttribute, PopupNotice, Product
 
 T = Attribute.DataType
 
@@ -328,3 +333,147 @@ class SearchTestCase(TestCase):
             [self.root.name, self.leaf.name],
         )
         self.assertContains(response, "Металлорежущий инструмент → Свёрла по металлу")
+
+
+class PopupNoticeTestCase(TestCase):
+    """Всплывающее окно при входе на сайт."""
+
+    def test_get_active_returns_active_and_none_when_inactive(self):
+        self.assertIsNone(PopupNotice.get_active())
+        popup = PopupNotice.objects.create(title="Акция", is_active=True)
+        self.assertEqual(PopupNotice.get_active(), popup)
+
+        popup.is_active = False
+        popup.save()
+        self.assertIsNone(PopupNotice.get_active())
+
+    def test_only_one_active_row_is_kept_by_save(self):
+        first = PopupNotice.objects.create(title="Первое", is_active=True)
+        second = PopupNotice.objects.create(title="Второе", is_active=True)
+        first.refresh_from_db()
+        self.assertFalse(first.is_active)
+        self.assertEqual(PopupNotice.objects.filter(is_active=True).get(), second)
+
+    def test_db_constraint_blocks_two_active_rows(self):
+        PopupNotice.objects.create(title="Первое", is_active=True)
+        second = PopupNotice.objects.create(title="Второе", is_active=False)
+        # bulk update обходит save() — ограничение ловит уже сама БД
+        with self.assertRaises(IntegrityError):
+            with transaction.atomic():
+                PopupNotice.objects.filter(pk=second.pk).update(is_active=True)
+
+    def test_empty_active_popup_is_not_shown(self):
+        PopupNotice.objects.create(is_active=True)  # все содержательные поля пусты
+        self.assertIsNone(PopupNotice.get_active())
+
+    def test_popup_rendered_on_site_only_when_active(self):
+        self.assertNotContains(self.client.get("/"), 'id="site-popup"')
+
+        popup = PopupNotice.objects.create(
+            title="Скидки", text="Скидки на свёрла", button_text="В каталог",
+            button_url="/catalog/", is_active=True,
+        )
+        response = self.client.get("/")
+        self.assertContains(response, 'id="site-popup"')
+        self.assertContains(response, "Скидки на свёрла")
+        self.assertContains(response, f'data-popup-id="{popup.pk}"')
+        self.assertContains(response, 'href="/catalog/"')
+
+    def test_admin_deactivates_previous_active_popup(self):
+        first = PopupNotice.objects.create(title="Первое", is_active=True)
+        user = get_user_model().objects.create_superuser(
+            username="popup-admin", password="test-only",  # noqa: S106
+        )
+        self.client.force_login(user)
+        response = self.client.post(
+            "/admin/shop/popupnotice/add/",
+            {"title": "Второе", "text": "", "button_text": "", "button_url": "", "is_active": "on"},
+        )
+        self.assertEqual(response.status_code, 302)
+        first.refresh_from_db()
+        self.assertFalse(first.is_active)
+        self.assertEqual(PopupNotice.objects.filter(is_active=True).count(), 1)
+
+
+class RaisePricesCommandTestCase(TestCase):
+    """Команда raise_prices: наценка процентом и заглушка с единой ценой."""
+
+    @classmethod
+    def setUpTestData(cls):
+        root = Category.objects.add_root(create_kwargs={"name": "Инструмент"})
+        cls.leaf = Category.objects.add_child(root, create_kwargs={"name": "Свёрла"})
+        cls.cheap = cls._product("RP-100", 100)
+        cls.rounds = cls._product("RP-4098", 4098)
+        cls.hidden = cls._product("RP-300", 300, is_active=False)
+        cls.zero = cls._product("RP-0", 0, is_active=False)
+        cls.no_price = cls._product("RP-NONE", None, is_active=False)
+
+    @classmethod
+    def _product(cls, sku, price, is_active=True):
+        return Product.objects.create(
+            sku=sku, name=f"Товар {sku}", category=cls.leaf,
+            price=price, is_active=is_active, attributes={},
+        )
+
+    def _run(self, *args):
+        out = StringIO()
+        call_command("raise_prices", *args, stdout=out)
+        return out.getvalue()
+
+    def _prices(self):
+        return dict(Product.objects.values_list("sku", "price"))
+
+    # ---- режим процентов ----
+    def test_default_percent_raises_prices_by_15(self):
+        self._run()
+        prices = self._prices()
+        self.assertEqual(prices["RP-100"], 115)
+        self.assertEqual(prices["RP-4098"], 4713)  # 4098 * 1.15 = 4712.7
+        self.assertEqual(prices["RP-300"], 345)    # скрытый товар тоже
+        self.assertEqual(prices["RP-0"], 0)
+        self.assertIsNone(prices["RP-NONE"])
+
+    def test_percent_is_configurable(self):
+        self._run("--percent", "10")
+        self.assertEqual(self._prices()["RP-100"], 110)
+
+    def test_dry_run_changes_nothing(self):
+        output = self._run("--dry-run")
+        self.assertIn("Dry-run", output)
+        self.assertEqual(self._prices()["RP-100"], 100)
+        self.assertEqual(self._prices()["RP-4098"], 4098)
+
+    def test_updated_at_is_touched(self):
+        before = Product.objects.get(sku="RP-100").updated_at
+        self._run()
+        self.assertGreater(Product.objects.get(sku="RP-100").updated_at, before)
+
+    # ---- заглушка с единой ценой ----
+    def test_fixed_price_requires_yes(self):
+        output = self._run("--fixed-price", "777")
+        self.assertIn("--yes", output)
+        self.assertEqual(self._prices()["RP-100"], 100)
+        self.assertEqual(self._prices()["RP-4098"], 4098)
+
+    def test_fixed_price_sets_same_price_for_all_priced_products(self):
+        self._run("--fixed-price", "777", "--yes")
+        prices = self._prices()
+        self.assertEqual(prices["RP-100"], 777)
+        self.assertEqual(prices["RP-4098"], 777)
+        self.assertEqual(prices["RP-300"], 777)
+        # без цены и с ценой 0 остаются нетронутыми
+        self.assertEqual(prices["RP-0"], 0)
+        self.assertIsNone(prices["RP-NONE"])
+
+    def test_fixed_price_dry_run_does_not_write(self):
+        self._run("--fixed-price", "777", "--dry-run")
+        self.assertEqual(self._prices()["RP-100"], 100)
+
+    def test_negative_fixed_price_is_rejected(self):
+        with self.assertRaises(CommandError):
+            self._run("--fixed-price", "-1", "--yes")
+
+    # ---- взаимоисключающие режимы ----
+    def test_percent_and_fixed_price_together_is_an_error(self):
+        with self.assertRaises(CommandError):
+            self._run("--percent", "10", "--fixed-price", "777")

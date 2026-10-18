@@ -501,3 +501,70 @@ class Catalog(SlugWithIdMixin, models.Model):
     def get_absolute_url(self):
         """Отдельной страницы у каталога нет — ссылка ведёт прямо на PDF-файл."""
         return self.file.url
+
+
+# --------------------------------------------------------------------------
+# Всплывающее окно при входе на сайт
+# --------------------------------------------------------------------------
+class PopupNotice(models.Model):
+    """
+    Объявление, которое показывается посетителю при входе на сайт.
+    Активным может быть только одно окно за раз (см. UniqueConstraint).
+    Показ — один раз за сессию браузера, логика на клиенте (static/js/popup.js).
+    """
+    title = models.CharField("Заголовок", max_length=255, blank=True)
+    text = models.TextField("Текст", blank=True)
+    image = models.ImageField("Картинка", upload_to="popups/%Y/%m/", blank=True)
+    button_text = models.CharField("Подпись кнопки", max_length=64, blank=True)
+    button_url = models.CharField(
+        "Ссылка кнопки", max_length=500, blank=True,
+        help_text="Внутренний путь (/catalog/) или полный URL. Пусто — кнопка просто закрывает окно.",
+    )
+    is_active = models.BooleanField("Показывать на сайте", default=False)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "Всплывающее окно"
+        verbose_name_plural = "Всплывающие окна"
+        ordering = ["-updated_at"]
+        # На уровне БД: не больше одной строки с is_active=True.
+        constraints = [
+            models.UniqueConstraint(
+                fields=["is_active"],
+                condition=models.Q(is_active=True),
+                name="single_active_popup",
+            ),
+        ]
+
+    def __str__(self):
+        return self.title or f"Всплывающее окно #{self.pk}"
+
+    @property
+    def is_empty(self):
+        """Полностью пустое окно показывать не нужно."""
+        return not (self.title or self.text or self.image)
+
+    @classmethod
+    def deactivate_others(cls, keep_pk=None):
+        """Снимает флаг «Показывать на сайте» со всех окон, кроме указанного."""
+        qs = cls.objects.filter(is_active=True)
+        if keep_pk:
+            qs = qs.exclude(pk=keep_pk)
+        return qs.update(is_active=False)
+
+    def save(self, *args, **kwargs):
+        # Активным может быть только одно окно: гасим остальные в одной транзакции
+        # (та же гарантия дублируется partial-unique-индексом single_active_popup).
+        with transaction.atomic():
+            if self.is_active:
+                type(self).deactivate_others(self.pk)
+            super().save(*args, **kwargs)
+
+    @classmethod
+    def get_active(cls):
+        """Активное окно или None. Одно за раз, пустое не берём."""
+        return (cls.objects.filter(is_active=True)
+                .exclude(title="", text="", image="")  # все три пустые
+                .first())

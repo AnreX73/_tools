@@ -36,6 +36,7 @@
     <script src="{% static 'vendor/htmx.min.js' %}" defer></script>
     <script src="{% static 'js/search.js' %}" defer></script>
     <script src="{% static 'js/cascade.js' %}" defer></script>
+    <script src="{% static 'js/popup.js' %}" defer></script>
     <script src="{% static 'vendor/alpine-persist.min.js' %}" defer></script>
     <script src="{% static 'vendor/alpine.min.js' %}" defer></script>
     <script src="{% static 'js/pwa.js' %}" defer></script>
@@ -129,6 +130,7 @@
     </footer>
 
     {% if request.user.is_staff and perms.chat.reply_conversation %}{% include 'chat/operator_widget.html' %}{% else %}{% include 'chat/widget.html' %}{% endif %}
+    {% include 'shop/partials/popup_notice.html' %}
     {% block scripts %}{% endblock %}
 </body>
 </html>

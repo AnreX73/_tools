@@ -22,7 +22,7 @@ from treebeard.forms import movenodeform_factory
 
 from .models import (
     Attribute, AttributeOption, Brand, Catalog, Category, CategoryAttribute, CategorySortRule,
-    Product, ProductImage,
+    PopupNotice, Product, ProductImage,
 )
 from .sorting import sort_field_choices
 
@@ -451,6 +451,47 @@ class CatalogAdmin(admin.ModelAdmin):
         ("Привязка", {"fields": ("products", "categories", "brands")}),
         ("Служебное", {"fields": ("slug", "created_at", "updated_at"), "classes": ("collapse",)}),
     )
+
+
+class PopupNoticeAdminForm(forms.ModelForm):
+    class Meta:
+        model = PopupNotice
+        fields = "__all__"
+
+    def clean(self):
+        cleaned = super().clean()
+        # Единственный активный слот переключаем ДО проверки ограничения БД:
+        # иначе форма падала бы на validation unique constraint single_active_popup.
+        if cleaned.get("is_active") and not self.errors:
+            PopupNotice.deactivate_others(self.instance.pk)
+        return cleaned
+
+
+@admin.register(PopupNotice)
+class PopupNoticeAdmin(admin.ModelAdmin):
+    """Всплывающее окно при входе на сайт. Активным может быть только одно."""
+    form = PopupNoticeAdminForm
+    list_display = ("notice_label", "is_active", "updated_at")
+    list_filter = ("is_active",)
+    readonly_fields = ("image_preview", "created_at", "updated_at")
+    fieldsets = (
+        (None, {"fields": ("is_active", "title", "text", "button_text", "button_url")}),
+        ("Картинка", {"fields": ("image", "image_preview")}),
+        ("Служебное", {"fields": ("created_at", "updated_at"), "classes": ("collapse",)}),
+    )
+
+    @admin.display(description="Окно")
+    def notice_label(self, obj):
+        return str(obj)
+
+    @admin.display(description="Предпросмотр")
+    def image_preview(self, obj):
+        if obj and obj.image:
+            return format_html(
+                '<img src="{}" alt="" style="max-width:360px;height:auto;border-radius:10px">',
+                obj.image.url,
+            )
+        return "—"
 
 
 

@@ -165,3 +165,15 @@ shop/data/seed_shop.json
 - До 760px строка поиска переносится на всю ширину под логотипом.
 - **Проверено:** 11 тестов поиска (всего 23, все проходят). Через nginx ответ за 75–110 мс. Сценарии с клавиатурой проверены в headless Edge на 1300 и 390 px, ошибок JS нет.
 - **На будущее:** при росте каталога перейти на `pg_trgm` или FTS, поиска по характеристикам (JSONB) пока нет.
+
+---
+
+## Этап 3: всплывающее окно при входе на сайт
+
+- **Модель `PopupNotice` (`shop/models.py`):** `title`, `text`, `image` (`popups/%Y/%m/`), `button_text`, `button_url` (внутренний путь или полный URL), `is_active`, `created_at/updated_at`.
+    - **Одно активное окно за раз:** на уровне БД — `UniqueConstraint(..., condition=Q(is_active=True), name="single_active_popup")`, на уровне приложения — `save()` в транзакции гасит остальные через `deactivate_others()`. `get_active()` возвращает единственное непустое активное окно.
+    - Управление в админке (`PopupNoticeAdmin`): предпросмотр картинки, фильтр по `is_active`. Форма `PopupNoticeAdminForm.clean()` переключает активный слот **до** проверки ограничения, иначе Django-валидация падала бы на unique constraint.
+- **Показ:** контекст-процессор `shop/context_processors.py::popup_notice` кладёт `popup_notice` в контекст всех страниц (в админке, при `HX-Request` и на `__reload__/` запрос не делается). Шаблон `shop/partials/popup_notice.html` подключён в `base.html`.
+- **Клиент:** `static/js/popup.js` открывает `<dialog class="site-popup">` через `showModal()` один раз за сессию вкладки (ключ `popup_seen_<id>` в `sessionStorage`). Закрытие — крестик, кнопка без ссылки, клик по фону, Esc. Стили — в `static/css/style.css`, поддерживают светлую/тёмную тему и адаптив.
+- **Тесты:** 6 штук в `shop/tests.py` (`PopupNoticeTestCase`): `get_active`, инвариант «одно активное» (и `save()`, и БД через bulk update), пустое окно не показывается, рендер на сайте, переключение из админки. Всего в проекте 54 теста, все проходят.
+
