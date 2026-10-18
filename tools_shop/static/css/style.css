@@ -157,6 +157,11 @@ a:hover { color: var(--accent-hover); }
 main.container {
  flex: 1; padding-top: 24px; padding-bottom: 64px; }
 
+/* Обёртка колонки каталога и контента. На десктопе (при наличии .cascade-rail)
+   превращается в грид, чтобы рейл был в потоке и заканчивался над подвалом. */
+.rail-layout {
+ flex: 1; }
+
 /* десктоп: показ/скрытие между мобильным и десктопным маркапом (каскад) */
 .desktop-only { display: none; }
 /* !important — иначе .btn { display: inline-flex } (ниже по файлу, та же специфичность)
@@ -303,17 +308,25 @@ background: radial-gradient(circle farthest-corner at center center, #3B4951 0%,
     .desktop-only.catalogs-link { display: inline-flex; }
     .desktop-hidden { display: none; }
 
-    /* левая колонка на всю высоту окна, своя прокрутка, не часть document flow */
-    
-.cascade-rail {
+    /* колонка каталога: липнет к верху окна, своя прокрутка и заканчивается там,
+       где заканчивается контент — над подвалом, а не поверх него */
+    .rail-layout:has(> .cascade-rail) {
+        display: grid; grid-template-columns: var(--rail-w) minmax(0, 1fr);
+        column-gap: 24px; align-items: start;
+        width: 100%; max-width: var(--content-width); margin: 0 auto; padding: 0 20px 0 0;
+    }
+    .cascade-rail {
         display: block;
-        position: fixed; z-index: 20; top: var(--header-h); bottom: 0;
-        left: max(0px, calc((100vw - var(--content-width)) / 2));
-        width: var(--rail-w); overflow-y: auto; overscroll-behavior: contain;
+        position: sticky; z-index: 20; top: var(--header-h);
+        /* высоту даёт растяжение по строке грида, но не выше окна: на короткой
+           странице колонка доходит ровно до подвала, на длинной — липнет к верху */
+        align-self: stretch; max-height: calc(100vh - var(--header-h));
+        overflow-y: auto; overscroll-behavior: contain;
         background: var(--panel); border-right: 1px solid var(--border);
         padding: 16px 12px; scrollbar-width: thin;
     }
-    main.container--with-rail { padding-left: calc(var(--rail-w) + 24px); }
+    /* отступ под рейл больше не нужен — колонку держит грид обёртки */
+    main.container--with-rail { padding-left: 0; padding-right: 0; }
 
     
 .cascade-root {
@@ -410,12 +423,12 @@ background: radial-gradient(circle farthest-corner at center center, #3B4951 0%,
     .search-reset { margin-top: 16px; }
 
     /* === переиспользуемый компонент строки-дропдауна (каскад листа + поиск) === */
-    .prow-list { display: flex; flex-direction: column; gap: 6px; }
+    .prow-list { display: flex; flex-direction: column; gap: 4px; }
     .prow { border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--panel); overflow: hidden; }
     .prow-head {
-        display: flex; align-items: center; gap: 10px; width: 100%; min-height: 44px;
-        padding: 10px 12px; border: 0; background: none; cursor: pointer; text-align: left;
-        font: inherit; color: var(--text);
+        display: flex; align-items: center; gap: 10px; width: 100%; min-height: 32px;
+        padding: 5px 12px; border: 0; background: none; cursor: pointer; text-align: left;
+        font: inherit; color: var(--text); line-height: 1.25;
         transition: background .15s var(--ease);
         
     }
@@ -442,26 +455,9 @@ background: radial-gradient(circle farthest-corner at center center, #3B4951 0%,
     .prow-body-inner { padding: 16px; }
     .prow-loading { margin: 0; color: var(--muted); font-size: 13px; }
 
-    /* карточка товара внутри строки-дропдауна */
-    .pcard { display: grid; grid-template-columns: minmax(0, 1fr) 220px; gap: 24px; align-items: start; }
-    .pcard-main { display: flex; gap: 16px; min-width: 0; }
-    .pcard-photo {
-        flex: none; display: block; width: 120px; height: 120px; padding: 0; cursor: zoom-in;
-        background: var(--panel-2); border: 1px solid var(--border); border-radius: var(--radius-sm); overflow: hidden;
-    }
-    .pcard-photo img { display: block; width: 100%; height: 100%; object-fit: contain; }
-    .pcard-body { min-width: 0; }
-    .spec-table-compact { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1px; background: var(--border); }
-    .spec-table-compact tbody, .spec-table-compact tr { display: contents; }
-    .spec-table-compact th, .spec-table-compact td { background: var(--panel); border-bottom: 0; padding: 8px 12px; font-size: 13px; }
-    .spec-table-compact th { width: auto; font-weight: 500; }
-    .pcard-permalink { display: inline-block; margin-top: 10px; font-size: 13px; font-weight: 500; }
-    .pcard-side {
-        display: flex; flex-direction: column; gap: 10px; padding: 16px;
-        background: var(--panel-2); border: 1px solid var(--border); border-radius: var(--radius-sm);
-    }
-    .pcard-side .price-label { color: var(--muted); font-size: 12px; }
-    .pcard-side .price { font-size: 22px; }
+    /* карточка товара внутри строки-дропдауна — см. блок «slim-карточка
+       товара» ниже, ПОСЛЕ базового .spec-table: там учтён порядок каскада */
+
     .qty-stepper input:focus { outline: none; }
     .qty-stepper { display: flex; align-items: stretch; height: 36px; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; background: var(--panel); }
     .qty-stepper button {
@@ -474,7 +470,6 @@ background: radial-gradient(circle farthest-corner at center center, #3B4951 0%,
         background: var(--panel); color: var(--text);
     }
     .qty-stepper input:focus { outline: none; }
-    .pcard-side .note { margin: 2px 0 0; color: var(--muted); font-size: 12px; }
     
 }
 
@@ -753,6 +748,70 @@ a.category-tile:hover .arrow { background: var(--accent); color: #fff; transform
 .spec-table th { width: 40%; max-width: 320px; color: var(--muted); font-weight: 500; }
 .spec-table td { color: var(--text); font-weight: 500; }
 
+/* === slim-карточка товара внутри строки-дропдауна (только десктоп) ===
+   ВАЖНО: блок стоит ПОСЛЕ базового .spec-table намеренно. При равной
+   специфичности выигрывает объявление, расположенное ниже по файлу, поэтому
+   базовые правила (.spec-table th { width: 40% }, padding 11px 16px,
+   border-bottom у ячеек) перебивали компактную таблицу: подписи сжимались и
+   переносились, а строки были вдвое выше задуманного. */
+@media (min-width: 901px) {
+    /* сетка карточки: слева характеристики, справа колонка из двух строк —
+       фото сверху, цена снизу. Две строки обязательны: когда фото и цена делят
+       одну ячейку, при коротком списке характеристик они накладываются друг на
+       друга (цена рисуется поверх фото — она позже по DOM). */
+    .pcard {
+        display: grid; grid-template-columns: minmax(0, 1fr) 220px;
+        grid-template-rows: auto auto;
+        column-gap: 20px; align-items: start;
+    }
+    /* зазор между строками только при наличии фото: иначе пустая первая строка
+       добавляла бы отступ над ценой у товаров без картинки */
+    .pcard:has(.pcard-photo) { row-gap: 20px; }
+
+    /* тело карточки отдаём напрямую в сетку .pcard: так фото переезжает в правую
+       колонку, а блок цены прижимается к низу карточки — без правок HTML */
+    .pcard-main { display: contents; }
+    .pcard-body { grid-column: 1; grid-row: 1 / -1; min-width: 0; }
+    .pcard-photo {
+        grid-column: 2; grid-row: 1; align-self: start; justify-self: center; display: block;
+        width: 96px; height: 96px; padding: 0; cursor: zoom-in;
+        background: var(--panel-2); border: 1px solid var(--border); border-radius: var(--radius-sm); overflow: hidden;
+    }
+    .pcard-photo img { display: block; width: 100%; height: 100%; object-fit: contain; }
+
+    /* компактная таблица характеристик: подпись — по своему контенту (в одну
+       строку), значение — остаток ширины; хайрлайны даёт 1px-зазор + фон контейнера */
+    .spec-table-compact {
+        display: grid; grid-template-columns: max-content minmax(0, 1fr);
+        gap: 1px; background: var(--border);
+        width: 100%; border: 0; border-radius: 0; box-shadow: none;
+    }
+    .spec-table-compact tbody, .spec-table-compact tr { display: contents; }
+    .spec-table-compact th, .spec-table-compact td {
+        background: var(--panel); border-bottom: 0;
+        padding: 4px 10px; font-size: 12px; line-height: 1.3; vertical-align: middle;
+    }
+    .spec-table-compact th { width: auto; max-width: none; white-space: nowrap; font-weight: 500; }
+
+    .pcard-permalink { display: inline-block; margin-top: 6px; font-size: 12.5px; font-weight: 500; }
+
+    /* блок цены: подпись и цена — одной строкой, кнопка — на всю ширину;
+       прижат к низу карточки (нижняя строка правой колонки) */
+    .pcard-side {
+        grid-column: 2; grid-row: 2; align-self: end;
+        display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: baseline;
+        gap: 6px 8px; padding: 12px;
+        background: var(--panel-2); border: 1px solid var(--border); border-radius: var(--radius-sm);
+    }
+    .pcard-side .price-label { grid-area: 1 / 1; color: var(--muted); font-size: 11.5px; }
+    .pcard-side .price { grid-area: 1 / 2; font-size: 20px; line-height: 1.2; }
+    .pcard-side .buy-inline { grid-column: 1 / -1; grid-row: 2; }
+    .pcard-side .incart-btn { padding: 5px 8px 5px 4px; }
+    .pcard-side .note { margin: 0; color: var(--muted); font-size: 12px; }
+
+    .prow-body-inner { padding: 12px 16px; }
+}
+
 /* --- подвал --- */
 
 .site-footer {
@@ -886,6 +945,8 @@ body.cascade-leaf .cascade-root { display: none; }
     .cascade-columns.has-leaf .cascade-column[data-leaf="1"] {
         max-height: calc(100vh - var(--header-h) - 32px);
     }
+
+
 
 /* --- адаптив --- */
 

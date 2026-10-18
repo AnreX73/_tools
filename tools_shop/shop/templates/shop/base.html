@@ -106,11 +106,15 @@
         </div>
     </header>
 
-    {% block desktop_rail %}{% endblock %}
+    {# Колонка каталога и контент живут в общей обёртке: так рейл остаётся в   #}
+    {# потоке и заканчивается над подвалом, а не поверх него (см. .rail-layout). #}
+    <div class="rail-layout">
+        {% block desktop_rail %}{% endblock %}
 
-    <main class="container{% block main_class %}{% endblock %}">
-        {% block content %}{% endblock %}
-    </main>
+        <main class="container{% block main_class %}{% endblock %}">
+            {% block content %}{% endblock %}
+        </main>
+    </div>
 
     <footer class="site-footer">
         <div class="container">
