@@ -477,3 +477,86 @@ class RaisePricesCommandTestCase(TestCase):
     def test_percent_and_fixed_price_together_is_an_error(self):
         with self.assertRaises(CommandError):
             self._run("--percent", "10", "--fixed-price", "777")
+
+
+class ReplaceInNamesCommandTestCase(TestCase):
+    """Команда replace_in_names: замена слова в названиях товаров."""
+
+    @classmethod
+    def setUpTestData(cls):
+        root = Category.objects.add_root(create_kwargs={"name": "Инструмент"})
+        cls.leaf = Category.objects.add_child(root, create_kwargs={"name": "Свёрла"})
+        cls.trailing = cls._product("RIN-1", "Втулка переходная D20-06 Fenwerk")
+        cls.glued = cls._product("RIN-2", "Метчик машинный M3x0.5 DIN371Fenwerk")
+        cls.comma = cls._product("RIN-3", "Сверло HSSE N15C-0990 Fenwerk, шт")
+        cls.only = cls._product("RIN-4", "Fenwerk")
+        cls.other = cls._product("RIN-5", "Фреза без лишних слов")
+
+    @classmethod
+    def _product(cls, sku, name):
+        return Product.objects.create(
+            sku=sku, name=name, category=cls.leaf,
+            price=100, is_active=True, attributes={},
+        )
+
+    def _run(self, *args):
+        out = StringIO()
+        call_command("replace_in_names", *args, stdout=out)
+        return out.getvalue()
+
+    def _names(self):
+        return dict(Product.objects.values_list("sku", "name"))
+
+    # ---- удаление слова ----
+    def test_removes_trailing_word(self):
+        self._run("--find", "Fenwerk", "--replace", "")
+        names = self._names()
+        self.assertEqual(names["RIN-1"], "Втулка переходная D20-06")
+        self.assertEqual(names["RIN-5"], "Фреза без лишних слов")  # не задет
+
+    def test_removes_word_glued_to_previous(self):
+        self._run("--find", "Fenwerk", "--replace", "")
+        self.assertEqual(self._names()["RIN-2"], "Метчик машинный M3x0.5 DIN371")
+
+    def test_cleans_space_before_comma(self):
+        self._run("--find", "Fenwerk", "--replace", "")
+        self.assertEqual(self._names()["RIN-3"], "Сверло HSSE N15C-0990, шт")
+
+    def test_empty_result_is_skipped_and_reported(self):
+        output = self._run("--find", "Fenwerk", "--replace", "")
+        self.assertIn("Пропущено", output)
+        self.assertEqual(self._names()["RIN-4"], "Fenwerk")
+
+    # ---- замена слова, а не только удаление ----
+    def test_replaces_word_with_another(self):
+        self._run("--find", "Fenwerk", "--replace", "Прогресс")
+        self.assertEqual(self._names()["RIN-1"], "Втулка переходная D20-06 Прогресс")
+
+    # ---- режимы и защита ----
+    def test_dry_run_changes_nothing(self):
+        output = self._run("--find", "Fenwerk", "--replace", "", "--dry-run")
+        self.assertIn("Dry-run", output)
+        self.assertEqual(self._names()["RIN-1"], "Втулка переходная D20-06 Fenwerk")
+
+    def test_empty_find_is_an_error(self):
+        with self.assertRaises(CommandError):
+            self._run("--find", "", "--replace", "x")
+
+    def test_same_find_and_replace_is_an_error(self):
+        with self.assertRaises(CommandError):
+            self._run("--find", "Fenwerk", "--replace", "Fenwerk")
+
+    # ---- slug и updated_at ----
+    def test_slug_is_untouched_by_default(self):
+        before = Product.objects.get(sku="RIN-1").slug
+        self._run("--find", "Fenwerk", "--replace", "")
+        self.assertEqual(Product.objects.get(sku="RIN-1").slug, before)
+
+    def test_rebuild_slugs_updates_slug_of_changed_products(self):
+        self._run("--find", "Fenwerk", "--replace", "", "--rebuild-slugs")
+        self.assertNotIn("fenwerk", Product.objects.get(sku="RIN-1").slug)
+
+    def test_updated_at_is_touched(self):
+        before = Product.objects.get(sku="RIN-1").updated_at
+        self._run("--find", "Fenwerk", "--replace", "")
+        self.assertGreater(Product.objects.get(sku="RIN-1").updated_at, before)

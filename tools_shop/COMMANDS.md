@@ -37,6 +37,7 @@ python manage.py <команда> --help    # флаги конкретной к
 | `import_stock` | `[shop]` | реальный прайс-остатки клиента из xlsx | да |
 | `raise_prices` | `[shop]` | наценка в процентах или одна цена всем (заглушка) | да |
 | `rebuild_slugs` | `[shop]` | пересобрать `slug` категорий и товаров | да |
+| `replace_in_names` | `[shop]` | заменить/удалить слово в названиях товаров | да |
 | `generate_vapid_keys` | `[chat]` | VAPID-пара ключей для `.env` | нет |
 | `migrate` | `[django]` | применить миграции | да |
 | `collectstatic` | `[staticfiles]` | собрать статику в `staticfiles/` | нет (файлы) |
@@ -148,6 +149,38 @@ python manage.py rebuild_slugs
 убрали не-ASCII символы вроде `Ø`), потому что `slug` не пересчитывается автоматически и не
 меняется при переименовании объекта.
 
+### `replace_in_names` — замена слова в названиях товаров
+
+Меняет одно слово на другое во всех `Product.name`. Ищется точное вхождение подстроки
+(регистр учитывается), пустой `--replace` означает удаление слова.
+
+```sh
+python manage.py replace_in_names --find "Fenwerk" --replace "" --dry-run   # предпросмотр
+python manage.py replace_in_names --find "Fenwerk" --replace ""             # удалить слово
+python manage.py replace_in_names --find "Fenwerk" --replace "Прогресс"     # заменить слово
+python manage.py replace_in_names --find "Fenwerk" --replace "" --rebuild-slugs
+```
+
+| Флаг | Что делает |
+|---|---|
+| `--find СЛОВО` | что искать в названии (**обязателен**, точное вхождение, регистр учитывается) |
+| `--replace СЛОВО` | на что заменить; по умолчанию пусто — найденное слово удаляется |
+| `--dry-run` | показать отчёт, ничего не записывая |
+| `--rebuild-slugs` | заодно пересобрать `slug` изменённых товаров (в той же транзакции) |
+
+- После удаления слова название нормализуется: убираются двойные пробелы, пробел перед
+  запятой/точкой, пробел после открывающей скобки, хвостовые `-`, `,`, `;`, `:`. Поэтому
+  «слипшееся» написание вроде `…DIN371Fenwerk` превращается в `…DIN371`, а
+  `… N15C-0990 Fenwerk, шт` — в `… N15C-0990, шт`.
+- Товар **пропускается**, если имя не изменилось или после замены стало пустым (например,
+  название целиком состояло из искомого слова). Такие товары печатаются в отчёте — их правят
+  руками.
+- Одна транзакция, запись батчами по 500; `updated_at` проставляется у изменённых товаров.
+- По умолчанию `slug` **не меняется** — это правило всего проекта (см. `rebuild_slugs`), чтобы
+  не ломать уже проиндексированные ссылки. Флаг `--rebuild-slugs` пересобирает `slug` только
+  у изменённых товаров, но старые URL после этого перестанут открываться (редиректов нет).
+- Ошибка, если `--find` пустой или `--find` совпадает с `--replace` — менять нечего.
+
 ### `generate_vapid_keys` — ключи Web Push
 
 Генерирует пару VAPID-ключей и печатает её в формате переменных `.env`.
@@ -167,7 +200,7 @@ python manage.py generate_vapid_keys
 | `migrate` | `python manage.py migrate` | применить миграции |
 | `collectstatic` | `python manage.py collectstatic --noinput` | собрать статику в `staticfiles/` |
 | `runserver` | `python manage.py runserver` | переопределён Daphne, поэтому WebSocket чата работает |
-| `test` | `python manage.py test` | все тесты, сейчас 63 |
+| `test` | `python manage.py test` | все тесты, сейчас 74 |
 | `test` (один класс) | `python manage.py test shop.tests.RaisePricesCommandTestCase` | быстрее при отладке |
 | `createsuperuser` | `python manage.py createsuperuser` | администратор для `/admin/` |
 | `qcluster` | `python manage.py qcluster` | воркер django-q (нужен Redis) |
@@ -269,6 +302,7 @@ python -m ruff check .
 | `import_stock` | пересчитывает и перезаписывает `price` у существующих товаров |
 | `raise_prices` | не идемпотентна — повторный запуск накидывает процент ещё раз |
 | `raise_prices --fixed-price` | перезаписывает весь прайс одной цифрой (защита — флаг `--yes`) |
+| `replace_in_names` | массово переименовывает товары; с `--rebuild-slugs` дополнительно ломает старые URL |
 
 **Бэкап цен.** На хосте утилит `pg_dump`/`psql` нет, поэтому доступны три способа:
 
