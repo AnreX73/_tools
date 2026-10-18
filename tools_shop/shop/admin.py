@@ -208,13 +208,13 @@ class ProductAdminForm(forms.ModelForm):
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
     form = ProductAdminForm
-    list_display = ("sku", "name", "category", "price", "is_active")
+    list_display = ("sku", "name", "category", "unit", "price", "is_active")
     list_filter = ("is_active", "brand", ("category", admin.RelatedOnlyFieldListFilter))
     list_select_related = ("category",)
     search_fields = ("sku", "name")
     readonly_fields = ("slug", "created_at", "updated_at", "images_dropzone")
     fieldsets = (
-        (None, {"fields": ("category", "sku", "name", "brand", "price", "is_active", "description")}),
+        (None, {"fields": ("category", "sku", "name", "brand", "unit", "price", "is_active", "description")}),
         ("Изображения", {"fields": ("images_dropzone",)}),
         ("Характеристики", {"fields": ("attributes",)}),
         ("Служебное", {"fields": ("slug", "created_at", "updated_at"), "classes": ("collapse",)}),

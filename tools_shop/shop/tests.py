@@ -249,8 +249,8 @@ class SearchTestCase(TestCase):
             return Product.objects.create(sku=sku, name=name, category=category, **extra)
 
         cls.drill6 = make("DR-001", "Сверло спиральное Ø6,0 мм", cls.leaf, brand=brand, price=120)
-        cls.drill8 = make("DR-002", "Сверло спиральное Ø8,0 мм", cls.leaf)
-        cls.mill = make("ML-100", "Фреза концевая твёрдосплавная", cls.other)
+        cls.drill8 = make("DR-002", "Сверло спиральное Ø8,0 мм", cls.leaf, price=180)
+        cls.mill = make("ML-100", "Фреза концевая твёрдосплавная", cls.other, price=950)
         cls.hidden = make("DR-999", "Сверло скрытое", cls.leaf, is_active=False)
 
     def _ids(self, query):

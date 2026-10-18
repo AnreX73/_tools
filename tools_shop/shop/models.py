@@ -284,11 +284,20 @@ class ProductQuerySet(models.QuerySet):
 
 
 class Product(SlugWithIdMixin, models.Model):
+    class Unit(models.TextChoices):
+        PIECE = "шт", "шт"
+        KG = "кг", "кг"
+        LITER = "л", "л"
+        KIT = "компл", "компл"
+        PACK = "пач", "пач"
+
     category = models.ForeignKey(Category, on_delete=models.PROTECT, related_name="products")
     brand = models.ForeignKey(Brand, null=True, blank=True, on_delete=models.PROTECT,
                               related_name="products")
     sku = models.CharField("Артикул", max_length=64, unique=True)
     name = models.CharField("Название", max_length=255)
+    unit = models.CharField("Ед. измерения", max_length=16, choices=Unit.choices,
+                            default=Unit.PIECE, blank=True)
     description = models.TextField("Описание", blank=True)
     # У активного товара всегда указана цена. Для скрытых товаров цена может быть пустой.
     price = models.PositiveIntegerField("Цена", null=True, blank=True,
