@@ -33,11 +33,11 @@
     cursor: pointer;
     transition: color .15s var(--ease), border-color .15s var(--ease), background .15s var(--ease);
 }
-.favorite-btn:hover { color: #e11d48; border-color: #fecdd3; background: #fff1f2; }
-.favorite-btn.is-active { color: #e11d48; border-color: #fecdd3; background: #fff1f2; }
+.favorite-btn:hover { color: #d97706; border-color: #fde68a; background: #fffbeb; }
+.favorite-btn.is-active { color: #d97706; border-color: #fde68a; background: #fffbeb; }
 :root[data-theme="dark"] .favorite-btn:hover,
 :root[data-theme="dark"] .favorite-btn.is-active {
-    color: #fb7185; border-color: rgba(251, 113, 133, .35); background: rgba(251, 113, 133, .12);
+    color: #fbbf24; border-color: rgba(251, 191, 36, .35); background: rgba(251, 191, 36, .12);
 }
 
 /* Кнопка «В корзину» рядом с избранным на странице товара */
