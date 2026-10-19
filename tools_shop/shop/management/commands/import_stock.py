@@ -26,6 +26,7 @@ shop/management/commands/import_stock.py
 import hashlib
 import json
 import re
+from decimal import Decimal
 from pathlib import Path
 
 from django.core.exceptions import ValidationError
@@ -277,7 +278,8 @@ class Command(BaseCommand):
             issues.append(f"отрицательное количество ({qty_f:g})")
 
         if not issues and total_f is not None:
-            price = round(total_f / qty_f) if qty_f and qty_f > 0 else round(total_f)
+            price = total_f / qty_f if qty_f and qty_f > 0 else total_f
+            price = Decimal(str(price)).quantize(Decimal("0.01"))
             if price == 0:
                 issues.append(f"нулевая цена (сумма {total_f:g}, кол-во {qty_f})")
         elif total_f is None and not issues:

@@ -1,0 +1,181 @@
+{% extends "shop/base.html" %}
+{% load static shop_money %}
+{% block title %}Заявка № {{ order.number }}{% endblock %}
+{% block head %}
+    <link rel="stylesheet" href="{% static 'css/checkout.css' %}">
+    <meta name="robots" content="noindex, nofollow">
+{% endblock %}
+{% block content %}
+    <article class="order-page">
+        <header class="order-head">
+            <nav class="breadcrumbs">
+                <a href="{% url 'shop:index' %}">Главная</a>
+                <span class="sep">/</span> <a href="{% url 'shop:catalog' %}">Каталог</a>
+                <span class="sep">/</span> <span>Заявка № {{ order.number }}</span>
+            </nav>
+            <div class="order-head-row">
+                <div>
+                    <p class="order-kicker">Заявка № {{ order.number }}</p>
+                    <h1 class="page-title">{{ heading }}</h1>
+                </div>
+                <span class="status-badge status-{{ order.status }}">
+                    {{ order.get_status_display }}
+                </span>
+            </div>
+            <p class="lead">{{ status_hint }}</p>
+            <p class="help">
+                Оформлена {{ order.created_at|date:"d.m.Y H:i" }}.
+                Сохраните ссылку на эту страницу — по ней можно проверить статус.
+            </p>
+        </header>
+
+        <div class="order-layout">
+            <div class="order-main">
+                <section class="order-card">
+                    <h2>Состав заявки</h2>
+                    <div class="order-items">
+                        {% for item in order.items.all %}
+                            <div class="order-item">
+                                <div class="order-item-name">
+                                    <strong>{{ item.name }}</strong>
+                                    <span class="sku">Артикул: {{ item.sku }}</span>
+                                </div>
+                                <div class="order-item-qty">{{ item.qty }} × {{ item.price|money_rub }}</div>
+                                <div class="order-item-sum">{{ item.line_total|money_rub }}</div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                    <div class="order-total">
+                        <span>Итого</span>
+                        <strong>{{ order.items_total|money_rub }}</strong>
+                    </div>
+                </section>
+
+                <section class="order-card">
+                    <h2>Реквизиты</h2>
+                    <dl class="order-details">
+                        <div>
+                            <dt>Организация</dt>
+                            <dd>{{ snapshot.short_name|default:"—" }}</dd>
+                        </div>
+                        {% if snapshot.full_name %}
+                            <div>
+                                <dt>Полное наименование</dt>
+                                <dd>{{ snapshot.full_name }}</dd>
+                            </div>
+                        {% endif %}
+                        {% if legal_form_label %}
+                            <div>
+                                <dt>ОПФ</dt>
+                                <dd>{{ legal_form_label }}</dd>
+                            </div>
+                        {% endif %}
+                        <div>
+                            <dt>ИНН / КПП</dt>
+                            <dd>{{ snapshot.inn|default:"—" }}{% if snapshot.kpp %} / {{ snapshot.kpp }}{% endif %}</dd>
+                        </div>
+                        {% if snapshot.legal_address %}
+                            <div>
+                                <dt>Юридический адрес</dt>
+                                <dd>{{ snapshot.legal_address }}</dd>
+                            </div>
+                        {% endif %}
+                        <div>
+                            <dt>Адрес доставки</dt>
+                            <dd>{{ order.delivery_address|default:"—" }}</dd>
+                        </div>
+                        {% if snapshot.bank_name or snapshot.checking_account %}
+                            <div>
+                                <dt>Банк</dt>
+                                <dd>{{ snapshot.bank_name|default:"—" }}</dd>
+                            </div>
+                            <div>
+                                <dt>БИК</dt>
+                                <dd>{{ snapshot.bik|default:"—" }}</dd>
+                            </div>
+                            {% if snapshot.correspondent_account %}
+                                <div>
+                                    <dt>Корр. счёт</dt>
+                                    <dd>{{ snapshot.correspondent_account }}</dd>
+                                </div>
+                            {% endif %}
+                            <div>
+                                <dt>Расчётный счёт</dt>
+                                <dd>{{ snapshot.checking_account|default:"—" }}</dd>
+                            </div>
+                        {% endif %}
+                    </dl>
+                </section>
+
+                <section class="order-card">
+                    <h2>Контакты</h2>
+                    <dl class="order-details">
+                        <div>
+                            <dt>Контактное лицо</dt>
+                            <dd>{{ order.contact_name }}</dd>
+                        </div>
+                        <div>
+                            <dt>Email</dt>
+                            <dd>{{ order.contact_email }}</dd>
+                        </div>
+                        {% if order.contact_phone %}
+                            <div>
+                                <dt>Телефон</dt>
+                                <dd>{{ order.contact_phone }}</dd>
+                            </div>
+                        {% endif %}
+                        {% if order.comment %}
+                            <div>
+                                <dt>Комментарий</dt>
+                                <dd>{{ order.comment|linebreaksbr }}</dd>
+                            </div>
+                        {% endif %}
+                    </dl>
+                </section>
+
+                {% if current_invoice %}
+                    <section class="order-card">
+                        <h2>Счёт</h2>
+                        <p>
+                            Счёт № {{ current_invoice.number }}
+                            от {{ current_invoice.issued_at|date:"d.m.Y" }}
+                            {% if current_invoice.version > 1 %}(версия {{ current_invoice.version }}){% endif %}.
+                        </p>
+                        {% if current_invoice.pdf %}
+                            <a class="btn btn-ghost" href="{{ current_invoice.pdf.url }}"
+                               target="_blank" rel="noopener">Скачать PDF</a>
+                        {% else %}
+                            <p class="help">PDF счёта готовится. Мы отправим его на ваш email.</p>
+                        {% endif %}
+                        {% if current_invoice.sent_at %}
+                            <p class="help">
+                                Отправлен на email {{ current_invoice.sent_at|date:"d.m.Y H:i" }}.
+                            </p>
+                        {% endif %}
+                    </section>
+                {% endif %}
+            </div>
+
+            <aside class="order-aside">
+                <section class="order-card">
+                    <h2>История статусов</h2>
+                    <ol class="order-timeline">
+                        {% for log in order.status_log.all %}
+                            <li>
+                                <time datetime="{{ log.at|date:'c' }}">{{ log.at|date:"d.m.Y H:i" }}</time>
+                                <span>
+                                    {% if log.from_status %}
+                                        {{ log.get_from_status_display }} → {{ log.get_to_status_display }}
+                                    {% else %}
+                                        Заявка создана — {{ log.get_to_status_display }}
+                                    {% endif %}
+                                </span>
+                            </li>
+                        {% endfor %}
+                    </ol>
+                </section>
+                <a class="btn btn-ghost btn-block" href="{% url 'shop:catalog' %}">Вернуться в каталог</a>
+            </aside>
+        </div>
+    </article>
+{% endblock %}

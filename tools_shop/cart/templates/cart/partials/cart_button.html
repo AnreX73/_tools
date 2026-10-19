@@ -1,0 +1,25 @@
+{# Кнопка «В корзину» с количеством. После добавления показывает «В корзине: N». #}
+{# Количество передаётся через hx-include: htmx сам берёт value из input.    #}
+{# hx-target="closest" — чтобы не плодить одинаковые id на странице.          #}
+<div class="buy-inline" x-data="{ qty: 1 }">
+    <button type="button" class="btn btn-primary incart-btn"
+            hx-post="{% url 'cart:add' product.pk %}"
+            hx-include="closest .buy-inline"
+            hx-target="closest .buy-inline"
+            hx-swap="outerHTML"
+            hx-disabled-elt="this"
+            aria-label="Добавить в корзину">
+        <span class="incart-qty" role="group" aria-label="Количество">
+            <span class="incart-qty-btn" role="button" tabindex="0" aria-label="Уменьшить"
+                  @click="qty = Math.max(1, qty - 1)">−</span>
+            <input class="incart-qty-input" type="number" inputmode="numeric" name="qty"
+                   min="1" max="9999" step="1" x-model.number="qty"
+                   @change="qty = Math.min(9999, Math.max(1, qty || 1))" aria-label="Количество">
+            <span class="incart-qty-btn" role="button" tabindex="0" aria-label="Увеличить"
+                  @click="qty = Math.min(9999, qty + 1)">+</span>
+        </span>
+        <span class="incart-sep"></span>
+        <span>{% if in_cart_qty %}В корзине: {{ in_cart_qty }}{% else %}В корзину{% endif %}</span>
+    </button>
+    {% if error %}<p class="cart-error" role="alert">{{ error }}</p>{% endif %}
+</div>

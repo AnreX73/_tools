@@ -1,0 +1,10 @@
+{# Бейдж корзины в шапке. Обновляется по событию cart-updated. #}
+<a class="header-action" href="{% url 'cart:detail' %}" aria-label="Корзина: {{ cart_count }}"
+   hx-get="{% url 'cart:badge' %}"
+   hx-trigger="cart-updated from:body"
+   hx-target="this"
+   hx-swap="outerHTML">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.7 13.4a2 2 0 0 0 2 1.6h9.7a2 2 0 0 0 2-1.6L23 6H6"/></svg>
+    <span class="header-action-label">Корзина</span>
+    {% if cart_count %}<span class="header-badge">{{ cart_count }}</span>{% endif %}
+</a>

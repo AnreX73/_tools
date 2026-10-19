@@ -1,0 +1,58 @@
+<fieldset class="form-section" id="organization-fields">
+    <legend>Организация</legend>
+
+    {% if lookup_notice %}
+        <div class="notice inn-lookup-notice{% if lookup_level == 'warning' %} notice-warning{% elif lookup_level == 'error' %} notice-error{% endif %}"
+             role="status">
+            {{ lookup_notice }}
+        </div>
+    {% endif %}
+
+    <div class="form-grid">
+        <div class="form-row">
+            {{ form.legal_form.label_tag }}
+            {{ form.legal_form }}
+            {{ form.legal_form.errors }}
+        </div>
+        <div class="form-row">
+            {{ form.short_name.label_tag }}
+            {{ form.short_name }}
+            {{ form.short_name.errors }}
+        </div>
+        <div class="form-row form-row-full">
+            {{ form.full_name.label_tag }}
+            {{ form.full_name }}
+            {{ form.full_name.errors }}
+        </div>
+        <div class="form-row">
+            {{ form.inn.label_tag }}
+            <div class="field-with-action">
+                {{ form.inn }}
+                <button type="button" class="btn btn-ghost btn-sm"
+                        hx-post="{% url 'checkout:suggest_by_inn' %}"
+                        hx-include="#id_inn, #id_kpp"
+                        hx-target="#organization-fields"
+                        hx-swap="outerHTML"
+                        hx-indicator="#inn-lookup-indicator"
+                        hx-disabled-elt="this">Заполнить по ИНН</button>
+                <span id="inn-lookup-indicator" class="lookup-indicator"
+                      aria-hidden="true"></span>
+            </div>
+            <div id="inn-suggest" class="inn-suggest" aria-live="polite"></div>
+            {% if form.inn.help_text %}<p class="help">{{ form.inn.help_text }}</p>{% endif %}
+            {{ form.inn.errors }}
+        </div>
+        <div class="form-row">
+            {{ form.kpp.label_tag }}
+            {{ form.kpp }}
+            {% if form.kpp.help_text %}<p class="help">{{ form.kpp.help_text }}</p>{% endif %}
+            {{ form.kpp.errors }}
+        </div>
+        <div class="form-row form-row-full">
+            {{ form.ogrn.label_tag }}
+            {{ form.ogrn }}
+            {% if form.ogrn.help_text %}<p class="help">{{ form.ogrn.help_text }}</p>{% endif %}
+            {{ form.ogrn.errors }}
+        </div>
+    </div>
+</fieldset>

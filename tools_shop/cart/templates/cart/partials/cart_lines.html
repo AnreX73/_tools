@@ -1,0 +1,78 @@
+{% load shop_money %}
+{# Содержимое корзины: таблица позиций, итог, кнопки. Перерисовывается целиком. #}
+<div id="cart-lines" class="cart-lines">
+    {% if cart_error %}
+        <div class="notice notice-warning" role="alert">{{ cart_error }}</div>
+    {% endif %}
+    {% if removed %}
+        <div class="notice notice-warning" role="status">
+            <strong>Корзина изменилась:</strong>
+            <ul>
+                {% for item in removed %}<li>{{ item.message }}</li>{% endfor %}
+            </ul>
+        </div>
+    {% endif %}
+
+    {% if lines %}
+        <div class="cart-table" role="table" aria-label="Товары в корзине">
+            {% for line in lines %}
+                <div class="cart-row" role="row" id="cart-row-{{ line.product.pk }}">
+                    <div class="cart-cell cart-name" role="cell">
+                        <a href="{{ line.product.get_absolute_url }}">{{ line.product.name }}</a>
+                        <span class="sku">Артикул: {{ line.product.sku }}</span>
+                    </div>
+                    <div class="cart-cell cart-price" role="cell">
+                        {{ line.price|money_rub }}
+                    </div>
+                    <div class="cart-cell" role="cell">
+                        <div class="qty-stepper" x-data="{ qty: {{ line.qty }} }">
+                            <button type="button" aria-label="Уменьшить количество"
+                                    @click="qty = Math.max(1, qty - 1); $refs.input.dispatchEvent(new Event('change'))">−</button>
+                            <input x-ref="input" type="number" inputmode="numeric" name="qty"
+                                   min="1" max="9999" step="1" x-model.number="qty"
+                                   aria-label="Количество"
+                                   hx-post="{% url 'cart:update' line.product.pk %}"
+                                   hx-trigger="change delay:400ms"
+                                   hx-target="#cart-lines"
+                                   hx-swap="outerHTML"
+                                   hx-disabled-elt="this">
+                            <button type="button" aria-label="Увеличить количество"
+                                    @click="qty = Math.min(9999, qty + 1); $refs.input.dispatchEvent(new Event('change'))">+</button>
+                        </div>
+                    </div>
+                    <div class="cart-cell cart-sum" role="cell">
+                        {{ line.line_total|money_rub }}
+                    </div>
+                    <div class="cart-cell cart-actions" role="cell">
+                        <button type="button" class="link-danger"
+                                hx-post="{% url 'cart:remove' line.product.pk %}"
+                                hx-target="#cart-lines"
+                                hx-swap="outerHTML"
+                                hx-confirm="Удалить товар из корзины?"
+                                aria-label="Удалить «{{ line.product.name }}» из корзины">Удалить</button>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+
+        <div class="cart-summary">
+            <div class="cart-total">
+                <span>Итого</span>
+                <strong>{{ cart_total|money_rub }}</strong>
+            </div>
+            <div class="cart-actions-row">
+                <button type="button" class="btn btn-ghost"
+                        hx-post="{% url 'cart:clear' %}"
+                        hx-target="#cart-lines"
+                        hx-swap="outerHTML"
+                        hx-confirm="Очистить корзину полностью?">Очистить корзину</button>
+                <a class="btn btn-primary" href="{% url 'checkout:index' %}">Оформить заказ</a>
+            </div>
+        </div>
+    {% else %}
+        <div class="empty-state">
+            <p>Корзина пуста.</p>
+            <a class="btn btn-primary" href="{% url 'shop:catalog' %}">Перейти в каталог</a>
+        </div>
+    {% endif %}
+</div>

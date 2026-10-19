@@ -16,6 +16,7 @@ shop/management/commands/seed_shop.py
 и откатит всё (одна транзакция).
 """
 import json
+from decimal import Decimal
 from pathlib import Path
 
 from django.core.exceptions import ValidationError
@@ -172,7 +173,9 @@ class Command(BaseCommand):
         product.category = category
         product.name = item["name"]
         product.brand = self._brand(item.get("brand"))
-        product.price = item.get("price")             # int или null для скрытого товара
+        product.price = item.get("price")             # Decimal или None для скрытого товара
+        if product.price is not None:
+            product.price = Decimal(str(product.price))
         product.description = item.get("description", "")
         product.is_active = item.get("is_active", item.get("price") is not None)
         product.attributes = item.get("attributes", {})

@@ -7,6 +7,7 @@
 # Django's dynamic ORM and test-client APIs are not fully represented by the
 # project's pyright stubs.
 # pyright: reportAttributeAccessIssue=false, reportGeneralTypeIssues=false
+from decimal import Decimal
 from io import StringIO
 
 from django.contrib.auth import get_user_model
@@ -427,21 +428,22 @@ class RaisePricesCommandTestCase(TestCase):
     def test_default_percent_raises_prices_by_15(self):
         self._run()
         prices = self._prices()
-        self.assertEqual(prices["RP-100"], 115)
-        self.assertEqual(prices["RP-4098"], 4713)  # 4098 * 1.15 = 4712.7
-        self.assertEqual(prices["RP-300"], 345)    # скрытый товар тоже
-        self.assertEqual(prices["RP-0"], 0)
+        self.assertEqual(prices["RP-100"], Decimal("115.00"))
+        # 4098 * 1.15 = 4712.7 — копейки сохраняются
+        self.assertEqual(prices["RP-4098"], Decimal("4712.70"))
+        self.assertEqual(prices["RP-300"], Decimal("345.00"))    # скрытый товар тоже
+        self.assertEqual(prices["RP-0"], Decimal("0.00"))
         self.assertIsNone(prices["RP-NONE"])
 
     def test_percent_is_configurable(self):
         self._run("--percent", "10")
-        self.assertEqual(self._prices()["RP-100"], 110)
+        self.assertEqual(self._prices()["RP-100"], Decimal("110.00"))
 
     def test_dry_run_changes_nothing(self):
         output = self._run("--dry-run")
         self.assertIn("Dry-run", output)
-        self.assertEqual(self._prices()["RP-100"], 100)
-        self.assertEqual(self._prices()["RP-4098"], 4098)
+        self.assertEqual(self._prices()["RP-100"], Decimal("100.00"))
+        self.assertEqual(self._prices()["RP-4098"], Decimal("4098.00"))
 
     def test_updated_at_is_touched(self):
         before = Product.objects.get(sku="RP-100").updated_at
@@ -452,22 +454,22 @@ class RaisePricesCommandTestCase(TestCase):
     def test_fixed_price_requires_yes(self):
         output = self._run("--fixed-price", "777")
         self.assertIn("--yes", output)
-        self.assertEqual(self._prices()["RP-100"], 100)
-        self.assertEqual(self._prices()["RP-4098"], 4098)
+        self.assertEqual(self._prices()["RP-100"], Decimal("100.00"))
+        self.assertEqual(self._prices()["RP-4098"], Decimal("4098.00"))
 
     def test_fixed_price_sets_same_price_for_all_priced_products(self):
         self._run("--fixed-price", "777", "--yes")
         prices = self._prices()
-        self.assertEqual(prices["RP-100"], 777)
-        self.assertEqual(prices["RP-4098"], 777)
-        self.assertEqual(prices["RP-300"], 777)
+        self.assertEqual(prices["RP-100"], Decimal("777.00"))
+        self.assertEqual(prices["RP-4098"], Decimal("777.00"))
+        self.assertEqual(prices["RP-300"], Decimal("777.00"))
         # без цены и с ценой 0 остаются нетронутыми
-        self.assertEqual(prices["RP-0"], 0)
+        self.assertEqual(prices["RP-0"], Decimal("0.00"))
         self.assertIsNone(prices["RP-NONE"])
 
     def test_fixed_price_dry_run_does_not_write(self):
         self._run("--fixed-price", "777", "--dry-run")
-        self.assertEqual(self._prices()["RP-100"], 100)
+        self.assertEqual(self._prices()["RP-100"], Decimal("100.00"))
 
     def test_negative_fixed_price_is_rejected(self):
         with self.assertRaises(CommandError):

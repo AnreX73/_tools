@@ -1,0 +1,50 @@
+{% load shop_money %}
+{# Позиции избранного с кнопками «В корзину» и «Убрать». #}
+<div id="favorites-list" class="favorites-list">
+    {% if removed %}
+        <div class="notice notice-warning" role="status">
+            <strong>Избранное изменилось:</strong>
+            <ul>
+                {% for item in removed %}<li>{{ item.message }}</li>{% endfor %}
+            </ul>
+        </div>
+    {% endif %}
+
+    {% if products %}
+        <div class="favorites-grid">
+            {% for product in products %}
+                <article class="favorite-card" id="favorite-{{ product.pk }}">
+                    <a class="favorite-card-link" href="{{ product.get_absolute_url }}">
+                        <h2 class="product-name">{{ product.name }}</h2>
+                        <span class="sku">Артикул: {{ product.sku }}</span>
+                    </a>
+                    <div class="favorite-card-foot">
+                        <span class="price">{{ product.price|money_rub }}</span>
+                        {% if product.price is not None %}
+                            <div class="favorite-buy">
+                                <button type="button" class="btn btn-primary btn-sm"
+                                        hx-post="{% url 'cart:add' product.pk %}"
+                                        hx-vals='{"qty": 1}'
+                                        hx-target="closest .favorite-buy"
+                                        hx-swap="outerHTML"
+                                        hx-disabled-elt="this">В корзину</button>
+                            </div>
+                        {% else %}
+                            <span class="help">Цена по запросу</span>
+                        {% endif %}
+                    </div>
+                    <button type="button" class="link-danger"
+                            hx-post="{% url 'cart:favorite_remove' product.pk %}"
+                            hx-target="#favorites-list"
+                            hx-swap="outerHTML"
+                            aria-label="Убрать «{{ product.name }}» из избранного">Убрать</button>
+                </article>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="empty-state">
+            <p>В избранном пока ничего нет.</p>
+            <a class="btn btn-primary" href="{% url 'shop:catalog' %}">Перейти в каталог</a>
+        </div>
+    {% endif %}
+</div>

@@ -1,0 +1,7 @@
+{% extends "shop/base.html" %}
+{% load shop_money %}
+{% block title %}Избранное{% endblock %}
+{% block content %}
+    <h1 class="page-title">Избранное</h1>
+    {% include "cart/partials/favorites_list.html" %}
+{% endblock %}

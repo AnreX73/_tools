@@ -46,6 +46,9 @@ INSTALLED_APPS = [
     "users.apps.UsersConfig",
     "shop.apps.ShopConfig",
     "companies.apps.CompaniesConfig",
+    "cart.apps.CartConfig",
+    "orders.apps.OrdersConfig",
+    "checkout.apps.CheckoutConfig",
     "adminsortable2",
     "django_browser_reload",    
     "django.contrib.postgres",
@@ -80,6 +83,7 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
                 'shop.context_processors.popup_notice',
+                'cart.context_processors.cart_counters',
             ],
         },
     },
@@ -203,6 +207,10 @@ Q_CLUSTER = {
     "recycle": 500,
     "timeout": 60,
     "retry": 120,
+    # Письмо/PDF может временно не отправиться (SMTP, WeasyPrint, сеть).
+    # django-q2 повторит задачу, а после исчерпания попыток оставит ошибку
+    # в истории задач; счёт при этом останется выставленным.
+    "max_attempts": 3,
     "queue_limit": 50,
     "bulk": 10,
     "redis": {
@@ -216,10 +224,90 @@ Q_CLUSTER = {
 
 RU_EMAIL_PATTERN = r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.ru$"
 
+# ---- почта и заявки -------------------------------------------------------
+DEFAULT_FROM_EMAIL = config(
+    "DEFAULT_FROM_EMAIL", default="noreply@tools-service.ru"
+)
+# Адреса менеджеров, которым уходят уведомления о новых заявках.
+MANAGER_NOTIFY_EMAILS = config("MANAGER_NOTIFY_EMAILS", default="", cast=Csv())
+
+# Реквизиты продавца для счёта. В продакшене переопределите через .env,
+# не храните настоящие банковские данные в репозитории.
+SELLER_REQUISITES = {
+    "name": config("SELLER_NAME", default="ООО «ТУЛЗ СЕРВИС»"),
+    "full_name": config(
+        "SELLER_FULL_NAME",
+        default="Общество с ограниченной ответственностью «ТУЛЗ СЕРВИС»",
+    ),
+    "inn": config("SELLER_INN", default="7700000000"),
+    "kpp": config("SELLER_KPP", default="770001001"),
+    "address": config(
+        "SELLER_ADDRESS",
+        default="г. Москва, ул. Примерная, д. 1, офис 1",
+    ),
+    "phone": config("SELLER_PHONE", default="+7 (495) 000-00-00"),
+    "email": config("SELLER_EMAIL", default="info@tools-service.ru"),
+    "bank_name": config("SELLER_BANK_NAME", default="ПАО «Пример-Банк»"),
+    "bik": config("SELLER_BIK", default="044525225"),
+    "correspondent_account": config(
+        "SELLER_CORRESPONDENT_ACCOUNT", default="30101810400000000225"
+    ),
+    "checking_account": config(
+        "SELLER_CHECKING_ACCOUNT", default="40702810400000000001"
+    ),
+    "director": config("SELLER_DIRECTOR", default="Иванов Иван Иванович"),
+}
+
+# Базовый адрес сайта для ссылок в письмах (без завершающего слэша).
+SITE_URL = config("SITE_URL", default="http://localhost:8002").rstrip("/")
+
+# SMTP для боевой отправки. В тестах используется locmem backend.
+EMAIL_BACKEND = config(
+    "EMAIL_BACKEND", default="django.core.mail.backends.smtp.EmailBackend"
+)
+EMAIL_HOST = config("EMAIL_HOST", default="localhost")
+EMAIL_PORT = config("EMAIL_PORT", default=25, cast=int)
+EMAIL_HOST_USER = config("EMAIL_HOST_USER", default="")
+EMAIL_HOST_PASSWORD = config("EMAIL_HOST_PASSWORD", default="")
+EMAIL_USE_TLS = config("EMAIL_USE_TLS", default=False, cast=bool)
+EMAIL_USE_SSL = config("EMAIL_USE_SSL", default=False, cast=bool)
+EMAIL_TIMEOUT = config("EMAIL_TIMEOUT", default=30, cast=int)
+
+# Ограничение POST на оформление заявки: 5 попыток в час с одного IP.
+CHECKOUT_RATE_LIMIT = config("CHECKOUT_RATE_LIMIT", default=5, cast=int)
+CHECKOUT_RATE_WINDOW = config("CHECKOUT_RATE_WINDOW", default=3600, cast=int)
+# Включать только если перед Django стоит доверенный прокси, который
+# перезаписывает X-Forwarded-For. Иначе клиент подделает IP и обойдёт лимит.
+USE_X_FORWARDED_FOR = config("USE_X_FORWARDED_FOR", default=False, cast=bool)
+
+# ---- подсказки реквизитов DaData -----------------------------------------
+# Без DADATA_API_KEY подсказки для новых клиентов отключены, но повторные
+# клиенты по-прежнему подгружаются из базы. Ключ используется только на
+# сервере и не передаётся в шаблоны/JavaScript.
+DADATA_API_KEY = config("DADATA_API_KEY", default="")
+# Секрет нужен только для методов стандартизации; для Suggestions API
+# достаточно API-ключа. Оставлен на случай расширения интеграции.
+DADATA_SECRET_KEY = config("DADATA_SECRET_KEY", default="")
+DADATA_SUGGEST_URL = config(
+    "DADATA_SUGGEST_URL",
+    default="https://suggestions.dadata.ru/suggestions/api/4_1/rs/findById/party",
+)
+DADATA_TIMEOUT = config("DADATA_TIMEOUT", default=5, cast=int)
+# Успешные ответы кэшируются, чтобы не тратить квоту на повторные запросы.
+DADATA_CACHE_TTL = config("DADATA_CACHE_TTL", default=86400, cast=int)
+# Отдельный лимит на кнопку «Заполнить по ИНН»: 10 запросов в минуту с IP.
+DADATA_RATE_LIMIT = config("DADATA_RATE_LIMIT", default=10, cast=int)
+DADATA_RATE_WINDOW = config("DADATA_RATE_WINDOW", default=60, cast=int)
+
 # Дополнительные разрешенные домены, которые не заканчиваются на .ru
 EXTRA_ALLOWED_DOMAINS = ["yandex.by", "yandex.kz", "yandex.com"]
 
 SESSION_COOKIE_NAME = "sessionid_hairshop"
+
+# Корзина и избранное живут в сессии. cached_db: чтение из Redis, запись
+# и в кэш, и в БД — сессии не теряются при перезапуске Redis.
+SESSION_ENGINE = "django.contrib.sessions.backends.cached_db"
+SESSION_COOKIE_AGE = 60 * 60 * 24 * 90  # 90 дней
 
 # CSRF_COOKIE_NAME = "csrftoken_hairshop"
 

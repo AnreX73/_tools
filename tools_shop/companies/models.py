@@ -6,9 +6,12 @@ companies/models.py
 from __future__ import annotations
 
 from django.conf import settings
+from django.core.exceptions import ValidationError
 from django.core.validators import RegexValidator
 from django.db import models
 from django.db.models import Q
+
+from .validators import validate_inn
 
 
 class LegalEntity(models.Model):
@@ -42,16 +45,15 @@ class LegalEntity(models.Model):
     )
 
     # ---- ИНН, КПП, ОГРН ----
-    inn_validator = RegexValidator(
-        r"^\d{10}(\d{2})?$",
-        "ИНН должен содержать 10 цифр (юрлицо) или 12 цифр (ИП)"
-    )
+    # Уникальность ИНН в одиночку больше не требуется: у разных юрлиц может
+    # совпадать ИНН (например, обособленные подразделения), их различает КПП.
+    # Пара (ИНН, КПП) уникальна — см. Meta.constraints.
     inn = models.CharField(
         "ИНН",
         max_length=12,
-        unique=True,
-        validators=[inn_validator],
-        help_text="10 или 12 цифр"
+        db_index=True,
+        validators=[validate_inn],
+        help_text="10 цифр (юрлицо) или 12 цифр (ИП)"
     )
     kpp = models.CharField(
         "КПП",
@@ -131,6 +133,12 @@ class LegalEntity(models.Model):
 
     # ---- статус и даты ----
     is_active = models.BooleanField("Активна", default=True)  # type: ignore[assignment]
+    is_verified = models.BooleanField(
+        "Проверена менеджером",
+        default=False,
+        help_text="Реквизиты сверены менеджером; непроверенные компании "
+                  "не участвуют в автоматических сценариях.",
+    )  # type: ignore[assignment]
     created_at = models.DateTimeField("Дата создания", auto_now_add=True)  # type: ignore[assignment]
     updated_at = models.DateTimeField("Дата изменения", auto_now=True)  # type: ignore[assignment]
 
@@ -141,12 +149,38 @@ class LegalEntity(models.Model):
         verbose_name = "Юридическое лицо"
         verbose_name_plural = "Юридические лица"
         ordering = ["short_name"]
+        constraints = [
+            # У ИП КПП нет — храним пустую строку, поэтому ограничение работает
+            # и для юрлиц (ИНН+КПП), и для ИП (ИНН+"").
+            models.UniqueConstraint(fields=["inn", "kpp"], name="uniq_inn_kpp"),
+        ]
         indexes = [
             models.Index(fields=["is_active", "created_at"], name="company_active_created_idx"),
         ]
 
     def __str__(self) -> str:
         return str(self.short_name)
+
+    def clean_fields(self, exclude: set[str] | None = None) -> None:
+        """
+        Обрезает пробелы до проверки полей: иначе ИНН/КПП с пробелами
+        по краям не пройдут валидаторы длины и формата.
+        """
+        if self.inn:
+            self.inn = self.inn.strip()
+        self.kpp = (self.kpp or "").strip()
+        super().clean_fields(exclude=exclude)
+
+    def clean(self) -> None:
+        """
+        Проверяет сочетание ИНН и КПП.
+
+        Контрольную сумму ИНН проверяет валидатор поля при full_clean(),
+        здесь — только правила, зависящие от обоих полей.
+        """
+        super().clean()
+        if len(self.inn or "") == 10 and not self.kpp:
+            raise ValidationError({"kpp": "Для ИНН из 10 цифр КПП обязателен."})
 
     def get_delivery_address(self) -> str:
         """Возвращает адрес доставки (фактический или юридический)."""
@@ -191,6 +225,12 @@ class CompanyUser(models.Model):
     position = models.CharField("Должность", max_length=128, blank=True)
     
     added_at = models.DateTimeField("Дата добавления", auto_now_add=True)  # type: ignore[assignment]
+    confirmed_at = models.DateTimeField(
+        "Подтверждён",
+        null=True,
+        blank=True,
+        help_text="Когда пользователь подтвердил связь с компанией.",
+    )
 
     class Meta:
         verbose_name = "Пользователь компании"

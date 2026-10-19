@@ -1,4 +1,6 @@
 {% load shop_search %}
+{% load shop_money %}
+{% load cart_tags %}
 <article class="product-card">
     {% if show_category %}<span class="product-category">{{ item.product.category.name }}</span>{% endif %}
     <a class="product-card-link" href="{{ item.product.get_absolute_url }}">
@@ -14,6 +16,12 @@
     {% endif %}
     <div class="product-foot">
         <span class="sku">{{ item.product.sku }}{% if item.product.main_image %}<svg class="photo-badge" role="img" aria-label="Есть фото" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><title>Есть фото</title><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>{% endif %}</span>
-        <span class="price">{{ item.product.price }} ₽</span>
+        <span class="price">{{ item.product.price|money_rub }}</span>
+    </div>
+    <div class="product-actions">
+        {% include "cart/partials/favorite_button.html" with product=item.product is_favorite=item.product.pk|is_favorite:request %}
+        {% if item.product.price is not None %}
+            {% include "cart/partials/cart_button.html" with product=item.product in_cart_qty=item.product.pk|in_cart_qty:request %}
+        {% endif %}
     </div>
 </article>

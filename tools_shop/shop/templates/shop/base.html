@@ -32,6 +32,7 @@
     <link rel="apple-touch-icon" href="{% static 'shop/images/pwa-180.png' %}">
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
     <link rel="stylesheet" href="{% static 'css/chat.css' %}">
+    <link rel="stylesheet" href="{% static 'css/cart.css' %}">
     <script src="{% static 'js/chat.js' %}" defer></script>
     <script src="{% static 'vendor/htmx.min.js' %}" defer></script>
     <script src="{% static 'js/search.js' %}" defer></script>
@@ -85,6 +86,8 @@
                 <a href="{% url 'shop:catalog' %}" class="desktop-hidden{% if url_name == 'catalog' or url_name == 'category' or url_name == 'product' %} active{% endif %}">Каталог</a>
             </nav>
             {% endwith %}
+            {% include 'cart/partials/favorites_badge.html' %}
+            {% include 'cart/partials/cart_badge.html' %}
             <a class="btn btn-ghost desktop-only catalogs-link{% if request.resolver_match.url_name == 'catalogs' %} active{% endif %}" href="{% url 'shop:catalogs' %}">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
                 Справочники

@@ -1,0 +1,5 @@
+{# Товар стал недоступен: показываем причину вместо кнопки. #}
+<div class="notice notice-warning" role="status">
+    <p>{{ message }}</p>
+    <a class="btn btn-ghost btn-sm" href="{% url 'shop:catalog' %}">В каталог</a>
+</div>

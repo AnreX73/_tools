@@ -1,0 +1,74 @@
+{% extends "admin/base_site.html" %}
+{% load i18n %}
+
+{% block breadcrumbs %}
+<div class="breadcrumbs">
+    <a href="{% url 'admin:index' %}">{% translate "Home" %}</a>
+    &rsaquo; <a href="{% url 'admin:app_list' app_label=opts.app_label %}">{{ opts.app_config.verbose_name }}</a>
+    &rsaquo; <a href="{% url 'admin:orders_order_changelist' %}">Заявки</a>
+    &rsaquo; Отклонить
+</div>
+{% endblock %}
+
+{% block content %}
+<div id="content-main">
+    <h1>Отклонить заявки</h1>
+
+    <p>
+        Будет отклонено заявок: <strong>{{ orders|length }}</strong>.
+        Комментарий обязателен и сохранится в истории статусов.
+    </p>
+
+    <form method="post" novalidate>
+        {% csrf_token %}
+        {{ form.order_ids }}
+        {{ form.non_field_errors }}
+
+        <fieldset class="module aligned">
+            <div class="form-row">
+                {{ form.comment.errors }}
+                <div class="flex-container">
+                    <label for="{{ form.comment.id_for_label }}" class="required">
+                        {{ form.comment.label }}:
+                    </label>
+                    {{ form.comment }}
+                </div>
+                {% if form.comment.help_text %}
+                    <div class="help">{{ form.comment.help_text }}</div>
+                {% endif %}
+            </div>
+        </fieldset>
+
+        {% if orders %}
+            <h2>Выбранные заявки</h2>
+            <table class="adminlist" style="width:100%; margin-bottom:20px;">
+                <thead>
+                    <tr>
+                        <th>Номер</th>
+                        <th>Организация</th>
+                        <th>Статус</th>
+                        <th>Сумма</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for order in orders %}
+                        <tr>
+                            <td>{{ order.number }}</td>
+                            <td>{{ order.company.short_name }}</td>
+                            <td>{{ order.get_status_display }}</td>
+                            <td>{{ order.items_total }} руб.</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <p class="errornote">Заявки не найдены.</p>
+        {% endif %}
+
+        <div class="submit-row">
+            <input type="submit" value="Отклонить" class="default">
+            <a href="{% url 'admin:orders_order_changelist' %}" class="button cancel-link">Отмена</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

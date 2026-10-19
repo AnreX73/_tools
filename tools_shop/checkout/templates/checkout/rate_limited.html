@@ -1,0 +1,19 @@
+{% extends "shop/base.html" %}
+{% load static %}
+{% block title %}Слишком много попыток{% endblock %}
+{% block head %}
+    <link rel="stylesheet" href="{% static 'css/checkout.css' %}">
+{% endblock %}
+{% block content %}
+    <div class="checkout-rate-limited">
+        <h1 class="page-title">Слишком много попыток</h1>
+        <p class="lead">
+            Заявку нельзя отправить так часто. Подождите немного и попробуйте
+            снова — или свяжитесь с менеджером.
+        </p>
+        <div class="checkout-changed-actions">
+            <a class="btn btn-primary" href="{% url 'cart:detail' %}">Вернуться в корзину</a>
+            <a class="btn btn-ghost" href="{% url 'shop:catalog' %}">В каталог</a>
+        </div>
+    </div>
+{% endblock %}

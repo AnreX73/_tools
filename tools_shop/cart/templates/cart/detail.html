@@ -1,0 +1,7 @@
+{% extends "shop/base.html" %}
+{% load shop_money %}
+{% block title %}Корзина{% endblock %}
+{% block content %}
+    <h1 class="page-title">Корзина</h1>
+    {% include "cart/partials/cart_lines.html" %}
+{% endblock %}

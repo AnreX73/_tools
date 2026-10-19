@@ -1,4 +1,5 @@
 {% load shop_search %}
+{% load shop_money %}
 {# Десктоп: строка товара как дропдаун. Клик раскрывает карточку на месте #}
 {# (htmx-подгрузка shop:product_card), без перехода на страницу товара.    #}
 {# Переиспользуется и каскадом каталога, и результатами поиска.           #}
@@ -18,7 +19,7 @@
             </div>
             {% endif %}
         </span>
-        <span class="prow-price">{{ item.product.price }} ₽</span>
+        <span class="prow-price">{{ item.product.price|money_rub }}</span>
         <span class="prow-chev" aria-hidden="true">▾</span>
     </button>
     <div id="prow-body-{{ item.product.pk }}" class="prow-body" x-show="open" x-cloak

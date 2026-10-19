@@ -16,10 +16,11 @@ shop/models.py
 import re
 import unicodedata
 import uuid
+from decimal import Decimal
 
 from django.contrib.postgres.indexes import GinIndex
 from django.core.exceptions import ValidationError
-from django.core.validators import FileExtensionValidator, RegexValidator
+from django.core.validators import FileExtensionValidator, MinValueValidator, RegexValidator
 from django.db import models, transaction
 from treebeard.mp_tree import MP_Node
 
@@ -300,8 +301,11 @@ class Product(SlugWithIdMixin, models.Model):
                             default=Unit.PIECE, blank=True)
     description = models.TextField("Описание", blank=True)
     # У активного товара всегда указана цена. Для скрытых товаров цена может быть пустой.
-    price = models.PositiveIntegerField("Цена", null=True, blank=True,
-                                        help_text="Обязательна для активного товара")
+    price = models.DecimalField(
+        "Цена", max_digits=12, decimal_places=2, null=True, blank=True,
+        validators=[MinValueValidator(Decimal("0"))],
+        help_text="Обязательна для активного товара",
+    )
     is_active = models.BooleanField("Показывать на сайте", default=True)
 
     attributes = models.JSONField("Характеристики", default=dict, blank=True)

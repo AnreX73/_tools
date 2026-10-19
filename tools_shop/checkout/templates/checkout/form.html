@@ -1,0 +1,155 @@
+{% extends "shop/base.html" %}
+{% load static %}
+{% block title %}Оформление заказа{% endblock %}
+{% block head %}
+    <link rel="stylesheet" href="{% static 'css/checkout.css' %}">
+{% endblock %}
+{% block content %}
+    <nav class="breadcrumbs">
+        <a href="{% url 'shop:index' %}">Главная</a>
+        <span class="sep">/</span> <a href="{% url 'cart:detail' %}">Корзина</a>
+        <span class="sep">/</span> <span>Оформление</span>
+    </nav>
+
+    <h1 class="page-title">Оформление заказа</h1>
+    <p class="lead">
+        Заполните реквизиты организации. Менеджер проверит наличие товара
+        и пришлёт счёт на указанный email.
+    </p>
+
+    <form method="post" action="{% url 'checkout:index' %}?confirmed=1"
+          class="checkout-form" id="checkout-form" autocomplete="on">
+        {% csrf_token %}
+        {{ form.idempotency_key }}
+
+        {% if form.non_field_errors %}
+            <div class="notice notice-error" role="alert">
+                {{ form.non_field_errors }}
+            </div>
+        {% endif %}
+
+        <div class="checkout-layout">
+            <div class="checkout-main">
+                {% include "checkout/partials/organization_fields.html" %}
+
+                <fieldset class="form-section">
+                    <legend>Адреса</legend>
+                    <div class="form-grid">
+                        <div class="form-row form-row-full">
+                            {{ form.legal_address.label_tag }}
+                            {{ form.legal_address }}
+                            {{ form.legal_address.errors }}
+                        </div>
+                        <div class="form-row form-row-full">
+                            {{ form.delivery_address.label_tag }}
+                            {% if form.delivery_address.help_text %}<p class="help">{{ form.delivery_address.help_text }}</p>{% endif %}
+                            {{ form.delivery_address }}
+                            {{ form.delivery_address.errors }}
+                        </div>
+                    </div>
+                </fieldset>
+
+                <fieldset class="form-section">
+                    <legend>Банковские реквизиты <span class="optional">необязательно</span></legend>
+                    <p class="help">Нужны, если счёт должен быть выставлен с банковскими реквизитами.</p>
+                    <div class="form-grid">
+                        <div class="form-row form-row-full">
+                            {{ form.bank_name.label_tag }}
+                            {{ form.bank_name }}
+                            {{ form.bank_name.errors }}
+                        </div>
+                        <div class="form-row">
+                            {{ form.bik.label_tag }}
+                            {{ form.bik }}
+                            {{ form.bik.errors }}
+                        </div>
+                        <div class="form-row">
+                            {{ form.correspondent_account.label_tag }}
+                            {{ form.correspondent_account }}
+                            {{ form.correspondent_account.errors }}
+                        </div>
+                        <div class="form-row form-row-full">
+                            {{ form.checking_account.label_tag }}
+                            {{ form.checking_account }}
+                            {{ form.checking_account.errors }}
+                        </div>
+                    </div>
+                </fieldset>
+
+                <fieldset class="form-section">
+                    <legend>Контакты</legend>
+                    <div class="form-grid">
+                        <div class="form-row">
+                            {{ form.contact_name.label_tag }}
+                            {{ form.contact_name }}
+                            {{ form.contact_name.errors }}
+                        </div>
+                        <div class="form-row">
+                            {{ form.email.label_tag }}
+                            {{ form.email }}
+                            {% if form.email.help_text %}<p class="help">{{ form.email.help_text }}</p>{% endif %}
+                            {{ form.email.errors }}
+                        </div>
+                        <div class="form-row">
+                            {{ form.phone.label_tag }}
+                            {{ form.phone }}
+                            {{ form.phone.errors }}
+                        </div>
+                    </div>
+                </fieldset>
+
+                <fieldset class="form-section">
+                    <legend>Комментарий</legend>
+                    <div class="form-row">
+                        {{ form.comment.label_tag }}
+                        {{ form.comment }}
+                        {{ form.comment.errors }}
+                    </div>
+                </fieldset>
+
+                <div class="checkout-consent">
+                    <label class="checkbox-row" for="{{ form.consent.id_for_label }}">
+                        {{ form.consent }}
+                        <span>{{ form.consent.label }}</span>
+                    </label>
+                    {{ form.consent.errors }}
+                    <p class="help">
+                        Данные используются для обработки заявки и выставления счёта.
+                    </p>
+                </div>
+
+                <div class="hp-field" aria-hidden="true">
+                    <label for="{{ form.honeypot.id_for_label }}">Не заполняйте это поле</label>
+                    {{ form.honeypot }}
+                </div>
+
+                <div class="checkout-submit">
+                    <button type="submit" class="btn btn-primary">Отправить заявку</button>
+                    <span class="help">Поля, отмеченные звёздочкой, обязательны.</span>
+                </div>
+            </div>
+
+            <aside class="checkout-aside">
+                <div class="checkout-summary-card">
+                    <div class="checkout-summary-head">
+                        <h2>Ваш заказ</h2>
+                        <a href="{% url 'cart:detail' %}" class="checkout-edit">Изменить</a>
+                    </div>
+                    {% include "checkout/partials/summary.html" %}
+                    <p class="help checkout-note">
+                        Цены и наличие проверяются на сервере при отправке заявки.
+                        Менеджер подтвердит состав перед выставлением счёта.
+                    </p>
+                </div>
+
+                <div class="checkout-contacts">
+                    <h2>Нужна помощь?</h2>
+                    <p class="help">
+                        Напишите нам в чат на сайте или свяжитесь с менеджером —
+                        поможем подобрать аналог и уточнить сроки поставки.
+                    </p>
+                </div>
+            </aside>
+        </div>
+    </form>
+{% endblock %}

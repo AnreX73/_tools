@@ -1,0 +1,59 @@
+{% extends "shop/base.html" %}
+{% load static %}
+{% block title %}Корзина изменилась{% endblock %}
+{% block head %}
+    <link rel="stylesheet" href="{% static 'css/checkout.css' %}">
+{% endblock %}
+{% block content %}
+    <nav class="breadcrumbs">
+        <a href="{% url 'shop:index' %}">Главная</a>
+        <span class="sep">/</span> <a href="{% url 'cart:detail' %}">Корзина</a>
+        <span class="sep">/</span> <span>Оформление</span>
+    </nav>
+
+    <h1 class="page-title">Корзина изменилась</h1>
+    <p class="lead">
+        Пока вы оформляли заказ, состав или цены в корзине обновились.
+        Проверьте заказ перед отправкой заявки.
+    </p>
+
+    {% if removed %}
+        <div class="notice notice-warning" role="alert">
+            <strong>Недоступные позиции удалены из корзины:</strong>
+            <ul>
+                {% for item in removed %}<li>{{ item.message }}</li>{% endfor %}
+            </ul>
+        </div>
+    {% endif %}
+
+    {% if price_changed %}
+        <div class="notice notice-warning" role="status">
+            Цены в корзине изменились с момента её просмотра.
+            Ниже указаны актуальные цены — проверьте итоговую сумму.
+        </div>
+    {% endif %}
+
+    {% if draft_saved %}
+        <div class="notice" role="status">
+            Введённые реквизиты сохранены. После проверки заказа вы вернётесь
+            к заполненной форме.
+        </div>
+    {% endif %}
+
+    <div class="checkout-changed-layout">
+        <div class="checkout-summary-card">
+            <div class="checkout-summary-head">
+                <h2>Актуальный состав заказа</h2>
+                <a href="{% url 'cart:detail' %}" class="checkout-edit">В корзину</a>
+            </div>
+            {% include "checkout/partials/summary.html" %}
+        </div>
+
+        <div class="checkout-changed-actions">
+            <a class="btn btn-primary" href="{% url 'checkout:index' %}?confirmed=1">
+                Продолжить оформление
+            </a>
+            <a class="btn btn-ghost" href="{% url 'cart:detail' %}">Вернуться в корзину</a>
+        </div>
+    </div>
+{% endblock %}

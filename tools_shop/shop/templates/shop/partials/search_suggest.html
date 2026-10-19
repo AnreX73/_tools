@@ -1,4 +1,4 @@
-{% load shop_search %}{% if searchable %}
+{% load shop_search %}{% load shop_money %}{% if searchable %}
     {% if categories %}
         <div class="suggest-group">
             <div class="suggest-title">Категории</div>
@@ -27,7 +27,7 @@
                             · {{ product.category.name }}{% if product.brand %} · {{ product.brand }}{% endif %}
                         </span>
                     </span>
-                    <span class="suggest-price">{{ product.price }} ₽</span>
+                    <span class="suggest-price">{{ product.price|money_rub }}</span>
                 </a>
             {% endfor %}
         </div>

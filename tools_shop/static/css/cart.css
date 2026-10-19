@@ -1,0 +1,163 @@
+/* --- cart.css: шапка, корзина, избранное --- */
+
+/* Кнопки-иконки в шапке */
+.header-action {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    height: 38px;
+    padding: 0 10px;
+    border-radius: 10px;
+    color: var(--text-2);
+    border: 1px solid transparent;
+    transition: background .15s var(--ease), border-color .15s var(--ease), color .15s var(--ease);
+}
+.header-action:hover { background: var(--panel-2); border-color: var(--border); color: var(--text); }
+.header-action-label { font-size: 14px; }
+.header-badge {
+    display: inline-flex; align-items: center; justify-content: center;
+    min-width: 20px; height: 20px; padding: 0 6px;
+    border-radius: 999px;
+    background: var(--accent); color: #fff;
+    font-size: 12px; font-weight: 700; line-height: 1;
+    font-variant-numeric: tabular-nums;
+}
+
+/* Кнопка избранного */
+.favorite-btn {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 38px; height: 38px; flex: none;
+    border: 1px solid var(--border); border-radius: 10px;
+    background: var(--panel); color: var(--muted);
+    cursor: pointer;
+    transition: color .15s var(--ease), border-color .15s var(--ease), background .15s var(--ease);
+}
+.favorite-btn:hover { color: #e11d48; border-color: #fecdd3; background: #fff1f2; }
+.favorite-btn.is-active { color: #e11d48; border-color: #fecdd3; background: #fff1f2; }
+:root[data-theme="dark"] .favorite-btn:hover,
+:root[data-theme="dark"] .favorite-btn.is-active {
+    color: #fb7185; border-color: rgba(251, 113, 133, .35); background: rgba(251, 113, 133, .12);
+}
+
+/* Кнопка «В корзину» рядом с избранным на странице товара */
+.buy-row { display: flex; align-items: stretch; gap: 8px; margin-top: 10px; }
+.buy-row .buy-inline { flex: 1 1 auto; min-width: 0; }
+.buy-row .favorite-btn { width: 46px; height: auto; }
+
+/* Карточка товара в каталоге */
+.product-actions { display: flex; align-items: stretch; gap: 8px; margin-top: 10px; }
+.product-actions .buy-inline { flex: 1 1 auto; min-width: 0; }
+.product-actions .incart-btn { font-size: 13px; }
+.product-actions .favorite-btn { width: 38px; }
+
+/* Карточка в раскрывающемся списке */
+.pcard-favorite { display: flex; align-items: center; gap: 8px; margin-top: 8px; }
+
+/* --- корзина --- */
+.cart-lines { display: flex; flex-direction: column; gap: 16px; }
+.cart-table {
+    display: flex; flex-direction: column;
+    border: 1px solid var(--border); border-radius: var(--radius);
+    background: var(--panel); overflow: hidden;
+}
+.cart-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 120px 132px 120px 90px;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--border);
+}
+.cart-row:last-child { border-bottom: 0; }
+.cart-name { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.cart-name a { color: var(--text); font-weight: 600; }
+.cart-name a:hover { color: var(--accent); }
+.cart-price, .cart-sum { font-variant-numeric: tabular-nums; white-space: nowrap; }
+.cart-sum { font-weight: 700; }
+.cart-actions { text-align: right; }
+
+.cart-summary {
+    display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between;
+    gap: 16px; padding: 16px 18px;
+    border: 1px solid var(--border); border-radius: var(--radius);
+    background: var(--panel);
+}
+.cart-total { display: flex; align-items: baseline; gap: 12px; font-size: 16px; }
+.cart-total strong { font-size: 22px; font-variant-numeric: tabular-nums; }
+.cart-actions-row { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+
+.link-danger {
+    background: none; border: 0; padding: 0;
+    color: var(--muted); font: inherit; cursor: pointer;
+    text-decoration: underline; text-underline-offset: 3px;
+}
+.link-danger:hover { color: #dc2626; }
+
+/* --- избранное --- */
+.favorites-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 16px;
+}
+.favorite-card {
+    display: flex; flex-direction: column; gap: 10px;
+    padding: 16px;
+    border: 1px solid var(--border); border-radius: var(--radius);
+    background: var(--panel);
+    box-shadow: var(--shadow-xs);
+}
+.favorite-card-link { display: flex; flex-direction: column; gap: 4px; color: var(--text); }
+.favorite-card-link:hover h2 { color: var(--accent); }
+.favorite-card-foot {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 10px; margin-top: auto;
+}
+.favorite-card .link-danger { align-self: flex-start; }
+
+/* --- служебные блоки --- */
+.notice {
+    padding: 12px 14px;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border);
+    background: var(--panel-2);
+    font-size: 14px;
+}
+.notice ul { margin: 6px 0 0; padding-left: 20px; }
+.notice-warning { border-color: #fde68a; background: #fffbeb; color: #92400e; }
+:root[data-theme="dark"] .notice-warning {
+    border-color: rgba(253, 230, 138, .35); background: rgba(146, 64, 14, .18); color: #fcd34d;
+}
+.empty-state {
+    display: flex; flex-direction: column; align-items: flex-start; gap: 12px;
+    padding: 32px; border: 1px dashed var(--border-strong); border-radius: var(--radius);
+    color: var(--muted);
+}
+.page-title { margin: 0 0 18px; font-size: 28px; }
+
+.btn-sm { padding: 6px 12px; font-size: 13px; }
+
+/* Бейдж обновляется htmx: пока грузится — не мигаем размером */
+.header-action.htmx-request { opacity: .6; }
+
+/* Ошибка под кнопкой «В корзину» (например, количество вне 1..9999) */
+.cart-error { margin: 6px 0 0; color: #b91c1c; font-size: 13px; }
+:root[data-theme="dark"] .cart-error { color: #fca5a5; }
+
+@media (max-width: 760px) {
+    .header-action-label { display: none; }
+    .cart-row {
+        grid-template-columns: minmax(0, 1fr) auto;
+        grid-template-areas:
+            "name name"
+            "price sum"
+            "qty actions";
+        row-gap: 8px;
+    }
+    .cart-name { grid-area: name; }
+    .cart-price { grid-area: price; color: var(--muted); }
+    .cart-sum { grid-area: sum; text-align: right; }
+    .cart-row > .cart-cell:nth-child(3) { grid-area: qty; }
+    .cart-actions { grid-area: actions; }
+    .cart-total strong { font-size: 19px; }
+}

@@ -22,11 +22,13 @@ class LegalEntityAdmin(admin.ModelAdmin):
         "legal_form",
         "inn",
         "is_active",
+        "is_verified",
         "created_at",
         "get_primary_contact"
     )
-    list_filter = ("legal_form", "is_active", "created_at")
+    list_filter = ("legal_form", "is_active", "is_verified", "created_at")
     search_fields = ("short_name", "full_name", "inn", "email")
+    actions = ("mark_verified",)
     
     fieldsets = (
         ("Основные реквизиты", {
@@ -51,13 +53,22 @@ class LegalEntityAdmin(admin.ModelAdmin):
             "fields": ("director_name", "director_position")
         }),
         ("Статус и дополнительно", {
-            "fields": ("is_active", "notes")
+            "fields": ("is_active", "is_verified", "notes")
         }),
     )
     
     inlines = [CompanyUserInline]
     readonly_fields = ("created_at", "updated_at")
-    
+
+    @admin.action(description="Отметить проверенной")
+    def mark_verified(self, request, queryset):
+        """Массово подтверждает реквизиты после проверки менеджером."""
+        updated = queryset.update(is_verified=True)
+        self.message_user(
+            request,
+            f"Отмечено проверенными: {updated}.",
+        )
+
     @admin.display(description="Основной контакт")
     def get_primary_contact(self, obj):
         """Показывает основного контакта компании."""

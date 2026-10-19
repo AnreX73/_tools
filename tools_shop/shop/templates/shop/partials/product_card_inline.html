@@ -3,7 +3,9 @@
 {# цена, выбор количества, кнопка «В корзину». Страница товара как отдельный #}
 {# экран на десктопе не используется — но доступна по прямой ссылке и для  #}
 {# мобильной версии (shop:product).                                       #}
-<div class="pcard" x-data="{ qty: 1 }">
+{% load shop_money %}
+{% load cart_tags %}
+<div class="pcard">
     <div class="pcard-main">
         {% if product.main_image %}
         <button type="button" class="pcard-photo" aria-label="Увеличить изображение: {{ product.name }}"
@@ -37,22 +39,16 @@
 
     <div class="pcard-side">
         <span class="price-label">Цена</span>
-        <span class="price">{{ product.price }} ₽</span>
+        <span class="price">{{ product.price|money_rub }}</span>
 
-        <div class="buy-inline">
-            <button type="button" class="btn btn-primary incart-btn"
-                    aria-label="Добавить в корзину">
-                <span class="incart-qty" role="group" aria-label="Количество">
-                    <span class="incart-qty-btn" role="button" tabindex="0" aria-label="Уменьшить"
-                          @click="qty = Math.max(1, qty - 1)">−</span>
-                    <input class="incart-qty-input" id="qty-{{ product.pk }}" type="number" inputmode="numeric"
-                           min="1" step="1" x-model.number="qty" @change="qty = Math.max(1, qty || 1)" aria-label="Количество">
-                    <span class="incart-qty-btn" role="button" tabindex="0" aria-label="Увеличить"
-                          @click="qty = qty + 1">+</span>
-                </span>
-                <span class="incart-sep"></span>
-                <span>В корзину</span>
-            </button>
+        {% if product.price is not None %}
+            {% include "cart/partials/cart_button.html" with in_cart_qty=product.pk|in_cart_qty:request %}
+        {% else %}
+            <p class="help">Цена по запросу — оставьте заявку, менеджер свяжется с вами.</p>
+        {% endif %}
+        <div class="pcard-favorite">
+            {% include "cart/partials/favorite_button.html" with is_favorite=product.pk|is_favorite:request %}
+            <span class="help">В избранное</span>
         </div>
     </div>
 </div>

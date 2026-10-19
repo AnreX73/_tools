@@ -1,0 +1,18 @@
+{% load shop_money %}
+{# Краткий состав заявки для колонки оформления. #}
+<div class="checkout-lines">
+    {% for line in lines %}
+        <div class="checkout-line">
+            <div class="checkout-line-name">
+                <a href="{{ line.product.get_absolute_url }}">{{ line.product.name }}</a>
+                <span class="sku">Артикул: {{ line.product.sku }}</span>
+            </div>
+            <div class="checkout-line-qty">{{ line.qty }} × {{ line.price|money_rub }}</div>
+            <div class="checkout-line-sum">{{ line.line_total|money_rub }}</div>
+        </div>
+    {% endfor %}
+</div>
+<div class="checkout-total">
+    <span>Итого</span>
+    <strong>{{ cart_total|money_rub }}</strong>
+</div>

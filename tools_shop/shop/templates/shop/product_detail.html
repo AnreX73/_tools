@@ -1,4 +1,5 @@
 {% extends "shop/base.html" %}
+{% load shop_money cart_tags %}
 {% block title %}{{ product.name }}{% endblock %}
 {% block content %}
     <nav class="breadcrumbs">
@@ -27,20 +28,14 @@
         <aside class="product-detail-side">
             <div class="price-box">
                 <span class="price-label">Цена</span>
-            <span class="price">{{ product.price }} ₽</span>
-            <div x-data="{ qty: 1 }">
-                <button type="button" class="btn btn-primary btn-block incart-btn" aria-label="Добавить в корзину">
-                    <span class="incart-qty" role="group" aria-label="Количество">
-                        <span class="incart-qty-btn" role="button" tabindex="0" aria-label="Уменьшить"
-                              @click="qty = Math.max(1, qty - 1)">−</span>
-                        <input class="incart-qty-input" type="number" inputmode="numeric"
-                               min="1" step="1" x-model.number="qty" @change="qty = Math.max(1, qty || 1)" aria-label="Количество">
-                        <span class="incart-qty-btn" role="button" tabindex="0" aria-label="Увеличить"
-                              @click="qty = qty + 1">+</span>
-                    </span>
-                    <span class="incart-sep"></span>
-                    <span>В корзину</span>
-                </button>
+            <span class="price">{{ product.price|money_rub }}</span>
+            <div class="buy-row">
+                {% if product.price is not None %}
+                    {% include "cart/partials/cart_button.html" with in_cart_qty=product.pk|in_cart_qty:request %}
+                {% else %}
+                    <p class="help">Цена по запросу — оставьте заявку, менеджер свяжется с вами.</p>
+                {% endif %}
+                {% include "cart/partials/favorite_button.html" with is_favorite=product.pk|is_favorite:request %}
             </div>
             </div>
         </aside>
@@ -69,7 +64,7 @@
                     </a>
                     <div class="product-foot">
                         <span class="sku">{{ item.sku }}</span>
-                        <span class="price">{{ item.price }} ₽</span>
+                        <span class="price">{{ item.price|money_rub }}</span>
                     </div>
                 </article>
             {% endfor %}

@@ -13,6 +13,9 @@ urlpatterns = [
     path('sw.js', service_worker, name='service-worker'),
     path('chat/', include('chat.urls')),
     path('admin/', admin.site.urls),
+    path("cart/", include("cart.urls")),
+    path("checkout/", include("checkout.urls")),
+    path("", include("orders.urls")),
     path("", include("shop.urls")),
     # path("users/", include("users.urls")),
     path("__reload__/", include("django_browser_reload.urls"))

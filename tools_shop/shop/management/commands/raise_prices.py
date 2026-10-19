@@ -5,8 +5,8 @@
   * --fixed-price — заглушка: поставить всем товарам одну и ту же цену.
                     Пишет в базу только с подтверждением --yes.
 
-Цена хранится целым числом рублей, поэтому результат округляется до рубля
-(ROUND_HALF_EVEN — то же, что делает round() в import_stock.py).
+Цена хранится как Decimal(12,2), поэтому процент считается точно и
+округляется до копейки (ROUND_HALF_EVEN).
 
 Товары с пустой ценой («цена по запросу», price IS NULL) и с ценой 0
 не трогаются в обоих режимах: у первых цены нет, у вторых менять нечего.
@@ -30,11 +30,12 @@ from shop.models import Product
 
 BATCH = 500
 SAMPLES = 10
+CENT = Decimal("0.01")
 
 
 def _raised(price, factor):
-    """Цена +процент, округлённая до рубля."""
-    return int((Decimal(price) * factor).to_integral_value(ROUND_HALF_EVEN))
+    """Цена +процент, округлённая до копейки."""
+    return (Decimal(price) * factor).quantize(CENT, rounding=ROUND_HALF_EVEN)
 
 
 class Command(BaseCommand):
@@ -52,8 +53,8 @@ class Command(BaseCommand):
         )
         mode.add_argument(
             "--fixed-price",
-            type=int,
-            metavar="РУБ",
+            type=Decimal,
+            metavar="ЦЕНА",
             help="Заглушка: поставить всем товарам с ценой одну и ту же цену. "
                  "Без --yes выполняется только предпросмотр.",
         )
