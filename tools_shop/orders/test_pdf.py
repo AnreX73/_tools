@@ -12,7 +12,7 @@ from uuid import uuid4
 
 from django.test import TestCase, override_settings
 
-from companies.models import LegalEntity
+from companies.models import LegalEntity, SellerProfile
 from shop.models import Category, Product
 
 from .models import Invoice, Order, OrderItem
@@ -35,6 +35,7 @@ def _weasyprint_available() -> bool:
         "full_name": "Общество с ограниченной ответственностью «Тестовый продавец»",
         "inn": "7700000000",
         "kpp": "770001001",
+        "ogrn": "1027700132195",
         "address": "г. Москва, ул. Тестовая, д. 1",
         "phone": "+7 (495) 111-22-33",
         "email": "seller@example.ru",
@@ -108,9 +109,46 @@ class InvoicePDFTests(TestCase):
         self.assertNotIn('<script>alert("x")</script>', html)
         self.assertIn("&lt;b&gt;Сверло&lt;/b&gt;", html)
         self.assertIn("ООО «Тестовый продавец»", html)
+        self.assertIn("ОГРН 1027700132195", html)
         self.assertIn(invoice.number, html)
         self.assertIn(invoice.order.number, html)
         self.assertIn("600,00", html)
+
+    def test_invoice_snapshots_seller_at_issue(self):
+        invoice = self.make_invoice()
+
+        self.assertEqual(
+            invoice.seller_snapshot["short_name"], "ООО «Тестовый продавец»"
+        )
+        self.assertEqual(invoice.seller_snapshot["ogrn"], "1027700132195")
+
+    def test_old_invoice_keeps_seller_snapshot(self):
+        invoice = self.make_invoice()
+
+        SellerProfile.objects.create(
+            short_name="ООО «Новый продавец»",
+            full_name="Общество с ограниченной ответственностью «Новый продавец»",
+            inn="7707083893",
+            kpp="773601001",
+            legal_address="г. Москва, ул. Новая, д. 2",
+        )
+
+        html_class = mock.Mock()
+        html_class.return_value.write_pdf.return_value = b"%PDF-1.4 old"
+        with mock.patch("orders.pdf._html_class", return_value=html_class):
+            render_invoice_pdf(invoice)
+
+        html = html_class.call_args.kwargs["string"]
+        self.assertIn("ООО «Тестовый продавец»", html)
+        self.assertNotIn("ООО «Новый продавец»", html)
+
+    @override_settings(SELLER_REQUISITES={})
+    def test_missing_seller_raises_before_pdf(self):
+        invoice = self.make_invoice()
+
+        with self.assertRaises(InvoicePDFError) as ctx:
+            render_invoice_pdf(invoice)
+        self.assertIn("Реквизиты продавца", str(ctx.exception))
 
     def test_weasyprint_failure_is_wrapped(self):
         invoice = self.make_invoice()

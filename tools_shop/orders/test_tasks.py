@@ -16,7 +16,7 @@ from django.test import TestCase, override_settings
 from django.urls import reverse
 from django.utils import timezone
 
-from companies.models import LegalEntity
+from companies.models import LegalEntity, SellerProfile
 from shop.models import Category, Product
 
 from .models import Invoice, Order, OrderItem
@@ -47,6 +47,16 @@ class OrderTaskTests(TestCase):
             price=Decimal("200.00"),
             is_active=True,
             attributes={},
+        )
+        cls.seller = SellerProfile.objects.create(
+            short_name="ООО «Почтовый продавец»",
+            full_name="Общество с ограниченной ответственностью «Почтовый продавец»",
+            inn="7707083893",
+            kpp="773601001",
+            legal_address="г. Москва, ул. Продавца, д. 1",
+            phone="+7 (495) 111-22-33",
+            email="seller@example.ru",
+            website="https://seller.example.ru",
         )
 
     def setUp(self):
@@ -111,6 +121,16 @@ class OrderTaskTests(TestCase):
         self.assertEqual(mail.outbox[0].to, ["buyer@example.ru"])
         self.assertIn("принята", mail.outbox[0].subject.lower())
 
+    def test_accepted_email_contains_seller_signature(self):
+        order = self.make_order()
+        send_order_accepted_email(order.pk)
+
+        message = mail.outbox[0]
+        self.assertIn("ООО «Почтовый продавец»", message.body)
+        self.assertIn("ИНН 7707083893", message.body)
+        self.assertIn("https://seller.example.ru", message.body)
+        self.assertEqual(message.reply_to, ["seller@example.ru"])
+
     @override_settings(MANAGER_NOTIFY_EMAILS=[])
     def test_notify_managers_without_recipients_is_noop(self):
         order = self.make_order()
@@ -149,6 +169,19 @@ class OrderTaskTests(TestCase):
         self.assertTrue(filename.endswith(".pdf"))
         self.assertEqual(content, b"%PDF-1.4 invoice")
         self.assertEqual(mimetype, "application/pdf")
+
+    def test_invoice_email_contains_seller_signature(self):
+        invoice = self.make_invoice()
+        with mock.patch(
+            "orders.tasks.render_invoice_pdf",
+            return_value=b"%PDF-1.4 invoice",
+        ):
+            generate_and_send_invoice(invoice.pk)
+
+        message = mail.outbox[0]
+        self.assertIn("ООО «Почтовый продавец»", message.body)
+        self.assertIn("ИНН 7707083893", message.body)
+        self.assertEqual(message.reply_to, ["seller@example.ru"])
 
     def test_generate_and_send_invoice_is_idempotent(self):
         invoice = self.make_invoice()

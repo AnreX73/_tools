@@ -74,6 +74,12 @@
                             <dt>ИНН / КПП</dt>
                             <dd>{{ snapshot.inn|default:"—" }}{% if snapshot.kpp %} / {{ snapshot.kpp }}{% endif %}</dd>
                         </div>
+                        {% if snapshot.ogrn %}
+                            <div>
+                                <dt>ОГРН</dt>
+                                <dd>{{ snapshot.ogrn }}</dd>
+                            </div>
+                        {% endif %}
                         {% if snapshot.legal_address %}
                             <div>
                                 <dt>Юридический адрес</dt>
@@ -105,6 +111,11 @@
                             </div>
                         {% endif %}
                     </dl>
+                </section>
+
+                <section class="order-card">
+                    <h2>Продавец</h2>
+                    {% include "partials/seller_requisites.html" with seller=order_seller %}
                 </section>
 
                 <section class="order-card">

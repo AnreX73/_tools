@@ -22,7 +22,7 @@ from treebeard.forms import movenodeform_factory
 
 from .models import (
     Attribute, AttributeOption, Brand, Catalog, Category, CategoryAttribute, CategorySortRule,
-    PopupNotice, Product, ProductImage,
+    PopupNotice, Product, ProductImage, Info, InfoSection
 )
 from .sorting import sort_field_choices
 
@@ -493,6 +493,79 @@ class PopupNoticeAdmin(admin.ModelAdmin):
             )
         return "—"
 
+
+
+class InfoAdminForm(forms.ModelForm):
+    class Meta:
+        model = Info
+        fields = "__all__"
+
+    def clean(self):
+        cleaned = super().clean()
+        if (
+            self.instance.pk
+            and self.instance.slug in Info.LEGACY_SLUGS
+            and not cleaned.get("is_active")
+        ):
+            raise ValidationError({
+                "is_active": (
+                    "Оферту и политику обработки персональных данных нельзя "
+                    "снять с публикации: на них ссылаются оформление заказа "
+                    "и страница «Правовая информация»."
+                ),
+            })
+        return cleaned
+
+
+class InfoSectionInline(SortableInlineAdminMixin, admin.TabularInline):
+    """Разделы документа: порядок меняется перетаскиванием строк."""
+    model = InfoSection
+    extra = 0
+    fields = ("heading", "body")
+    verbose_name = "раздел"
+    verbose_name_plural = "Разделы документа (перетаскивайте строки, чтобы менять порядок)"
+
+
+@admin.register(Info)
+class InfoAdmin(SortableAdminBase, admin.ModelAdmin):
+    form = InfoAdminForm
+    list_display = ("title", "kind", "slug", "revision_date", "is_active", "updated_at")
+    list_filter = ("kind", "is_active")
+    search_fields = ("title", "slug")
+    prepopulated_fields = {"slug": ("title",)}
+    readonly_fields = ("created_at", "updated_at")
+    inlines = [InfoSectionInline]
+    fieldsets = (
+        (None, {"fields": ("kind", "title", "slug", "revision_date", "is_active")}),
+        (
+            "Содержимое",
+            {
+                "fields": ("notice",),
+                "description": (
+                    "Подстановки: [[РЕКВИЗИТЫ]] и [[КОНТАКТЫ]] — отдельной строкой; "
+                    "[[НАИМЕНОВАНИЕ]], [[ПОЛНОЕ_НАИМЕНОВАНИЕ]], [[ИНН]], [[КПП]], "
+                    "[[ОГРН]], [[АДРЕС]], [[EMAIL]], [[ТЕЛЕФОН]], [[САЙТ]] — внутри текста."
+                ),
+            },
+        ),
+        ("Оформление", {"fields": ("image",)}),
+        ("Служебное", {"fields": ("created_at", "updated_at"), "classes": ("collapse",)}),
+    )
+
+    def get_readonly_fields(self, request, obj=None):
+        readonly = list(super().get_readonly_fields(request, obj))
+        # На юридические документы ссылаются оформление заказа и страница
+        # «Правовая информация», поэтому их слаг менять нельзя.
+        if obj is not None and obj.slug in Info.LEGACY_SLUGS:
+            readonly.append("slug")
+        return readonly
+
+    def get_prepopulated_fields(self, request, obj=None):
+        # Для юрстраниц slug только для чтения: prepopulated_fields не должен
+        # ссылаться на отсутствующее в форме поле.
+        if obj is not None and obj.slug in Info.LEGACY_SLUGS:
+            return {}
+        return self.prepopulated_fields
 
 
 admin.site.site_header = "Тулз сервис — админка"

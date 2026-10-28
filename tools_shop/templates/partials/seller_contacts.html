@@ -1,0 +1,19 @@
+{% comment %}
+    Контакты продавца для юридических страниц (токен [[КОНТАКТЫ]]).
+    Ожидает в контексте словарь ``seller`` (companies.seller.get_seller).
+{% endcomment %}
+{% if seller.email or seller.phone or seller.website %}
+    <ul class="seller-contacts">
+        {% if seller.email %}
+            <li>Email: <a href="mailto:{{ seller.email }}">{{ seller.email }}</a></li>
+        {% endif %}
+        {% if seller.phone %}
+            <li>Телефон: <a href="tel:{{ seller.phone }}">{{ seller.phone }}</a></li>
+        {% endif %}
+        {% if seller.website %}
+            <li>Сайт: <a href="{{ seller.website }}" target="_blank" rel="noopener">{{ seller.website }}</a></li>
+        {% endif %}
+    </ul>
+{% else %}
+    <p class="help">Контакты уточняются.</p>
+{% endif %}

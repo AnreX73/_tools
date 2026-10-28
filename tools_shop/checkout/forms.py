@@ -21,6 +21,7 @@ import re
 
 from django import forms
 from django.core.validators import RegexValidator
+from django.urls import reverse_lazy
 
 from companies.models import LegalEntity
 from companies.validators import validate_inn
@@ -92,6 +93,22 @@ class CheckoutForm(forms.Form):
                 "autocomplete": "off",
                 "maxlength": "12",
                 "placeholder": "10 или 12 цифр",
+                # Автоподстановка по вводу. Фильтр в hx-trigger не даёт
+                # дёргать сервер на каждой недонабранной цифре: иначе ответ
+                # заменял бы блок с полем ИНН и сбрасывал фокус.
+                "hx-post": reverse_lazy("checkout:suggest_by_inn"),
+                "hx-trigger": (
+                    # Фильтр обязан идти сразу после события: парсер htmx
+                    # иначе съедает его как значение delay.
+                    "input[event.target.value.length === 10"
+                    " || event.target.value.length === 12]"
+                    " changed delay:800ms"
+                ),
+                "hx-include": "#id_inn, #id_kpp",
+                "hx-target": "#organization-fields",
+                "hx-swap": "outerHTML",
+                "hx-indicator": "#inn-lookup-indicator",
+                "hx-sync": "closest form:replace",
             }
         ),
         help_text="10 цифр для юридического лица, 12 — для ИП.",

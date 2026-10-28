@@ -26,6 +26,8 @@ from django.db import transaction
 from django.urls import reverse
 from django.utils import timezone
 
+from companies.seller import get_seller, is_seller_configured
+
 from .models import Invoice, Order
 from .pdf import render_invoice_pdf
 
@@ -51,6 +53,46 @@ def _recipients() -> list[str]:
     if isinstance(raw, str):
         raw = [item.strip() for item in raw.split(",") if item.strip()]
     return [str(item).strip() for item in raw if str(item).strip()]
+
+
+def _seller_signature(seller: dict | None = None) -> str:
+    """Подпись продавца для писем покупателю. Пустая, если профиль не заполнен."""
+    seller = seller or get_seller()
+    if not is_seller_configured(seller):
+        return ""
+
+    lines = [seller["short_name"]]
+    if seller.get("full_name"):
+        lines.append(seller["full_name"])
+
+    registration = f"ИНН {seller['inn']}"
+    if seller.get("kpp"):
+        registration += f", КПП {seller['kpp']}"
+    if seller.get("ogrn"):
+        registration += f", ОГРН {seller['ogrn']}"
+    lines.append(registration)
+
+    if seller.get("legal_address"):
+        lines.append(seller["legal_address"])
+
+    contacts = []
+    if seller.get("phone"):
+        contacts.append(f"тел. {seller['phone']}")
+    if seller.get("email"):
+        contacts.append(f"email {seller['email']}")
+    if seller.get("website"):
+        contacts.append(seller["website"])
+    if contacts:
+        lines.append(", ".join(contacts))
+
+    return "\n\n--\n" + "\n".join(lines)
+
+
+def _seller_reply_to(seller: dict | None = None) -> list[str]:
+    """Ответы покупателя должны уходить продавцу, а не на noreply."""
+    seller = seller or get_seller()
+    email = str(seller.get("email") or "").strip()
+    return [email] if email else []
 
 
 def _load_order(order_id: int) -> Order | None:
@@ -138,18 +180,20 @@ def send_order_accepted_email(order_id: int) -> int:
         + f"\n\nИтого: {order.items_total}\n"
         f"Статус заявки: {_public_order_url(order)}\n\n"
         f"Если вы не оформляли заявку, просто проигнорируйте это письмо.\n"
+        + _seller_signature()
     )
-    send_mail(
+    message = EmailMessage(
         f"Заявка {order.number} принята",
         body,
         settings.DEFAULT_FROM_EMAIL,
         [order.contact_email],
-        fail_silently=False,
+        reply_to=_seller_reply_to() or None,
     )
+    message.send(fail_silently=False)
     return 1
 
 
-def _invoice_email_body(invoice: Invoice) -> str:
+def _invoice_email_body(invoice: Invoice, seller: dict | None = None) -> str:
     order = invoice.order
     return (
         f"Здравствуйте, {order.contact_name}!\n\n"
@@ -159,6 +203,7 @@ def _invoice_email_body(invoice: Invoice) -> str:
         f"Счёт приложен к письму в формате PDF.\n"
         f"Статус заявки: {_public_order_url(order)}\n\n"
         f"Если у вас есть вопросы, ответьте на это письмо.\n"
+        + _seller_signature(seller)
     )
 
 
@@ -211,11 +256,15 @@ def generate_and_send_invoice(invoice_id: int) -> int:
         filename = f"invoice-{invoice.pk}-v{invoice.version}.pdf"
         invoice.pdf.save(filename, ContentFile(pdf_bytes), save=False)
 
+        # Подпись и reply-to берём из того же снимка, что и PDF: письмо
+        # должно совпадать с приложенным счётом, даже если профиль изменился.
+        seller = invoice.seller_snapshot or get_seller()
         message = EmailMessage(
             f"Счёт № {invoice.number} по заявке {order.number}",
-            _invoice_email_body(invoice),
+            _invoice_email_body(invoice, seller),
             settings.DEFAULT_FROM_EMAIL,
             [order.contact_email],
+            reply_to=_seller_reply_to(seller) or None,
         )
         message.attach(filename, pdf_bytes, "application/pdf")
         message.send(fail_silently=False)

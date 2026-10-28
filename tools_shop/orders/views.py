@@ -13,6 +13,7 @@ from django.shortcuts import get_object_or_404, render
 from django.views.decorators.cache import never_cache
 
 from companies.models import LegalEntity
+from companies.seller import get_seller
 
 from .models import Invoice, Order
 from .statuses import OrderStatus
@@ -58,6 +59,13 @@ def detail(request, uuid):
     )
     current_invoice = order.current_invoices[0] if order.current_invoices else None
     snapshot = order.requisites_snapshot or {}
+    # Для заявки со счётом показываем продавца из снимка документа: если
+    # реквизиты поменяются, страница останется согласованной со счётом.
+    order_seller = (
+        current_invoice.seller_snapshot
+        if current_invoice is not None and current_invoice.seller_snapshot
+        else get_seller()
+    )
     legal_form_label = dict(LegalEntity.LegalForm.choices).get(
         str(snapshot.get("legal_form", ""))
     )
@@ -74,6 +82,7 @@ def detail(request, uuid):
             "title": f"Заявка № {order.number}",
             "order": order,
             "snapshot": snapshot,
+            "order_seller": order_seller,
             "legal_form_label": legal_form_label,
             "current_invoice": current_invoice,
             "heading": heading,

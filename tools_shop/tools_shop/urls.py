@@ -5,13 +5,18 @@ from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import include, path
 from chat.push_views import service_worker
-
-
+from companies.admin_views import inn_lookup
 
 
 urlpatterns = [
     path('sw.js', service_worker, name='service-worker'),
     path('chat/', include('chat.urls')),
+    # Эндпоинт админки должен идти раньше include admin.site.urls.
+    path(
+        "admin/inn-lookup/",
+        admin.site.admin_view(inn_lookup),
+        name="admin_inn_lookup",
+    ),
     path('admin/', admin.site.urls),
     path("cart/", include("cart.urls")),
     path("checkout/", include("checkout.urls")),

@@ -78,7 +78,7 @@ class LookupServiceTests(TestCase):
     def test_existing_company_is_loaded_from_database(self):
         company = make_company()
 
-        with mock.patch("checkout.lookup.DadataClient.find_party") as find:
+        with mock.patch("companies.lookup.DadataClient.find_party") as find:
             result = lookup_requisites("7707083893", "773601001")
 
         find.assert_not_called()
@@ -102,7 +102,7 @@ class LookupServiceTests(TestCase):
         make_company(kpp="773601001", short_name="Головная")
         make_company(kpp="773601002", short_name="Филиал")
 
-        with mock.patch("checkout.lookup.DadataClient.find_party") as find:
+        with mock.patch("companies.lookup.DadataClient.find_party") as find:
             result = lookup_requisites("7707083893")
 
         find.assert_not_called()
@@ -122,7 +122,7 @@ class LookupServiceTests(TestCase):
 
     def test_new_company_uses_dadata(self):
         with mock.patch(
-            "checkout.lookup.DadataClient.find_party",
+            "companies.lookup.DadataClient.find_party",
             return_value=party(warnings=("Статус в ЕГРЮЛ: ликвидируется.",)),
         ) as find:
             result = lookup_requisites("7736050003", "773601001")
@@ -136,7 +136,7 @@ class LookupServiceTests(TestCase):
 
     def test_successful_dadata_response_is_cached(self):
         with mock.patch(
-            "checkout.lookup.DadataClient.find_party",
+            "companies.lookup.DadataClient.find_party",
             return_value=party(),
         ) as find:
             first = lookup_requisites("7736050003", "773601001")
@@ -153,7 +153,7 @@ class SuggestByInnViewTests(TestCase):
     def test_existing_company_is_rendered_without_contacts(self):
         company = make_company()
 
-        with mock.patch("checkout.lookup.DadataClient.find_party") as find:
+        with mock.patch("companies.lookup.DadataClient.find_party") as find:
             response = self.client.post(
                 LOOKUP_URL,
                 {"inn": "7707083893", "kpp": "773601001"},
@@ -166,13 +166,18 @@ class SuggestByInnViewTests(TestCase):
         self.assertEqual(
             response.context["form"]["short_name"].value(), company.short_name
         )
+        # Адрес рендерится внутри #organization-fields: htmx заменяет только
+        # этот блок, поэтому поле должно быть в нём, а не в блоке «Адрес
+        # доставки» — иначе подставленный адрес не увидит пользователь.
+        self.assertContains(response, 'name="legal_address"')
+        self.assertContains(response, company.legal_address)
         self.assertNotContains(response, company.email)
         self.assertNotContains(response, company.phone)
         self.assertNotContains(response, company.bank_name)
 
     def test_dadata_result_fills_form(self):
         with mock.patch(
-            "checkout.lookup.DadataClient.find_party",
+            "companies.lookup.DadataClient.find_party",
             return_value=party(),
         ):
             response = self.client.post(
@@ -188,10 +193,12 @@ class SuggestByInnViewTests(TestCase):
         self.assertEqual(
             response.context["form"]["ogrn"].value(), "1027700070518"
         )
+        self.assertContains(response, 'name="legal_address"')
+        self.assertContains(response, "г. Москва, ул. Наметкина, д. 16")
 
     @override_settings(DADATA_RATE_LIMIT=10, DADATA_RATE_WINDOW=60)
     def test_invalid_inn_does_not_call_dadata(self):
-        with mock.patch("checkout.lookup.DadataClient.find_party") as find:
+        with mock.patch("companies.lookup.DadataClient.find_party") as find:
             response = self.client.post(LOOKUP_URL, {"inn": "7707083894"})
 
         find.assert_not_called()
@@ -219,7 +226,7 @@ class SuggestByInnViewTests(TestCase):
 
     def test_unavailable_dadata_keeps_form_manual(self):
         with mock.patch(
-            "checkout.lookup.DadataClient.find_party",
+            "companies.lookup.DadataClient.find_party",
             side_effect=DadataUnavailable("down"),
         ):
             response = self.client.post(
@@ -232,7 +239,7 @@ class SuggestByInnViewTests(TestCase):
 
     def test_not_found_is_reported(self):
         with mock.patch(
-            "checkout.lookup.DadataClient.find_party",
+            "companies.lookup.DadataClient.find_party",
             side_effect=DadataNotFound("not found"),
         ):
             response = self.client.post(

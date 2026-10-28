@@ -580,6 +580,7 @@ class InvoiceAdmin(admin.ModelAdmin):
         "sent_at",
         "is_current",
         "pdf",
+        "seller_snapshot",
         "preview_link",
         "created_at",
     )

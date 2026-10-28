@@ -13,8 +13,9 @@
 
     <h1 class="page-title">Оформление заказа</h1>
     <p class="lead">
-        Заполните реквизиты организации. Менеджер проверит наличие товара
-        и пришлёт счёт на указанный email.
+        Заполните реквизиты организации{% if seller.short_name %} — заявка
+        направляется в {{ seller.short_name }}{% endif %}. Менеджер проверит
+        наличие товара и пришлёт счёт на указанный email.
     </p>
 
     <form method="post" action="{% url 'checkout:index' %}?confirmed=1"
@@ -33,13 +34,8 @@
                 {% include "checkout/partials/organization_fields.html" %}
 
                 <fieldset class="form-section">
-                    <legend>Адреса</legend>
+                    <legend>Адрес доставки</legend>
                     <div class="form-grid">
-                        <div class="form-row form-row-full">
-                            {{ form.legal_address.label_tag }}
-                            {{ form.legal_address }}
-                            {{ form.legal_address.errors }}
-                        </div>
                         <div class="form-row form-row-full">
                             {{ form.delivery_address.label_tag }}
                             {% if form.delivery_address.help_text %}<p class="help">{{ form.delivery_address.help_text }}</p>{% endif %}
@@ -115,6 +111,12 @@
                     {{ form.consent.errors }}
                     <p class="help">
                         Данные используются для обработки заявки и выставления счёта.
+                        {% if seller.short_name %}
+                            Оператор обработки персональных данных —
+                            {{ seller.full_name|default:seller.short_name }},
+                            ИНН {{ seller.inn|default:"—" }}.
+                        {% endif %}
+                        <a href="{% url 'shop:legal' %}?tab=privacy" target="_blank" rel="noopener">Политика обработки персональных данных</a>.
                     </p>
                 </div>
 
@@ -125,7 +127,11 @@
 
                 <div class="checkout-submit">
                     <button type="submit" class="btn btn-primary">Отправить заявку</button>
-                    <span class="help">Поля, отмеченные звёздочкой, обязательны.</span>
+                    <span class="help">
+                        Поля, отмеченные звёздочкой, обязательны.
+                        С <a href="{% url 'shop:legal' %}?tab=offer">условиями оферты</a>
+                        можно ознакомиться заранее.
+                    </span>
                 </div>
             </div>
 
@@ -139,6 +145,15 @@
                     <p class="help checkout-note">
                         Цены и наличие проверяются на сервере при отправке заявки.
                         Менеджер подтвердит состав перед выставлением счёта.
+                    </p>
+                </div>
+
+                <div class="checkout-seller">
+                    <h2>Продавец</h2>
+                    {% include "partials/seller_requisites.html" %}
+                    <p class="help checkout-note">
+                        <a href="{% url 'shop:legal' %}?tab=offer">Условия оферты</a> ·
+                        <a href="{% url 'shop:legal' %}?tab=privacy">Политика обработки ПД</a>
                     </p>
                 </div>
 

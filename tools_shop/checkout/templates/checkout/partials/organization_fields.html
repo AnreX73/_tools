@@ -34,6 +34,7 @@
                         hx-target="#organization-fields"
                         hx-swap="outerHTML"
                         hx-indicator="#inn-lookup-indicator"
+                        hx-sync="closest form:replace"
                         hx-disabled-elt="this">Заполнить по ИНН</button>
                 <span id="inn-lookup-indicator" class="lookup-indicator"
                       aria-hidden="true"></span>
@@ -53,6 +54,11 @@
             {{ form.ogrn }}
             {% if form.ogrn.help_text %}<p class="help">{{ form.ogrn.help_text }}</p>{% endif %}
             {{ form.ogrn.errors }}
+        </div>
+        <div class="form-row form-row-full">
+            {{ form.legal_address.label_tag }}
+            {{ form.legal_address }}
+            {{ form.legal_address.errors }}
         </div>
     </div>
 </fieldset>

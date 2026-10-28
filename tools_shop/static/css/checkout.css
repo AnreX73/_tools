@@ -152,6 +152,7 @@
 /* --- сводка заказа --- */
 .checkout-summary-card,
 .checkout-contacts,
+.checkout-seller,
 .order-card {
     padding: 18px;
     border: 1px solid var(--border);
@@ -167,7 +168,8 @@
     margin-bottom: 8px;
 }
 .checkout-summary-head h2,
-.checkout-contacts h2 {
+.checkout-contacts h2,
+.checkout-seller h2 {
     margin: 0;
     font-size: 18px;
 }
@@ -221,6 +223,11 @@
 .checkout-note { margin: 12px 0 0; font-size: 13px; }
 .checkout-contacts h2 { margin-bottom: 8px; }
 .checkout-contacts .help { margin: 0; font-size: 13px; }
+
+.checkout-seller h2 { margin-bottom: 10px; }
+.checkout-seller .seller-requisites { grid-template-columns: minmax(0, 1fr); }
+.checkout-seller .seller-requisites dd { font-size: 13px; }
+.checkout-seller .checkout-note { font-size: 13px; }
 
 /* --- изменения корзины и лимит --- */
 .checkout-changed-layout {

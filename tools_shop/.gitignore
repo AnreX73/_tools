@@ -47,3 +47,7 @@ __pycache__/
 # Исключение для папки с логотипами
 !/shop/static/shop/images/
 !/shop/static/shop/images/**/*
+
+# Фактический конфиг nginx — «переключатель» режима на сервере (см. conf/README.md).
+# В git хранятся только шаблоны: conf/nginx.working.conf и conf/nginx.maintenance.conf.
+conf/nginx.conf

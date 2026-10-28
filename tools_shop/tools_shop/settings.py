@@ -84,6 +84,7 @@ TEMPLATES = [
                 'django.contrib.messages.context_processors.messages',
                 'shop.context_processors.popup_notice',
                 'cart.context_processors.cart_counters',
+                'companies.context_processors.seller',
             ],
         },
     },
@@ -231,31 +232,34 @@ DEFAULT_FROM_EMAIL = config(
 # Адреса менеджеров, которым уходят уведомления о новых заявках.
 MANAGER_NOTIFY_EMAILS = config("MANAGER_NOTIFY_EMAILS", default="", cast=Csv())
 
-# Реквизиты продавца для счёта. В продакшене переопределите через .env,
-# не храните настоящие банковские данные в репозитории.
+# Реквизиты продавца. Источник истины — модель ``companies.SellerProfile``
+# (редактируется в админке). Этот словарь — только fallback для тестов и
+# первого запуска. Пустые значения намеренно: заглушки с фиктивным ИНН и
+# банком не должны попасть в настоящий счёт.
 SELLER_REQUISITES = {
-    "name": config("SELLER_NAME", default="ООО «ТУЛЗ СЕРВИС»"),
-    "full_name": config(
-        "SELLER_FULL_NAME",
-        default="Общество с ограниченной ответственностью «ТУЛЗ СЕРВИС»",
-    ),
-    "inn": config("SELLER_INN", default="7700000000"),
-    "kpp": config("SELLER_KPP", default="770001001"),
-    "address": config(
-        "SELLER_ADDRESS",
-        default="г. Москва, ул. Примерная, д. 1, офис 1",
-    ),
-    "phone": config("SELLER_PHONE", default="+7 (495) 000-00-00"),
-    "email": config("SELLER_EMAIL", default="info@tools-service.ru"),
-    "bank_name": config("SELLER_BANK_NAME", default="ПАО «Пример-Банк»"),
-    "bik": config("SELLER_BIK", default="044525225"),
+    "legal_form": config("SELLER_LEGAL_FORM", default="ooo"),
+    "name": config("SELLER_NAME", default=""),
+    "full_name": config("SELLER_FULL_NAME", default=""),
+    "inn": config("SELLER_INN", default=""),
+    "kpp": config("SELLER_KPP", default=""),
+    "ogrn": config("SELLER_OGRN", default=""),
+    "address": config("SELLER_ADDRESS", default=""),
+    "postal_address": config("SELLER_POSTAL_ADDRESS", default=""),
+    "phone": config("SELLER_PHONE", default=""),
+    "email": config("SELLER_EMAIL", default=""),
+    "website": config("SELLER_WEBSITE", default=""),
+    "bank_name": config("SELLER_BANK_NAME", default=""),
+    "bik": config("SELLER_BIK", default=""),
     "correspondent_account": config(
-        "SELLER_CORRESPONDENT_ACCOUNT", default="30101810400000000225"
+        "SELLER_CORRESPONDENT_ACCOUNT", default=""
     ),
     "checking_account": config(
-        "SELLER_CHECKING_ACCOUNT", default="40702810400000000001"
+        "SELLER_CHECKING_ACCOUNT", default=""
     ),
-    "director": config("SELLER_DIRECTOR", default="Иванов Иван Иванович"),
+    "director": config("SELLER_DIRECTOR", default=""),
+    "director_position": config(
+        "SELLER_DIRECTOR_POSITION", default="Генеральный директор"
+    ),
 }
 
 # Базовый адрес сайта для ссылок в письмах (без завершающего слэша).
@@ -298,6 +302,11 @@ DADATA_CACHE_TTL = config("DADATA_CACHE_TTL", default=86400, cast=int)
 # Отдельный лимит на кнопку «Заполнить по ИНН»: 10 запросов в минуту с IP.
 DADATA_RATE_LIMIT = config("DADATA_RATE_LIMIT", default=10, cast=int)
 DADATA_RATE_WINDOW = config("DADATA_RATE_WINDOW", default=60, cast=int)
+# В админке менеджер проверяет несколько контрагентов подряд, поэтому лимит
+# выше клиентского.
+DADATA_ADMIN_RATE_LIMIT = config(
+    "DADATA_ADMIN_RATE_LIMIT", default=30, cast=int
+)
 
 # Дополнительные разрешенные домены, которые не заканчиваются на .ru
 EXTRA_ALLOWED_DOMAINS = ["yandex.by", "yandex.kz", "yandex.com"]

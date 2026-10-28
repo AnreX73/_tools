@@ -22,6 +22,8 @@ from django.contrib.postgres.indexes import GinIndex
 from django.core.exceptions import ValidationError
 from django.core.validators import FileExtensionValidator, MinValueValidator, RegexValidator
 from django.db import models, transaction
+from django.urls import reverse
+from django.utils import timezone
 from treebeard.mp_tree import MP_Node
 
 from .utils import make_slug
@@ -572,3 +574,108 @@ class PopupNotice(models.Model):
         return (cls.objects.filter(is_active=True)
                 .exclude(title="", text="", image="")  # все три пустые
                 .first())
+
+
+
+class Info(models.Model):
+    """
+    Информационная или юридическая страница: оферта, политика ПД и т.п.
+
+    Текст хранится в разделах ``InfoSection``, а не в одном HTML-поле: так его
+    можно править в админке без знания разметки. Реквизиты продавца
+    подставляются токенами при выводе (см. ``shop/info.py``).
+    """
+
+    class Kind(models.TextChoices):
+        OFFER = "offer", "Публичная оферта"
+        PRIVACY = "privacy", "Политика обработки персональных данных"
+        TERMS = "terms", "Пользовательское соглашение"
+        CONSENT = "consent", "Согласие на обработку персональных данных"
+        DELIVERY = "delivery", "Доставка и оплата"
+        RETURNS = "returns", "Возврат и гарантия"
+        ABOUT = "about", "О компании"
+        OTHER = "other", "Прочее"
+
+    #: Страницы, на которые ссылаются оформление заказа и страница «Правовая
+    #: информация». Их слаг нельзя менять, а страницу — снимать с публикации.
+    LEGACY_SLUGS = frozenset({"offer", "privacy"})
+
+    kind = models.CharField(
+        "Тип страницы",
+        max_length=20,
+        choices=Kind.choices,
+        default=Kind.OTHER,
+    )
+    title = models.CharField("Заголовок", max_length=200)
+    slug = models.SlugField(
+        "Слаг",
+        max_length=60,
+        unique=True,
+        blank=True,
+        help_text="Цифры, латиница, дефисы. Пусто — сгенерируется из заголовка.",
+    )
+    notice = models.TextField(
+        "Предупреждение",
+        blank=True,
+        help_text="Необязательный блок в начале страницы, например «Текст в разработке».",
+    )
+    revision_date = models.DateField("Дата редакции", default=timezone.localdate)
+    image = models.ImageField("Изображение", upload_to="info/", blank=True)
+    is_active = models.BooleanField("Отображать на сайте", default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return self.title
+
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            base = make_slug(self.title or "info")
+            base = (unicodedata.normalize("NFKD", base)
+                    .encode("ascii", "ignore").decode("ascii"))
+            base = re.sub(r"-+", "-", base)[:50].strip("-") or "info"
+            slug, number = base, 2
+            while type(self).objects.filter(slug=slug).exclude(pk=self.pk).exists():
+                slug = f"{base}-{number}"
+                number += 1
+            self.slug = slug
+        super().save(*args, **kwargs)
+
+    def get_absolute_url(self):
+        if self.slug in self.LEGACY_SLUGS:
+            return f"{reverse('shop:legal')}?tab={self.slug}"
+        return reverse("shop:info", kwargs={"slug": self.slug})
+
+    class Meta:
+        verbose_name = "Информационная страница"
+        verbose_name_plural = "Информационные страницы"
+        ordering = ["kind", "title"]
+
+
+class InfoSection(models.Model):
+    """Раздел информационной страницы: необязательный заголовок и текст."""
+
+    info = models.ForeignKey(
+        Info,
+        verbose_name="Страница",
+        related_name="sections",
+        on_delete=models.CASCADE,
+    )
+    heading = models.CharField("Заголовок раздела", max_length=200, blank=True)
+    body = models.TextField(
+        "Текст",
+        blank=True,
+        help_text=(
+            "Пустая строка — новый абзац, «- » — маркированный список, "
+            "«1. » — нумерованный. Токены вроде [[ИНН]] подставляются автоматически."
+        ),
+    )
+    sort_order = models.PositiveIntegerField("Порядок", default=0, db_index=True)
+
+    class Meta:
+        verbose_name = "Раздел"
+        verbose_name_plural = "Разделы"
+        ordering = ["sort_order", "id"]  # adminsortable2 берёт поле порядка отсюда
+
+    def __str__(self):
+        return self.heading or f"Раздел #{self.pk}"

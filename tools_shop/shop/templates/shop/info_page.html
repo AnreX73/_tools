@@ -1,0 +1,13 @@
+{% extends "shop/base.html" %}
+{% block title %}{{ info.title }}{% endblock %}
+{% block content %}
+    <nav class="breadcrumbs">
+        <a href="{% url 'shop:index' %}">Главная</a>
+        <span class="sep">/</span> <span>{{ info.title }}</span>
+    </nav>
+
+    <article class="legal-page">
+        <h1 class="page-title">{{ info.title }}</h1>
+        {% include "shop/partials/info_article.html" %}
+    </article>
+{% endblock %}

@@ -12,7 +12,7 @@ from uuid import uuid4
 from django.test import TestCase
 from django.urls import reverse
 
-from companies.models import LegalEntity
+from companies.models import LegalEntity, SellerProfile
 from shop.models import Category, Product
 
 from .models import Invoice, Order, OrderItem
@@ -31,6 +31,13 @@ class PublicOrderPageTests(TestCase):
             price=Decimal("150.00"),
             is_active=True,
             attributes={},
+        )
+        cls.seller = SellerProfile.objects.create(
+            short_name="ООО «Публичный продавец»",
+            full_name="Общество с ограниченной ответственностью «Публичный продавец»",
+            inn="7707083893",
+            kpp="773601001",
+            legal_address="г. Москва, ул. Продавца, д. 1",
         )
 
     def make_order(self, *, comment: str = "") -> Order:
@@ -92,6 +99,9 @@ class PublicOrderPageTests(TestCase):
         self.assertContains(response, "Публичный клиент")
         self.assertContains(response, "Сверло 6 мм")
         self.assertContains(response, "300")
+        self.assertContains(response, "Продавец")
+        self.assertContains(response, "ООО «Публичный продавец»")
+        self.assertContains(response, "ИНН 7707083893")
 
     def test_internal_comment_is_not_exposed(self):
         order = self.make_order(comment="Секретный комментарий менеджера")
@@ -125,3 +135,22 @@ class PublicOrderPageTests(TestCase):
         response = self.client.get(reverse("orders:detail", args=[order.uuid]))
         self.assertContains(response, "С-000001")
         self.assertContains(response, "PDF счёта готовится")
+
+    def test_invoice_seller_snapshot_is_used_on_page(self):
+        order = self.make_order()
+        Invoice.issue_for(order)
+
+        SellerProfile.objects.create(
+            short_name="ООО «Новый продавец»",
+            full_name="Общество с ограниченной ответственностью «Новый продавец»",
+            inn="7707083893",
+            kpp="773601001",
+            legal_address="г. Москва, ул. Новая, д. 2",
+        )
+
+        response = self.client.get(reverse("orders:detail", args=[order.uuid]))
+        self.assertEqual(
+            response.context["order_seller"]["short_name"],
+            "ООО «Публичный продавец»",
+        )
+        self.assertContains(response, "ООО «Публичный продавец»")

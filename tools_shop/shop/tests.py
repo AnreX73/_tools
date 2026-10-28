@@ -7,6 +7,7 @@
 # Django's dynamic ORM and test-client APIs are not fully represented by the
 # project's pyright stubs.
 # pyright: reportAttributeAccessIssue=false, reportGeneralTypeIssues=false
+from datetime import date
 from decimal import Decimal
 from io import StringIO
 
@@ -17,9 +18,15 @@ from django.core.management.base import CommandError
 from django.db import IntegrityError, transaction
 from django.http import QueryDict
 from django.test import TestCase
+from django.urls import reverse
+
+from companies.models import SellerProfile
 
 from . import catalog
-from .models import Attribute, AttributeOption, Category, CategoryAttribute, PopupNotice, Product
+from .models import (
+    Attribute, AttributeOption, Category, CategoryAttribute, Info, InfoSection,
+    PopupNotice, Product,
+)
 
 T = Attribute.DataType
 
@@ -562,3 +569,229 @@ class ReplaceInNamesCommandTestCase(TestCase):
         before = Product.objects.get(sku="RIN-1").updated_at
         self._run("--find", "Fenwerk", "--replace", "")
         self.assertGreater(Product.objects.get(sku="RIN-1").updated_at, before)
+
+
+class InfoPageTestCase(TestCase):
+    """Информационные и юридические страницы из админки."""
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.page = Info.objects.create(
+            kind=Info.Kind.TERMS,
+            title="Пользовательское соглашение",
+            slug="terms-test",
+            notice="Черновик документа.",
+            revision_date=date(2026, 10, 28),
+        )
+        InfoSection.objects.create(
+            info=cls.page,
+            heading="1. Общие условия",
+            body=(
+                "Первое условие.\n\n"
+                "- пункт один\n"
+                "- пункт два\n\n"
+                "ИНН: [[ИНН]]."
+            ),
+            sort_order=1,
+        )
+        InfoSection.objects.create(
+            info=cls.page,
+            heading="2. Реквизиты",
+            body="[[РЕКВИЗИТЫ]]",
+            sort_order=2,
+        )
+
+    def _get_page(self):
+        return self.client.get(reverse("shop:info", kwargs={"slug": self.page.slug}))
+
+    def test_renders_sections_in_order(self):
+        response = self._get_page()
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Пользовательское соглашение")
+        self.assertContains(response, "Редакция от 28.10.2026")
+        self.assertContains(response, "Черновик документа.")
+        self.assertLess(
+            response.content.index("1. Общие условия".encode()),
+            response.content.index("2. Реквизиты".encode()),
+        )
+        self.assertContains(response, "<li>пункт один</li>")
+
+    def test_seller_tokens_and_requisites(self):
+        SellerProfile.objects.create(
+            short_name="ООО «Тестовый продавец»",
+            full_name="Общество с ограниченной ответственностью «Тестовый продавец»",
+            inn="7707083893",
+            legal_address="г. Москва, ул. Тестовая, д. 1",
+            email="seller@example.ru",
+            phone="+7 (495) 111-22-33",
+        )
+        response = self._get_page()
+
+        self.assertContains(response, "ИНН: 7707083893.")
+        self.assertContains(response, "ООО «Тестовый продавец»")
+        self.assertContains(response, "seller-requisites")
+
+    def test_contacts_token(self):
+        SellerProfile.objects.create(
+            short_name="ООО «Контакты»",
+            full_name="Общество с ограниченной ответственностью «Контакты»",
+            inn="7707083893",
+            legal_address="г. Москва",
+            email="seller@example.ru",
+        )
+        InfoSection.objects.create(
+            info=self.page,
+            heading="Контакты",
+            body="[[КОНТАКТЫ]]",
+            sort_order=3,
+        )
+        response = self._get_page()
+
+        self.assertContains(response, 'class="seller-contacts"')
+        self.assertContains(response, "seller@example.ru")
+
+    def test_inactive_page_is_404(self):
+        self.page.is_active = False
+        self.page.save()
+
+        self.assertEqual(self._get_page().status_code, 404)
+
+    def test_unknown_slug_is_404(self):
+        response = self.client.get("/info/no-such-page/")
+
+        self.assertEqual(response.status_code, 404)
+
+    def test_offer_and_privacy_redirect_to_legal_tabs(self):
+        for url_name, tab in (("shop:offer", "offer"), ("shop:privacy", "privacy")):
+            with self.subTest(url_name=url_name):
+                response = self.client.get(reverse(url_name))
+                self.assertRedirects(
+                    response,
+                    f"{reverse('shop:legal')}?tab={tab}",
+                    status_code=301,
+                )
+
+    def test_info_offer_redirects_to_legal_tab(self):
+        response = self.client.get("/info/offer/")
+
+        self.assertRedirects(
+            response,
+            f"{reverse('shop:legal')}?tab=offer",
+            status_code=301,
+        )
+
+    def test_legal_page_shows_tabs_and_first_document(self):
+        response = self.client.get(reverse("shop:legal"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Правовая информация")
+        self.assertEqual(
+            [tab["slug"] for tab in response.context["tabs"]],
+            ["offer", "privacy", "terms-test"],
+        )
+        self.assertEqual(response.context["active"].slug, "offer")
+        self.assertContains(response, "1. Общие положения")
+        self.assertNotContains(response, "2. Какие данные обрабатываются")
+
+    def test_legal_page_selects_tab_from_query(self):
+        response = self.client.get(reverse("shop:legal"), {"tab": "privacy"})
+
+        self.assertEqual(response.context["active"].slug, "privacy")
+        self.assertContains(response, "2. Какие данные обрабатываются")
+        self.assertNotContains(response, "1. Общие положения")
+
+    def test_legal_page_unknown_tab_falls_back_to_first(self):
+        response = self.client.get(reverse("shop:legal"), {"tab": "no-such-tab"})
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context["active"].slug, "offer")
+
+    def test_legal_page_skips_inactive_pages(self):
+        privacy = Info.objects.get(slug="privacy")
+        privacy.is_active = False
+        privacy.save()
+
+        response = self.client.get(reverse("shop:legal"))
+
+        slugs = [tab["slug"] for tab in response.context["tabs"]]
+        self.assertNotIn("privacy", slugs)
+
+    def test_new_info_object_appears_as_tab(self):
+        Info.objects.create(
+            kind=Info.Kind.DELIVERY,
+            title="Доставка и оплата",
+            slug="delivery-test",
+        )
+
+        response = self.client.get(reverse("shop:legal"))
+
+        tabs = {tab["slug"]: tab for tab in response.context["tabs"]}
+        self.assertIn("delivery-test", tabs)
+        self.assertEqual(tabs["delivery-test"]["label"], "Доставка и оплата")
+        self.assertContains(response, "Доставка и оплата")
+
+    def test_legal_page_empty_state(self):
+        Info.objects.all().delete()
+
+        response = self.client.get(reverse("shop:legal"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Документы пока не опубликованы")
+        self.assertEqual(response.context["tabs"], [])
+
+    def test_html_in_text_is_escaped(self):
+        section = self.page.sections.first()
+        section.body = "<script>alert(1)</script>"
+        section.save()
+
+        response = self._get_page()
+        self.assertContains(response, "&lt;script&gt;alert(1)&lt;/script&gt;")
+        self.assertNotContains(response, "<script>alert(1)</script>")
+
+    def test_admin_pages_render(self):
+        user = get_user_model().objects.create_superuser(
+            username="info-admin", password="test-only",  # noqa: S106
+        )
+        self.client.force_login(user)
+        offer = Info.objects.get(slug="offer")
+
+        for url in (
+            "/admin/shop/info/",
+            "/admin/shop/info/add/",
+            f"/admin/shop/info/{self.page.pk}/change/",
+            f"/admin/shop/info/{offer.pk}/change/",
+        ):
+            with self.subTest(url=url):
+                self.assertEqual(self.client.get(url).status_code, 200)
+
+    def test_legacy_page_cannot_be_deactivated(self):
+        from .admin import InfoAdminForm
+
+        offer = Info.objects.get(slug="offer")
+        form = InfoAdminForm(
+            instance=offer,
+            data={
+                "kind": offer.kind,
+                "title": offer.title,
+                "slug": offer.slug,
+                "revision_date": offer.revision_date.isoformat(),
+                "notice": offer.notice,
+                # is_active не передан — форма пытается снять страницу с публикации
+            },
+        )
+
+        self.assertFalse(form.is_valid())
+        self.assertIn("is_active", form.errors)
+
+    def test_slug_is_generated_from_title(self):
+        page = Info.objects.create(kind=Info.Kind.DELIVERY, title="Доставка и оплата")
+
+        self.assertEqual(page.slug, "dostavka-i-oplata")
+
+    def test_generated_slug_is_unique(self):
+        first = Info.objects.create(kind=Info.Kind.RETURNS, title="Гарантия")
+        second = Info.objects.create(kind=Info.Kind.RETURNS, title="Гарантия")
+
+        self.assertEqual(first.slug, "garantiya")
+        self.assertEqual(second.slug, "garantiya-2")

@@ -31,6 +31,8 @@ from django.db import models, transaction
 from django.db.models import Q
 from django.utils import timezone
 
+from companies.seller import get_seller_snapshot, is_seller_configured
+
 from .sequences import next_invoice_number, next_order_number
 from .statuses import (
     EDITABLE_STATUSES,
@@ -397,6 +399,14 @@ class Invoice(models.Model):
         help_text="Заполняется фоновой задачей после одобрения заявки.",
     )
     sent_at = models.DateTimeField("Отправлен клиенту", null=True, blank=True)
+    seller_snapshot = models.JSONField(
+        "Реквизиты продавца на момент счёта",
+        default=dict,
+        blank=True,
+        editable=False,
+        help_text="Снимок SellerProfile: документ должен воспроизводиться "
+        "с теми реквизитами, с которыми был выставлен.",
+    )
     is_current = models.BooleanField("Действующая версия", default=True)
     created_at = models.DateTimeField("Создан", auto_now_add=True)
 
@@ -457,9 +467,15 @@ class Invoice(models.Model):
             cls.objects.filter(order=locked_order, is_current=True).update(
                 is_current=False
             )
+
+            # Снимок продавца фиксируем вместе с документом. Если профиль ещё
+            # не заполнен, оставляем пустой словарь: рендер возьмёт актуальные
+            # данные и не «заморозит» пустые поля навсегда.
+            seller = get_seller_snapshot()
             return cls.objects.create(
                 order=locked_order,
                 number=number,
                 version=version,
+                seller_snapshot=seller if is_seller_configured(seller) else {},
                 is_current=True,
             )

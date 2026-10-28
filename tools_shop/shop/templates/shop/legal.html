@@ -1,0 +1,27 @@
+{% extends "shop/base.html" %}
+{% block title %}Правовая информация{% endblock %}
+{% block content %}
+    <nav class="breadcrumbs">
+        <a href="{% url 'shop:index' %}">Главная</a>
+        <span class="sep">/</span> <span>Правовая информация</span>
+    </nav>
+
+    <h1 class="page-title">Правовая информация</h1>
+
+    {% if tabs %}
+        <nav class="legal-tabs" aria-label="Правовые документы">
+            {% for tab in tabs %}
+                <a class="legal-tab{% if tab.active %} is-active{% endif %}"
+                   href="{% url 'shop:legal' %}?tab={{ tab.slug|urlencode }}"
+                   {% if tab.active %}aria-current="page"{% endif %}>{{ tab.label }}</a>
+            {% endfor %}
+        </nav>
+
+        <article class="legal-page">
+            <h2 class="legal-doc-title">{{ active.title }}</h2>
+            {% include "shop/partials/info_article.html" with info=active section_heading_level=3 %}
+        </article>
+    {% else %}
+        <p class="help">Документы пока не опубликованы.</p>
+    {% endif %}
+{% endblock %}

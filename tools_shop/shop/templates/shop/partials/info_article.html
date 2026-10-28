@@ -1,0 +1,31 @@
+{% comment %}
+    Содержимое информационного документа: дата редакции, предупреждение,
+    изображение и разделы. Ожидает ``info`` и ``sections`` в контексте.
+
+    ``section_heading_level`` = 3 нужен на странице с табами, где заголовок
+    документа уже занимает h2. По умолчанию разделы выводятся как h2.
+{% endcomment %}
+{% if info.revision_date %}
+    <p class="help">Редакция от {{ info.revision_date|date:"d.m.Y" }}.</p>
+{% endif %}
+
+{% if info.notice %}
+    <div class="notice" role="status">{{ info.notice|linebreaksbr }}</div>
+{% endif %}
+
+{% if info.image %}
+    <img class="info-image" src="{{ info.image.url }}" alt="">
+{% endif %}
+
+{% for section in sections %}
+    {% if section.heading %}
+        {% if section_heading_level == 3 %}
+            <h3>{{ section.heading }}</h3>
+        {% else %}
+            <h2>{{ section.heading }}</h2>
+        {% endif %}
+    {% endif %}
+    {{ section.html }}
+{% empty %}
+    <p class="help">Содержимое страницы пока не заполнено.</p>
+{% endfor %}

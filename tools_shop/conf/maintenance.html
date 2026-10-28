@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="theme-color" content="#2563eb">
+  <title>Технические работы — Магазин инструментов</title>
+  <style>
+    :root {
+      color-scheme: light dark;
+      --bg: #f4f5f7;
+      --panel: #ffffff;
+      --border: #e4e7ec;
+      --text: #101828;
+      --text-2: #475467;
+      --muted: #667085;
+      --accent: #2563eb;
+      --accent-soft: #eef4ff;
+      --shadow: 0 8px 24px -6px rgba(16, 24, 40, 0.12), 0 2px 6px -2px rgba(16, 24, 40, 0.06);
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0b0f17;
+        --panel: #151b27;
+        --border: #263042;
+        --text: #e6e9f0;
+        --text-2: #c3cad6;
+        --muted: #8b95a7;
+        --accent: #4f83ee;
+        --accent-soft: rgba(79, 131, 238, 0.15);
+        --shadow: 0 8px 24px -6px rgba(0, 0, 0, 0.60), 0 2px 6px -2px rgba(0, 0, 0, 0.40);
+      }
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+      background: var(--bg);
+      color: var(--text);
+      font: 15px/1.55 "Inter", system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .card {
+      width: 100%;
+      max-width: 460px;
+      padding: 2.75rem 2rem 2.25rem;
+      text-align: center;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      box-shadow: var(--shadow);
+    }
+
+    .icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 64px;
+      height: 64px;
+      margin-bottom: 1.35rem;
+      color: var(--accent);
+      background: var(--accent-soft);
+      border-radius: 16px;
+    }
+
+    .icon svg {
+      width: 30px;
+      height: 30px;
+      animation: wiggle 4.5s ease-in-out infinite;
+    }
+
+    .brand {
+      margin-bottom: 0.9rem;
+      color: var(--muted);
+      font-size: 0.72rem;
+      font-weight: 600;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      margin-bottom: 0.85rem;
+      color: var(--text);
+      font-size: 1.5rem;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      line-height: 1.3;
+    }
+
+    p {
+      margin-bottom: 0.45rem;
+      color: var(--text-2);
+      font-size: 0.95rem;
+      line-height: 1.6;
+    }
+
+    .status {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-top: 1.6rem;
+      padding: 0.45rem 0.85rem;
+      color: var(--accent);
+      background: var(--accent-soft);
+      border-radius: 999px;
+      font-size: 0.82rem;
+      font-weight: 500;
+    }
+
+    .dot {
+      width: 7px;
+      height: 7px;
+      background: currentColor;
+      border-radius: 50%;
+      animation: pulse 1.4s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 0.35; transform: scale(0.85); }
+      50% { opacity: 1; transform: scale(1.15); }
+    }
+
+    @keyframes wiggle {
+      0%, 100% { transform: rotate(-7deg); }
+      50% { transform: rotate(7deg); }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .icon svg, .dot { animation: none; }
+    }
+
+    @media (max-width: 420px) {
+      .card { padding: 2.25rem 1.25rem 1.9rem; }
+      h1 { font-size: 1.3rem; }
+      .icon { width: 56px; height: 56px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="card" role="main">
+    <div class="icon" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"
+           stroke-linecap="round" stroke-linejoin="round">
+        <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>
+      </svg>
+    </div>
+    <div class="brand">Магазин инструментов</div>
+    <h1>Технические работы</h1>
+    <p>Сайт временно недоступен.</p>
+    <p>Обновляем каталог и цены — уже скоро вернёмся.</p>
+    <div class="status" aria-hidden="true">
+      <span class="dot"></span>
+      Скоро вернёмся
+    </div>
+  </main>
+</body>
+</html>

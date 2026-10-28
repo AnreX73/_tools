@@ -1,9 +1,13 @@
 from django.core.paginator import Paginator
 from django.db.models import Prefetch
-from django.shortcuts import get_object_or_404, render
+from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse
+
+from companies.seller import get_seller
 
 from . import catalog, search
-from .models import Catalog, Category, Product, ProductImage
+from .info import render_sections
+from .models import Catalog, Category, Info, Product, ProductImage
 from .sorting import get_sort_rules, order_products, sort_attribute_codes
 
 PAGE_SIZE = 24
@@ -32,6 +36,59 @@ def index(request):
         "root_categories": _root_categories(),
     }
     return render(request, "shop/index.html", context)
+
+
+def info_page(request, slug):
+    """Информационная или юридическая страница; текст редактируется в админке."""
+    # Юридические документы живут табами на /legal/, старые ссылки ведут туда же.
+    if slug in Info.LEGACY_SLUGS:
+        return redirect(f"{reverse('shop:legal')}?tab={slug}", permanent=True)
+
+    info = get_object_or_404(
+        Info.objects.prefetch_related("sections"),
+        slug=slug,
+        is_active=True,
+    )
+
+    seller = get_seller()
+    context = {
+        "title": info.title,
+        "info": info,
+        "sections": render_sections(info, seller),
+        "seller": seller,
+    }
+    return render(request, "shop/info_page.html", context)
+
+
+def legal_info(request):
+    """Правовая информация: все активные Info-страницы, сгруппированные в табы."""
+    docs = list(
+        Info.objects.filter(is_active=True)
+        .prefetch_related("sections")
+        .order_by("created_at", "pk")
+    )
+
+    requested_slug = request.GET.get("tab")
+    active = next((doc for doc in docs if doc.slug == requested_slug), None)
+    if active is None and docs:
+        active = docs[0]
+
+    seller = get_seller()
+    context = {
+        "title": "Правовая информация",
+        "tabs": [
+            {
+                "slug": doc.slug,
+                "label": doc.title,
+                "active": active is not None and doc.pk == active.pk,
+            }
+            for doc in docs
+        ],
+        "active": active,
+        "sections": render_sections(active, seller) if active else [],
+        "seller": seller,
+    }
+    return render(request, "shop/legal.html", context)
 
 
 def catalog_index(request):

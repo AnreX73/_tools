@@ -19,6 +19,7 @@ from django.conf import settings
 from django.template.loader import render_to_string
 
 from companies.models import LegalEntity
+from companies.seller import get_seller, is_seller_configured
 
 from .models import Invoice
 
@@ -47,11 +48,17 @@ def render_invoice_pdf(invoice: Invoice) -> bytes:
     """
     Возвращает PDF счёта как bytes.
 
-    Реквизиты продавца берутся из ``settings.SELLER_REQUISITES``. Реквизиты
+    Реквизиты продавца берутся из снимка счёта (``Invoice.seller_snapshot``).
+    Для старых счетов без снимка — из активного профиля продавца. Реквизиты
     покупателя — из снимка заявки, а не из текущей карточки организации:
     счёт должен соответствовать тому, что покупатель указал при оформлении.
     """
-    seller = getattr(settings, "SELLER_REQUISITES", {}) or {}
+    seller = invoice.seller_snapshot or get_seller()
+    if not is_seller_configured(seller):
+        raise InvoicePDFError(
+            "Реквизиты продавца не заполнены. Откройте «Реквизиты продавца» "
+            "в админке и укажите наименование, ИНН и юридический адрес."
+        )
     order = invoice.order
     buyer = order.requisites_snapshot or {}
 

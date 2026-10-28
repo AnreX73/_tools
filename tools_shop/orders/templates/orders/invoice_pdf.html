@@ -127,15 +127,16 @@
 <body>
     <div class="top">
         <div class="seller">
-            <p class="seller-name">{{ seller.name|default:"ООО «ТУЛЗ СЕРВИС»" }}</p>
+            <p class="seller-name">{{ seller.short_name|default:"—" }}</p>
             {% if seller.full_name %}<p class="seller-line">{{ seller.full_name }}</p>{% endif %}
             <p class="seller-line">
-                ИНН {{ seller.inn|default:"—" }}{% if seller.kpp %} / КПП {{ seller.kpp }}{% endif %}
+                ИНН {{ seller.inn|default:"—" }}{% if seller.kpp %} / КПП {{ seller.kpp }}{% endif %}{% if seller.ogrn %} / ОГРН {{ seller.ogrn }}{% endif %}
             </p>
-            {% if seller.address %}<p class="seller-line">{{ seller.address }}</p>{% endif %}
+            {% if seller.legal_address %}<p class="seller-line">{{ seller.legal_address }}</p>{% endif %}
             <p class="seller-line small muted">
                 {% if seller.phone %}Тел.: {{ seller.phone }}{% endif %}
                 {% if seller.email %}{% if seller.phone %} · {% endif %}Email: {{ seller.email }}{% endif %}
+                {% if seller.website %}{% if seller.phone or seller.email %} · {% endif %}{{ seller.website }}{% endif %}
             </p>
         </div>
         <div class="doc">
@@ -152,11 +153,12 @@
     <div class="parties">
         <div class="party">
             <h3>Поставщик</h3>
-            <p><strong>{{ seller.name|default:"ООО «ТУЛЗ СЕРВИС»" }}</strong></p>
+            <p><strong>{{ seller.short_name|default:"—" }}</strong></p>
+            {% if seller.full_name %}<p class="small">{{ seller.full_name }}</p>{% endif %}
             <p class="small">
-                ИНН {{ seller.inn|default:"—" }}{% if seller.kpp %} / КПП {{ seller.kpp }}{% endif %}
+                ИНН {{ seller.inn|default:"—" }}{% if seller.kpp %} / КПП {{ seller.kpp }}{% endif %}{% if seller.ogrn %} / ОГРН {{ seller.ogrn }}{% endif %}
             </p>
-            {% if seller.address %}<p class="small">{{ seller.address }}</p>{% endif %}
+            {% if seller.legal_address %}<p class="small">{{ seller.legal_address }}</p>{% endif %}
             {% if seller.bank_name %}
                 <p class="small">
                     {{ seller.bank_name }}{% if seller.bik %}, БИК {{ seller.bik }}{% endif %}
@@ -179,6 +181,7 @@
                 {% if buyer_legal_form %}{{ buyer_legal_form }} · {% endif %}
                 ИНН {{ buyer.inn|default:order.company.inn }}
                 {% if buyer.kpp %} / КПП {{ buyer.kpp }}{% endif %}
+                {% if buyer.ogrn %} / ОГРН {{ buyer.ogrn }}{% endif %}
             </p>
             <p class="small">
                 Адрес: {{ buyer.legal_address|default:order.company.legal_address }}
@@ -238,9 +241,10 @@
         </p>
         {% if seller.bank_name %}
             <p class="small">
-                Получатель: {{ seller.name|default:"ООО «ТУЛЗ СЕРВИС»" }},
+                Получатель: {{ seller.short_name|default:"—" }},
                 ИНН {{ seller.inn|default:"—" }}
                 {% if seller.kpp %}, КПП {{ seller.kpp }}{% endif %}
+                {% if seller.ogrn %}, ОГРН {{ seller.ogrn }}{% endif %}
             </p>
             <p class="small">
                 Банк: {{ seller.bank_name }}
@@ -256,10 +260,10 @@
     <div class="signature">
         <div>
             <div class="signature-line"></div>
-            <p class="small muted">Руководитель</p>
+            <p class="small muted">{{ seller.director_position|default:"Руководитель" }}</p>
         </div>
         <div>
-            <p class="small"><strong>{{ seller.director|default:"" }}</strong></p>
+            <p class="small"><strong>{{ seller.director_name|default:"" }}</strong></p>
             <p class="small muted">подпись / расшифровка</p>
         </div>
     </div>
@@ -267,6 +271,7 @@
     <div class="footer">
         {% if seller.phone %}Телефон: {{ seller.phone }}. {% endif %}
         {% if seller.email %}Email: {{ seller.email }}. {% endif %}
+        {% if seller.website %}Сайт: {{ seller.website }}. {% endif %}
         Счёт сформирован автоматически; действителен при наличии подписи и печати.
     </div>
 </body>

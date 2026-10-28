@@ -17,7 +17,7 @@ from django.test import Client, RequestFactory, TestCase
 from django.urls import reverse
 
 from cart.services import Cart
-from companies.models import LegalEntity
+from companies.models import LegalEntity, SellerProfile
 from orders.models import Order, OrderItem
 from orders.statuses import OrderStatus
 from shop.models import Category, Product
@@ -343,9 +343,43 @@ class CheckoutViewTests(CheckoutTestMixin, TestCase):
             f'hx-post="{reverse("checkout:suggest_by_inn")}"',
         )
         self.assertContains(response, 'hx-include="#id_inn, #id_kpp"')
+        self.assertContains(
+            response,
+            'hx-trigger="input[event.target.value.length === 10'
+            ' || event.target.value.length === 12]'
+            ' changed delay:800ms"',
+        )
         self.assertContains(response, 'name="ogrn"')
         key = str(response.context["form"]["idempotency_key"].value())
         self.assertEqual(key, self.client.session["checkout_idempotency_key"])
+
+    def test_get_shows_seller_and_legal_links(self):
+        SellerProfile.objects.create(
+            short_name="ООО «Продавец оформления»",
+            full_name="Общество с ограниченной ответственностью «Продавец оформления»",
+            inn="7707083893",
+            kpp="773601001",
+            legal_address="г. Москва, ул. Продавца, д. 1",
+        )
+        self.set_cart()
+        response = self.client.get(FORM_URL)
+
+        self.assertContains(response, "ООО «Продавец оформления»")
+        self.assertContains(response, "ИНН / КПП")
+        self.assertContains(response, f"{reverse('shop:legal')}?tab=offer")
+        self.assertContains(response, f"{reverse('shop:legal')}?tab=privacy")
+        self.assertContains(response, "Оператор обработки персональных данных")
+
+    def test_get_with_htmx_header_renders_page(self):
+        # htmx-запросы идут без seller в контексте (процессор их пропускает),
+        # но страница всё равно должна рендериться: раньше подвал падал
+        # с VariableDoesNotExist из-за цепочки default: в base.html.
+        self.set_cart()
+        response = self.client.get(FORM_URL, HTTP_HX_REQUEST="true")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'id="organization-fields"')
+        self.assertContains(response, "ТУЛЗ СЕРВИС")
 
     def test_post_creates_order_clears_cart_and_redirects(self):
         self.set_cart({self.product.pk: 2})

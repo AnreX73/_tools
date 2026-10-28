@@ -1,0 +1,48 @@
+.inn-lookup {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+}
+
+.inn-lookup input[type="text"] {
+    flex: 1 1 220px;
+    max-width: 320px;
+}
+
+.inn-lookup__button {
+    padding: 6px 12px;
+    border: 1px solid var(--border-color, #ccc);
+    border-radius: 4px;
+    background: var(--button-bg, #f8f8f8);
+    color: var(--button-fg, #333);
+    font-size: 13px;
+    line-height: 1.4;
+    white-space: nowrap;
+    cursor: pointer;
+}
+
+.inn-lookup__button:hover,
+.inn-lookup__button:focus-visible {
+    border-color: var(--primary, #417690);
+}
+
+.inn-lookup__button[disabled] {
+    opacity: 0.6;
+    cursor: progress;
+}
+
+.inn-lookup__status {
+    flex-basis: 100%;
+    min-height: 1em;
+    font-size: 12px;
+    color: var(--body-quiet-color, #666);
+}
+
+.inn-lookup__status.is-warning {
+    color: var(--body-fg, #333);
+}
+
+.inn-lookup__status.is-error {
+    color: var(--error-fg, #ba2121);
+}

@@ -1,0 +1,54 @@
+{% comment %}
+    Краткие реквизиты продавца для страницы оформления и публичной заявки.
+    Ожидает в контексте словарь ``seller`` (companies.seller.get_seller).
+{% endcomment %}
+{% if seller.short_name %}
+    <dl class="order-details seller-requisites">
+        <div>
+            <dt>Организация</dt>
+            <dd>{{ seller.short_name }}</dd>
+        </div>
+        {% if seller.full_name and seller.full_name != seller.short_name %}
+            <div>
+                <dt>Полное наименование</dt>
+                <dd>{{ seller.full_name }}</dd>
+            </div>
+        {% endif %}
+        <div>
+            <dt>ИНН / КПП</dt>
+            <dd>{{ seller.inn|default:"—" }}{% if seller.kpp %} / {{ seller.kpp }}{% endif %}</dd>
+        </div>
+        {% if seller.ogrn %}
+            <div>
+                <dt>ОГРН</dt>
+                <dd>{{ seller.ogrn }}</dd>
+            </div>
+        {% endif %}
+        {% if seller.legal_address %}
+            <div>
+                <dt>Юридический адрес</dt>
+                <dd>{{ seller.legal_address }}</dd>
+            </div>
+        {% endif %}
+        {% if seller.phone %}
+            <div>
+                <dt>Телефон</dt>
+                <dd><a href="tel:{{ seller.phone }}">{{ seller.phone }}</a></dd>
+            </div>
+        {% endif %}
+        {% if seller.email %}
+            <div>
+                <dt>Email</dt>
+                <dd><a href="mailto:{{ seller.email }}">{{ seller.email }}</a></dd>
+            </div>
+        {% endif %}
+        {% if seller.website %}
+            <div>
+                <dt>Сайт</dt>
+                <dd><a href="{{ seller.website }}" target="_blank" rel="noopener">{{ seller.website }}</a></dd>
+            </div>
+        {% endif %}
+    </dl>
+{% else %}
+    <p class="help">Реквизиты продавца уточняются.</p>
+{% endif %}
