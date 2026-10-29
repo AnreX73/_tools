@@ -73,16 +73,25 @@
 {% endblock %}
 {% block scripts %}
     {% if product.main_image %}
-    <dialog id="image-modal" class="image-modal" aria-label="Изображение товара">
+    {% with images=product.gallery_images %}
+    <dialog id="image-modal" class="image-modal" aria-label="Изображения товара">
         <button type="button" class="image-modal-close" aria-label="Закрыть" onclick="this.closest('dialog').close()">&times;</button>
-        <img src="{{ product.main_image.image.url }}" alt="{{ product.name }}">
+        <div class="image-slider" data-slider>
+            <div class="image-slider-track" data-slider-track>
+                {% for image in images %}
+                    <img src="{{ image.image.url }}" alt="{{ product.name }}, изображение {{ forloop.counter }} из {{ images|length }}"
+                         {% if forloop.first %}decoding="async"{% else %}hidden loading="lazy"{% endif %}>
+                {% endfor %}
+            </div>
+            {% if images|length > 1 %}
+                <button type="button" class="image-slider-nav image-slider-prev" data-slider-prev
+                        aria-label="Предыдущее изображение">‹</button>
+                <button type="button" class="image-slider-nav image-slider-next" data-slider-next
+                        aria-label="Следующее изображение">›</button>
+                <div class="image-slider-counter" data-slider-counter aria-live="polite">1 / {{ images|length }}</div>
+            {% endif %}
+        </div>
     </dialog>
-    <script>
-        (function () {
-            var dlg = document.getElementById('image-modal');
-            // клик по подложке (вне картинки) закрывает окно
-            dlg.addEventListener('click', function (e) { if (e.target === dlg) dlg.close(); });
-        })();
-    </script>
+    {% endwith %}
     {% endif %}
 {% endblock %}

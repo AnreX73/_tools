@@ -8,14 +8,30 @@
 <div class="pcard">
     <div class="pcard-main">
         {% if product.main_image %}
+        {% with images=product.gallery_images %}
         <button type="button" class="pcard-photo" aria-label="Увеличить изображение: {{ product.name }}"
                 onclick="document.getElementById('pcard-modal-{{ product.pk }}').showModal()">
             <img src="{{ product.main_image.image.url }}" alt="{{ product.name }}" decoding="async" loading="lazy">
         </button>
-        <dialog id="pcard-modal-{{ product.pk }}" class="image-modal" aria-label="Изображение товара">
+        <dialog id="pcard-modal-{{ product.pk }}" class="image-modal" aria-label="Изображения товара">
             <button type="button" class="image-modal-close" aria-label="Закрыть" onclick="this.closest('dialog').close()">&times;</button>
-            <img src="{{ product.main_image.image.url }}" alt="{{ product.name }}">
+            <div class="image-slider" data-slider>
+                <div class="image-slider-track" data-slider-track>
+                    {% for image in images %}
+                        <img src="{{ image.image.url }}" alt="{{ product.name }}, изображение {{ forloop.counter }} из {{ images|length }}"
+                             {% if forloop.first %}decoding="async"{% else %}hidden loading="lazy"{% endif %}>
+                    {% endfor %}
+                </div>
+                {% if images|length > 1 %}
+                    <button type="button" class="image-slider-nav image-slider-prev" data-slider-prev
+                            aria-label="Предыдущее изображение">‹</button>
+                    <button type="button" class="image-slider-nav image-slider-next" data-slider-next
+                            aria-label="Следующее изображение">›</button>
+                    <div class="image-slider-counter" data-slider-counter aria-live="polite">1 / {{ images|length }}</div>
+                {% endif %}
+            </div>
         </dialog>
+        {% endwith %}
         {% endif %}
 
         <div class="pcard-body">

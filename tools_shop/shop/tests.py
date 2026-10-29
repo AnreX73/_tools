@@ -25,7 +25,7 @@ from companies.models import SellerProfile
 from . import catalog
 from .models import (
     Attribute, AttributeOption, Category, CategoryAttribute, Info, InfoSection,
-    PopupNotice, Product,
+    PopupNotice, Product, ProductImage,
 )
 
 T = Attribute.DataType
@@ -124,6 +124,35 @@ class CatalogTestCase(TestCase):
         response = self.client.get(self.p1.get_absolute_url())
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Материал инструмента")
+
+    # ---- галерея изображений ----
+    def test_product_gallery_shows_all_images(self):
+        for number in range(3):
+            ProductImage.objects.create(
+                product=self.p1, image=f"products/test{number}.png", sort_order=number
+            )
+
+        page = self.client.get(self.p1.get_absolute_url())
+        self.assertEqual(page.status_code, 200)
+        for number in range(3):
+            self.assertContains(page, f"products/test{number}.png")
+        self.assertContains(page, "data-slider-next")
+        self.assertContains(page, "1 / 3")
+
+        card = self.client.get(f"/product/{self.p1.slug}/card/")
+        self.assertEqual(card.status_code, 200)
+        for number in range(3):
+            self.assertContains(card, f"products/test{number}.png")
+        self.assertContains(card, "data-slider-next")
+        self.assertContains(card, "1 / 3")
+
+    def test_product_gallery_single_image_has_no_navigation(self):
+        ProductImage.objects.create(product=self.p2, image="products/single.png")
+
+        page = self.client.get(self.p2.get_absolute_url())
+        self.assertContains(page, "products/single.png")
+        self.assertNotContains(page, "data-slider-next")
+        self.assertNotContains(page, "data-slider-counter")
 
     # ---- фильтры ----
     def _ids(self, response):

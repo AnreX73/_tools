@@ -675,14 +675,38 @@ a.category-tile:hover .arrow { background: var(--accent); color: #fff; transform
 }
 .image-modal::backdrop { background: rgba(16, 24, 40, .6); }
 .image-modal img { display: block; width: 100%; height: auto; max-height: 80vh; object-fit: contain; border-radius: inherit; }
+
+/* слайдер изображений внутри модалки */
+.image-slider { position: relative; }
+/* селектор сильнее .image-modal img, иначе display:block перебивает hidden */
+.image-slider img[hidden] { display: none; }
+.image-slider-nav {
+    position: absolute; top: 50%; transform: translateY(-50%); z-index: 1;
+    display: grid; place-items: center; width: 40px; height: 40px; padding: 0;
+    border: 0; border-radius: 50%; background: rgba(16, 24, 40, .55); color: #fff;
+    font-size: 24px; line-height: 1; cursor: pointer;
+    transition: background .2s var(--ease);
+}
+.image-slider-nav:hover, .image-slider-nav:focus-visible { background: var(--accent); }
+.image-slider-prev { left: 8px; }
+.image-slider-next { right: 8px; }
+.image-slider-counter {
+    position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%);
+    padding: 3px 10px; border-radius: 999px; background: rgba(16, 24, 40, .55);
+    color: #fff; font-size: 12px; line-height: 1.4; font-variant-numeric: tabular-nums;
+    pointer-events: none;
+}
+
 .image-modal-close {
-    position: absolute; top: -12px; right: -12px; width: 32px; height: 32px; padding: 0;
+    position: absolute; top: -12px; right: -12px; z-index: 2; width: 32px; height: 32px; padding: 0;
     border: 0; border-radius: 50%; background: var(--text); color: var(--bg); font-size: 20px; line-height: 1; cursor: pointer;
 }
 .image-modal-close:hover { background: var(--accent); }
 @media (max-width: 560px) {
     .image-modal { width: 300px; }
     .image-modal-close { top: -10px; right: -10px; }
+    /* на узких экранах листаем свайпом и клавишами — стрелки не нужны */
+    .image-slider-nav { display: none; }
 }
 
 /* всплывающее окно при входе на сайт */
@@ -1147,13 +1171,23 @@ body.cascade-leaf .cascade-root { display: none; }
     .container { padding: 0 14px; }
     .main-nav a { padding: 8px 10px; }
     .logo-img { height: 28px; }
-    .product-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
-    .product-card { padding: 12px; }
+    /* minmax(0, 1fr), а не 1fr: иначе колонка не сжимается ниже min-content
+       карточки (кнопка «В корзину» с блоком количества ~246px) и сетка
+       вылезает за вьюпорт на узких экранах, давая горизонтальную прокрутку */
+    .product-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+    .product-card { min-width: 0; padding: 12px; }
     .product-name { font-size: 14px; }
     .product-specs { display: none; }
     .product-foot { flex-direction: column; align-items: flex-start; gap: 2px; }
     .price { font-size: 15px; }
     .spec-table th { width: 45%; }
+}
+
+
+/* совсем узкие экраны: две колонки становятся тесными — переходим в одну,
+   чтобы кнопка «В корзину» и счётчик количества не поджимались */
+@media (max-width: 420px) {
+    .product-grid { grid-template-columns: minmax(0, 1fr); }
 }
 
 

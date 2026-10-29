@@ -340,6 +340,13 @@ class Product(SlugWithIdMixin, models.Model):
         return reverse("shop:product", args=[self.slug])
 
     @property
+    def gallery_images(self):
+        """Все изображения товара в порядке показа (учитывает prefetch)."""
+        if hasattr(self, "prefetched_images"):
+            return self.prefetched_images
+        return self.images.all()
+
+    @property
     def main_image(self):
         """Первое изображение товара, оптимизировано для prefetch."""
         # Если есть prefetch — берём из кэша, без запроса
